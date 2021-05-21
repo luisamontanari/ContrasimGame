@@ -1,4 +1,4 @@
-# Contrasim-Game
+# Contrasimulation_Game
 
 This repository contains [Isabelle2020](https://isabelle.in.tum.de/website-Isabelle2020/index.html) formulations proving the soundness and correctness of two game-theoretical characterizations of the contrasimulation preorder.
 
