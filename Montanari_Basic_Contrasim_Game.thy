@@ -46,7 +46,7 @@ fun strategy_from_contrasim :: \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \
     (AttackerNode (SOME q1 . R q1 p1 \<and> q0 \<Rightarrow>$A q1) p1)\<close> |
   \<open>strategy_from_contrasim _ _ = undefined\<close>
 
-lemma defender_pred_is_attacker: 
+lemma basic_defender_pred_is_attacker: 
   assumes 
     \<open>c_game_defender_node n0\<close>
     \<open>n0 = DefenderNode A p' q\<close>
@@ -110,12 +110,12 @@ next
        strategy_from_contrasim.simps(1)[of \<open>R\<close>]
        by (metis (no_types, lifting) A c_basic_game_node.inject(1) c_game_defender_node.elims(2))
      then obtain A ppred where n0_def: \<open>n0 = (DefenderNode A q ppred)\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-       by (metis assms(3) c_basic_game.defender_pred_is_attacker simulation_challenge p0moved.hyps(1, 3) strategy_plays_subset)
+       by (metis assms(3) c_basic_game.basic_defender_pred_is_attacker simulation_challenge p0moved.hyps(1, 3) strategy_plays_subset)
      hence \<open>strategy_from_contrasim R (n0#play) = AttackerNode (SOME q1. R q1 q \<and> ppred \<Rightarrow>$ A  q1) q\<close> 
        using n0_def strategy_from_contrasim.simps(1)[of \<open>R\<close> \<open>A\<close> \<open>q\<close> \<open>ppred\<close> \<open>play\<close>] by auto
      hence p_def: \<open>p = (SOME p1. R p1 q \<and> ppred \<Rightarrow>$ A p1)\<close> using A by auto
      have \<open>\<exists>qpred. hd play = (AttackerNode qpred ppred) \<and> c_game_moves (hd play) n0\<close> 
-       using defender_pred_is_attacker strategy_plays_subset[OF p0moved.hyps(1)]
+       using basic_defender_pred_is_attacker strategy_plays_subset[OF p0moved.hyps(1)]
        by (simp add: assms(3) n0_def  p0moved.hyps(3)) 
      then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred ppred)\<close> 
        and qpred_move: \<open>c_game_moves (hd play) n0\<close> by auto
@@ -224,9 +224,9 @@ proof (safe)
   then obtain A p1 q where n0_def: \<open>n0 = DefenderNode A p1 q\<close>
     using c_game_defender_node.elims(2) by blast 
   then obtain p where p_def: \<open>hd play = AttackerNode p q\<close>
-    using n0_def A defender_pred_is_attacker assms(3) strategy_plays_subset by blast
+    using n0_def A basic_defender_pred_is_attacker assms(3) strategy_plays_subset by blast
   hence \<open>c_game_moves (AttackerNode p q) (DefenderNode A p1 q)\<close> 
-    using A n0_def by (metis assms(3) defender_pred_is_attacker strategy_plays_subset)
+    using A n0_def by (metis assms(3) basic_defender_pred_is_attacker strategy_plays_subset)
   hence mov_p_p1: \<open>p \<Rightarrow>$A p1\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by auto  
   from p_def have \<open>R p q\<close> 
     using basic_game_all_f_consistent_atk_pos_in_R A assms
