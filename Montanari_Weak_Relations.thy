@@ -72,7 +72,7 @@ lemma ZR_C_guarantees_action_succ :
  assumes 
     \<open>contrasim C\<close>
     \<open>ZR (set_type C) p Q\<close>
-    \<open>p \<Rightarrow>a p'\<close>
+    \<open>p =\<rhd>a p'\<close>
     \<open>a \<noteq> \<tau>\<close>
   shows \<open>dsuccs a Q \<noteq> {}  \<and> ZR (set_type C) p' (dsuccs a Q)\<close>
 proof -
@@ -84,8 +84,9 @@ proof -
     using assms set_type_def by (metis singleton_inject) 
   have notau: \<open>\<forall>a \<in> set (A@[a]). a \<noteq> \<tau>\<close> 
     using \<open>a \<noteq> \<tau>\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> by auto
-  have word: \<open>p0 \<Rightarrow>$(A@[a]) p'\<close>
-    using \<open>p0 \<Rightarrow>$A p\<close>  \<open>p \<Rightarrow>a  p'\<close> rev_seq_step_concat
+  have  \<open>p \<Rightarrow>a  p'\<close> using assms(3,4) steps.refl tau_def by auto 
+  hence word: \<open>p0 \<Rightarrow>$(A@[a]) p'\<close>
+    using \<open>p0 \<Rightarrow>$A p\<close>  rev_seq_step_concat
     by (meson steps.step steps_concat)
   then obtain q' where \<open>q0 \<Rightarrow>$(A@[a]) q' \<and> CS q' p'\<close> 
     using CS_def contrasim_def[of \<open>CS\<close>] notau
