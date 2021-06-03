@@ -37,7 +37,7 @@ lemma ZR_C_guarantees_tau_succ :
     \<open>contrasim C\<close>
     \<open>ZR (set_type C) p Q\<close>
     \<open>p \<Rightarrow>^\<tau> p'\<close>
-  shows \<open>\<exists>q'. q' \<in> (hsuccs \<tau> Q) \<and> ZR (set_type C) q' {p'}\<close>
+  shows \<open>\<exists>q'. q' \<in> (weak_tau_succs Q) \<and> ZR (set_type C) q' {p'}\<close>
 proof -
   obtain p0 Q0 A q0
       where \<open>(set_type C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> \<open>Q0 = {q0}\<close> 
@@ -51,21 +51,21 @@ proof -
     using assms contrasim_def[of \<open>C\<close>] \<open>C p0 q0\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> by blast
   hence \<open>(set_type C) q' {p'}\<close> using set_type_def by auto
   hence inZR: \<open>ZR (set_type C) q' {p'}\<close> using R_is_in_ZR  by auto
-  have \<open>q' \<in> hsuccs \<tau> Q\<close>
+  have \<open>q' \<in> weak_tau_succs Q\<close>
   proof (cases \<open>A = []\<close>)
     case True
     hence \<open>q0 \<Rightarrow>^\<tau> q'\<close> using \<open>q0 \<Rightarrow>$A q'\<close> by auto
-    hence \<open>q' \<in> hsuccs \<tau> {q0}\<close> using hsuccs_def by simp
-    hence \<open>q' \<in> hsuccs \<tau> Q0\<close>  using \<open>Q0 = {q0}\<close>  by simp       
-    thus \<open>q' \<in> hsuccs \<tau> Q\<close>  using Q_def by (simp add: True) 
+    hence \<open>q' \<in> weak_tau_succs {q0}\<close> using weak_tau_succs_def by simp
+    hence \<open>q' \<in> weak_tau_succs Q0\<close>  using \<open>Q0 = {q0}\<close>  by simp       
+    thus \<open>q' \<in> weak_tau_succs Q\<close>  using Q_def by (simp add: True) 
   next
     case False
-    hence \<open>q' \<in> hsuccs \<tau> (dsuccs_seq_rec (rev A) Q0)\<close> 
+    hence \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) Q0)\<close> 
       using \<open>Q0 = {q0}\<close> \<open>q0 \<Rightarrow>$ A q'\<close>
-      by (simp add: word_reachable_implies_in_s) 
-    thus \<open>q' \<in> hsuccs \<tau> Q\<close> using Q_def by simp 
+      by (simp add: word_reachable_implies_in_dsuccs) 
+    thus \<open>q' \<in> weak_tau_succs Q\<close> using Q_def by simp 
   qed
-  thus \<open>\<exists>q'. q' \<in> hsuccs \<tau> Q \<and> ZR (set_type C) q' {p'}\<close> using inZR by auto
+  thus \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> ZR (set_type C) q' {p'}\<close> using inZR by auto
 qed
 
 lemma ZR_C_guarantees_action_succ :
@@ -91,10 +91,10 @@ proof -
   then obtain q' where \<open>q0 \<Rightarrow>$(A@[a]) q' \<and> CS q' p'\<close> 
     using CS_def contrasim_def[of \<open>CS\<close>] notau
     by fastforce
-  hence \<open>q' \<in> hsuccs \<tau> (dsuccs_seq_rec (rev (A@[a])) {q0})\<close> 
-    using word_reachable_implies_in_s by blast
+  hence \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev (A@[a])) {q0})\<close> 
+    using word_reachable_implies_in_dsuccs by blast
   then obtain q1 where in_dsuccs: \<open>q1 \<in> dsuccs_seq_rec (rev (A@[a])) {q0}\<close> \<open>q1 \<Rightarrow>^\<tau> q'\<close>
-    using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev (A@[a])) {q0}\<close>] by auto
+    using weak_tau_succs_def[of \<open>dsuccs_seq_rec (rev (A@[a])) {q0}\<close>] by auto
   hence \<open>q1 \<in> dsuccs_seq_rec (a#(rev A)) {q0}\<close> by auto
   hence \<open>q1 \<in> dsuccs a (dsuccs_seq_rec (rev A) {q0})\<close>  by auto
   hence notempty: \<open>q1 \<in> dsuccs a Q\<close> using Q_def \<open>Q0 = {q0}\<close> by auto

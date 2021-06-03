@@ -171,17 +171,20 @@ next
   then show ?case using Cons.prems last by auto 
 qed
 
-definition hsuccs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
-\<open>hsuccs a Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^a q1}\<close> 
+definition weak_tau_succs :: "'s set \<Rightarrow> 's set" where
+\<open>weak_tau_succs Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^\<tau> q1}\<close> 
 
 definition dsuccs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
 \<open>dsuccs a Q  = {q1. \<exists>q\<in> Q. q =\<rhd>a q1}\<close> 
+
+definition word_reachable_via_delay :: "'a list \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool" where
+\<open>word_reachable_via_delay A p p0 p1 = (\<exists>p00. p \<Rightarrow>$(butlast A) p00 \<and> p00 =\<rhd>(last A) p0 \<and> p0 \<Rightarrow>^\<tau> p1)\<close>
 
 primrec dsuccs_seq_rec :: "'a list \<Rightarrow> 's set \<Rightarrow> 's set" where
 \<open>dsuccs_seq_rec [] Q  = Q\<close> | 
 \<open>dsuccs_seq_rec (a#as) Q  = dsuccs a (dsuccs_seq_rec as Q)\<close>
 
-lemma in_s_implies_word_reachable : 
+lemma in_dsuccs_implies_word_reachable : 
   assumes 
     \<open>q' \<in> dsuccs_seq_rec (rev A) {q}\<close>
   shows \<open>q \<Rightarrow>$A q'\<close> using assms
@@ -201,11 +204,11 @@ next
     using \<open>q0 =\<rhd>a q'\<close> steps.refl rev_seq_step_concat by blast 
 qed
 
-lemma word_reachable_implies_in_s : 
+lemma word_reachable_implies_in_dsuccs : 
   assumes 
     \<open>q \<Rightarrow>$A q'\<close>
     \<open>A \<noteq> []\<close>
-  shows \<open>q' \<in> hsuccs \<tau> (dsuccs_seq_rec (rev A) {q})\<close> using assms(1)
+  shows \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) {q})\<close> using assms(1)
 proof (induct arbitrary: q' rule: rev_nonempty_induct[OF assms(2)])
   case single: (1 a)
   hence \<open>q \<Rightarrow>^a q'\<close> by blast
@@ -213,13 +216,13 @@ proof (induct arbitrary: q' rule: rev_nonempty_induct[OF assms(2)])
   hence \<open>q0 \<in> dsuccs a {q}\<close> using dsuccs_def by blast
   hence  \<open>q0 \<in> dsuccs_seq_rec (rev [a]) {q}\<close> by simp 
   hence \<open>\<exists>q0 \<in> dsuccs_seq_rec (rev [a]) {q}. q0 \<Rightarrow>^\<tau> q'\<close> using \<open>q0 \<Rightarrow>^\<tau> q'\<close> by auto
-  thus ?case using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev [a]) {q}\<close>] by auto
+  thus ?case using weak_tau_succs_def[of\<open>dsuccs_seq_rec (rev [a]) {q}\<close>] by auto
 next
   case snoc: (2 a as)
   then obtain q1 where \<open>q \<Rightarrow>$as q1\<close> and \<open>q1 \<Rightarrow>^a q'\<close> using rev_seq_split by blast 
-  hence in_succs: \<open>q1 \<in> hsuccs \<tau> (dsuccs_seq_rec (rev as) {q})\<close> using snoc.hyps by auto
+  hence in_succs: \<open>q1 \<in> weak_tau_succs (dsuccs_seq_rec (rev as) {q})\<close> using snoc.hyps by auto
   then obtain q0 where q0_def: \<open>q0 \<in> dsuccs_seq_rec (rev as) {q}\<close> \<open>q0 \<Rightarrow>^\<tau> q1\<close> 
-    using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev as) {q}\<close>] by auto
+    using weak_tau_succs_def[of\<open>dsuccs_seq_rec (rev as) {q}\<close>] by auto
   hence \<open>q0 \<Rightarrow>^a q'\<close> using \<open>q1 \<Rightarrow>^a q'\<close> steps_concat tau_tau by blast 
   then obtain q2 where \<open>q0 =\<rhd>a q2\<close> \<open>q2 \<Rightarrow>^\<tau> q'\<close> using steps.refl by auto 
   hence \<open>\<exists>q0 \<in> dsuccs_seq_rec (rev as) {q}. q0 =\<rhd>a q2\<close> using q0_def by auto
@@ -227,7 +230,7 @@ next
   hence \<open>q2 \<in> dsuccs_seq_rec (a#(rev as)) {q}\<close> by auto
   hence \<open>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}\<close> by auto
   hence \<open>\<exists>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}. q2 \<Rightarrow>^\<tau> q'\<close> using \<open>q2 \<Rightarrow>^\<tau> q'\<close> by auto
-  thus ?case using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev (as@[a])) {q}\<close>] by auto
+  thus ?case using weak_tau_succs_def[of \<open>dsuccs_seq_rec (rev (as@[a])) {q}\<close>] by auto
 qed
 
 lemma simp_dsuccs_seq_rev: 

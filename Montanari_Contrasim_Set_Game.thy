@@ -29,7 +29,7 @@ fun (in lts_tau) c_set_game_moves ::
 
   swap_answer:
     \<open>c_set_game_moves (DefenderSwapNode p1 Q) (AttackerNode q1 P1) =   
-      (q1 \<in> hsuccs \<tau> Q \<and> P1 = {p1})\<close> |                                         
+      (q1 \<in> weak_tau_succs Q \<and> P1 = {p1})\<close> |                                         
 
   c_set_game_moves_no_step:               
     \<open>c_set_game_moves _ _ = False\<close>
@@ -193,10 +193,10 @@ next
         using second_elem_in_play_set strategy_plays_subset[OF p0moved.hyps(1)] assms(3) n0_def
         by (simp add: assms(4)) 
       hence \<open>ZR (set_type C) qpred Ppred\<close> using p0moved.hyps(2) qpred_def by blast
-      hence \<open>\<exists>p. p \<in> hsuccs \<tau> Ppred \<and> ZR (set_type C) p {q}\<close> 
+      hence \<open>\<exists>p. p \<in> weak_tau_succs Ppred \<and> ZR (set_type C) p {q}\<close> 
         using qpred_q_move assms(1,2) ZR_C_guarantees_tau_succ by blast
       hence \<open>\<exists>p. (\<exists>p0. p0 \<in> Ppred \<and> p0 \<Rightarrow>^\<tau>  p) \<and> ZR (set_type C) p {q}\<close> 
-        using hsuccs_def[of \<open>\<tau>\<close> \<open>Ppred\<close>] by blast
+        using weak_tau_succs_def[of \<open>Ppred\<close>] by blast
       from someI_ex[OF this] p_def have \<open>ZR (set_type C) p {q}\<close> by simp
       thus \<open>ZR (set_type C) p Q\<close> using Q_def by blast
     qed
@@ -283,9 +283,9 @@ proof (safe)
         hence \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p1 Q)\<close> 
           using p1moved.hyps(4) n1_def by auto
         hence p_succ: \<open>p \<Rightarrow>^\<tau> p1\<close> by auto
-        hence \<open>\<exists>q'. q' \<in> hsuccs \<tau> Q \<and> ZR (set_type C) q' {p1}\<close> 
+        hence \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> ZR (set_type C) q' {p1}\<close> 
           using ZR ZR_C_guarantees_tau_succ assms(1) by auto
-        hence \<open>\<exists>q1. q1 \<in> hsuccs \<tau> Q \<and> ZR (set_type C) q1 {p1}\<close> by auto
+        hence \<open>\<exists>q1. q1 \<in> weak_tau_succs Q \<and> ZR (set_type C) q1 {p1}\<close> by auto
         hence \<open>\<exists>q1 P1. c_set_game_moves n1' (AttackerNode q1 P1)\<close> using n1'_def  by auto  
         thus \<open>\<exists>a. c_set_game_moves (hd (n1' # n1 # play)) a\<close> by auto
       qed
@@ -318,7 +318,7 @@ proof (safe)
       by (metis assms(3) set_defender_pred_is_attacker simulation_challenge strategy_plays_subset) 
     hence \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
       by (metis A n0_def assms(3) set_defender_pred_is_attacker strategy_plays_subset) 
-    hence \<open>p =\<rhd>a p'\<close> \<open>\<not> tau a\<close> by auto
+    hence \<open>p =\<rhd>a p'\<close> \<open>\<not> tau a\<close> by auto   
     hence \<open>ZR (set_type C) p Q\<close>
       using set_game_all_f_consistent_atk_pos_in_ZR[OF assms] A p_def
         assms(3) second_elem_in_play_set strategy_plays_subset 
@@ -351,9 +351,9 @@ proof (safe)
       using set_game_all_f_consistent_atk_pos_in_ZR[OF assms] A p_def
         assms(3) second_elem_in_play_set strategy_plays_subset 
       by fastforce 
-    hence  \<open>\<exists>q'. q' \<in> hsuccs \<tau> Q \<and> ZR (set_type C) q' {p'}\<close>
+    hence  \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> ZR (set_type C) q' {p'}\<close>
       using ZR_C_guarantees_tau_succ \<open>p \<Rightarrow>^\<tau> p'\<close> assms(1) by auto 
-    hence q1_ex: \<open>\<exists>q1. (\<exists>q.(q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> ZR (set_type C) q1 {p'}\<close> using hsuccs_def by auto
+    hence q1_ex: \<open>\<exists>q1. (\<exists>q.(q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> ZR (set_type C) q1 {p'}\<close> using weak_tau_succs_def by auto
     hence strat: \<open>strategy_from_ZR_C (ZR (set_type C)) (n0#play) = 
     AttackerNode (SOME q1 . (\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> (ZR (set_type C)) q1 {p'}) {p'}\<close>
       using n0_def by auto
@@ -364,7 +364,7 @@ proof (safe)
       by auto
     with someI_ex[OF q1_ex] have X: \<open>\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1) \<and> ZR (set_type C) q1 {p'}\<close> 
       by blast
-    hence \<open>q1 \<in> hsuccs \<tau> Q \<and> {p'} = {p'}\<close>using hsuccs_def by auto
+    hence \<open>q1 \<in> weak_tau_succs Q \<and> {p'} = {p'}\<close>using weak_tau_succs_def by auto
     thus ?thesis  using n0_def strat q1_def by auto
   qed
 qed
@@ -385,10 +385,6 @@ proof -
   thus ?thesis using \<open>p = p1\<close> n0_def by auto
 qed
 
-definition delay_x :: "'a list \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool" where
-\<open>delay_x A p p0 p1 = (\<exists>p00. p \<Rightarrow>$(butlast A) p00 \<and> p00 =\<rhd>(last A) p0 \<and> p0 \<Rightarrow>^\<tau> p1)\<close>
-
-
 lemma defSimNode_with_prefix_in_play: 
   assumes 
     \<open>A \<noteq> []\<close>
@@ -399,7 +395,7 @@ lemma defSimNode_with_prefix_in_play:
     \<open>play \<in> plays_for_strategy f\<close>
     \<open>hd play = AttackerNode p {q}\<close>
   shows \<open>\<exists>play p0. ((DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}))#play) 
-      \<in> plays_for_strategy f \<and> delay_x A p p0 p1\<close> 
+      \<in> plays_for_strategy f \<and> word_reachable_via_delay A p p0 p1\<close> 
 proof - 
   have  \<open>\<not>player1_wins play\<close> using assms(4, 6) player0_winning_strategy_def by auto
   hence \<open>(c_set_game_defender_node (hd play) \<and> (\<nexists>p'. c_set_game_moves (hd play) p')) \<Longrightarrow> False\<close> 
@@ -421,7 +417,7 @@ proof -
     hence inplay: \<open>((DefenderSimNode (last [a]) p0  (dsuccs_seq_rec (rev (butlast [a])) {q}))#play) \<in> plays_for_strategy f\<close>
       by auto
     have \<open>p  \<Rightarrow>$(butlast [a]) p\<close> by (simp add: steps.refl) 
-    hence \<open>delay_x [a] p p0 p1\<close> using delay_x_def \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> by auto
+    hence \<open>word_reachable_via_delay [a] p p0 p1\<close> using word_reachable_via_delay_def \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> by auto
     then show ?case using inplay by auto
   next
     case snoc: (2 a as)
@@ -434,10 +430,10 @@ proof -
     then obtain p11 where  \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> using steps.refl \<open>\<not> tau a\<close> tau_tau by blast
     hence \<open>\<exists>play p0.
        DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
-       \<in> plays_for_strategy f \<and> delay_x as p p0 p'\<close>  using p'_def snoc by auto
+       \<in> plays_for_strategy f \<and> word_reachable_via_delay as p p0 p'\<close>  using p'_def snoc by auto
     then obtain play p0
       where play_def: \<open>DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
-       \<in> plays_for_strategy f\<close> \<open>delay_x as p p0 p'\<close> by auto
+       \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay as p p0 p'\<close> by auto
 
     hence \<open>DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q}) # play 
                 \<in> plays_for_strategy f\<close> using as_def by auto
@@ -456,13 +452,13 @@ proof -
     then obtain n0' 
       where n0'_def : \<open>n0' = DefenderSimNode a p11 (dsuccs a2 ((dsuccs_seq_rec (rev as2) {q})))\<close> 
       and n0'_mov: \<open>c_set_game_moves n1 n0'\<close> using p'_step n1_atk
-      by (metis (no_types, lifting) \<open>\<not> tau a\<close> \<open>p' =\<rhd> a p11\<close> delay_x_def simulation_challenge play_def(2) steps_concat tau_tau)
+      by (metis (no_types, lifting) \<open>\<not> tau a\<close> \<open>p' =\<rhd> a p11\<close> word_reachable_via_delay_def simulation_challenge play_def(2) steps_concat tau_tau)
     hence in_play: \<open>n0'#n1#n0#play \<in> plays_for_strategy f\<close> using n1_in_play
       by (simp add: n1_atk player1_position_def plays_for_strategy.p1move) 
     hence \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as2@[a2])) {q})\<close> using n0'_def  by auto
     hence n0'_is_defSimNode: \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as)) {q})\<close> using as_def by auto
-    from \<open>p \<Rightarrow>$ as  p'\<close> \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> have \<open>delay_x (as@[a]) p p11 p1\<close> 
-      using delay_x_def by auto
+    from \<open>p \<Rightarrow>$ as  p'\<close> \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> have \<open>word_reachable_via_delay (as@[a]) p p11 p1\<close> 
+      using word_reachable_via_delay_def by auto
     then show ?case using n0'_is_defSimNode in_play by auto
   qed
 qed
@@ -506,11 +502,11 @@ proof (safe)
       by (meson c_set_game_defender_node.simps(3) plays_for_strategy.p0move) 
     then obtain n1' where n1'_mov: \<open>c_set_game_moves n0 n1'\<close> 
       and in_play: \<open>n1'#n0#play \<in> plays_for_strategy f\<close> by auto
-    hence \<open>\<exists>q1. n1' = AttackerNode q1 {p1} \<and> (q1 \<in> hsuccs \<tau> {q})\<close>
+    hence \<open>\<exists>q1. n1' = AttackerNode q1 {p1} \<and> (q1 \<in> weak_tau_succs {q})\<close>
       by (metis c_set_game_defender_node.elims(2, 3) c_set_game_moves_no_step(3, 4) swap_answer n0_def) 
     then obtain q1 where q1_def: \<open>n1' = AttackerNode q1 {p1}\<close> 
-      and q_succ: \<open>q1 \<in> hsuccs \<tau> {q}\<close> by auto
-    hence q_tau: \<open>q \<Rightarrow>^\<tau> q1\<close> using hsuccs_def by auto
+      and q_succ: \<open>q1 \<in> weak_tau_succs {q}\<close> by auto
+    hence q_tau: \<open>q \<Rightarrow>^\<tau> q1\<close> using weak_tau_succs_def by auto
     from in_play q1_def n0_def have \<open>C q1 p1\<close> unfolding C_def by force 
     then show ?thesis using q_tau Nil by auto 
   next
@@ -519,11 +515,11 @@ proof (safe)
     hence \<open>\<not>tau a\<close> using \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> snoc  by (simp add: tau_def) 
     then obtain A_play p0 where 
      gotoA: \<open>DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}) # A_play
-        \<in> plays_for_strategy f\<close> \<open>delay_x A p p0 p1\<close> 
+        \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay A p p0 p1\<close> 
         using defSimNode_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(1,2) play_def play_hd by meson
     then obtain Q where Q_def: \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
-    hence Q_all: \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_s_implies_word_reachable by auto
+    hence Q_all: \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_dsuccs_implies_word_reachable by auto
     then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a p0 (dsuccs_seq_rec (rev as) {q}) \<close> by auto
     hence A_play_def: \<open>n0#A_play \<in> plays_for_strategy f\<close> using gotoA snoc by auto
     then obtain n1 where n1_move: \<open>c_set_game_moves n0 n1\<close>
@@ -538,7 +534,8 @@ proof (safe)
       using n0_def A_play_def n1_move assms(2) move_DefSim_to_AtkNode 
         plays_for_strategy.p0move sound_strategy_def 
       by fastforce 
-    from \<open>delay_x A p p0 p1\<close> have \<open>p0 \<Rightarrow>^\<tau> p1\<close> using delay_x_def by auto
+    from \<open>word_reachable_via_delay A p p0 p1\<close> have \<open>p0 \<Rightarrow>^\<tau> p1\<close> 
+      using word_reachable_via_delay_def by auto
     then obtain n0' where n0'_move: \<open>c_set_game_moves n1 n0'\<close>
       and n0'_def: \<open>n0' = DefenderSwapNode p1 (dsuccs_seq_rec (rev A) {q})\<close>
       using  swap_challenge tau_tau n1_def by blast
@@ -547,12 +544,12 @@ proof (safe)
     then obtain n1' where n1'_move: \<open>c_set_game_moves n0' n1'\<close>
       and in_strat: \<open>n1' = f(n0'#n1#n0#A_play)\<close> 
       using Def_not_stuck n0'_def  assms(2) sound_strategy_def by auto
-    then obtain q1 where q1_def: \<open>q1 \<in> hsuccs \<tau> (dsuccs_seq_rec (rev A) {q})\<close> 
+    then obtain q1 where q1_def: \<open>q1 \<in> weak_tau_succs (dsuccs_seq_rec (rev A) {q})\<close> 
       and n1'_def: \<open>n1'  = AttackerNode q1 {p1}\<close> using n0'_def
       by (metis c_set_game_defender_node.cases c_set_game_moves_no_step(3, 7) swap_answer) 
-    hence \<open>q1 \<in> {q1. \<exists>q0 \<in> (dsuccs_seq_rec (rev A) {q}). q0 \<Rightarrow>^\<tau> q1}\<close> using hsuccs_def by auto
+    hence \<open>q1 \<in> {q1. \<exists>q0 \<in> (dsuccs_seq_rec (rev A) {q}). q0 \<Rightarrow>^\<tau> q1}\<close> using weak_tau_succs_def by auto
     also have \<open>... = {q1. \<exists>q0 \<in> (dsuccs_seq_rec (rev A) {q}). q \<Rightarrow>$A q0 \<and> q0 \<Rightarrow>^\<tau> q1}\<close>
-      using in_s_implies_word_reachable by auto
+      using in_dsuccs_implies_word_reachable by auto
     also have \<open>... \<subseteq> {q1. \<exists>q0 \<in> (dsuccs_seq_rec (rev A) {q}). q \<Rightarrow>$A q1}\<close> 
       using word_tau_concat by auto
     also have \<open>... \<subseteq> {q1. q \<Rightarrow>$A q1}\<close> by auto
