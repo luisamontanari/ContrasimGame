@@ -161,16 +161,19 @@ next
   then show ?case using Cons.prems last by auto 
 qed
 
-definition succs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
-\<open>succs a Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^a q1}\<close> 
+definition hsuccs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
+\<open>hsuccs a Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^a q1}\<close> 
 
-primrec succs_seq_rec :: "'a list \<Rightarrow> 's set \<Rightarrow> 's set" where
-\<open>succs_seq_rec [] Q  = Q\<close> | 
-\<open>succs_seq_rec (a#as) Q  = succs a (succs_seq_rec as Q)\<close>
+definition dsuccs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
+\<open>dsuccs a Q  = {q1. \<exists>q\<in> Q. q =\<rhd>a q1}\<close> 
 
-lemma in_s_implies_word_reachable : 
+primrec dsuccs_seq_rec :: "'a list \<Rightarrow> 's set \<Rightarrow> 's set" where
+\<open>dsuccs_seq_rec [] Q  = Q\<close> | 
+\<open>dsuccs_seq_rec (a#as) Q  = dsuccs a (dsuccs_seq_rec as Q)\<close>
+
+lemma in_ds_implies_word_reachable : 
   assumes 
-    \<open>q' \<in> succs_seq_rec (rev A) {q}\<close>
+    \<open>q' \<in> dsuccs_seq_rec (rev A) {q}\<close>
   shows \<open>q \<Rightarrow>$A q'\<close> using assms
 proof (induct arbitrary: q' rule: rev_induct) 
   case Nil
@@ -179,41 +182,42 @@ proof (induct arbitrary: q' rule: rev_induct)
   thus \<open>q \<Rightarrow>$[] q'\<close> by simp
 next
   case (snoc a as)
-  hence \<open>q' \<in> succs_seq_rec (a#(rev as)) {q}\<close> by simp
-  hence \<open>q' \<in> succs a (succs_seq_rec (rev as) {q})\<close> by simp
-  then obtain q0 where \<open>q0 \<in> succs_seq_rec (rev as) {q}\<close> 
-    and \<open>q0 \<Rightarrow>^a q'\<close> using succs_def  by auto
+  hence \<open>q' \<in> dsuccs_seq_rec (a#(rev as)) {q}\<close> by simp
+  hence \<open>q' \<in> dsuccs a (dsuccs_seq_rec (rev as) {q})\<close> by simp
+  then obtain q0 where \<open>q0 \<in> dsuccs_seq_rec (rev as) {q}\<close> 
+    and \<open>q0 =\<rhd>a q'\<close> using dsuccs_def  by auto
   hence \<open>q \<Rightarrow>$as q0\<close> using snoc.hyps by auto
-  thus \<open>q \<Rightarrow>$(as @ [a]) q'\<close> using \<open>q0 \<Rightarrow>^a q'\<close> rev_seq_step_concat by auto 
+  thus \<open>q \<Rightarrow>$(as @ [a]) q'\<close> 
+    using \<open>q0 =\<rhd>a q'\<close> steps.refl rev_seq_step_concat by blast 
 qed
 
 lemma word_reachable_implies_in_s : 
   assumes 
     \<open>q \<Rightarrow>$A q'\<close>
     \<open>A \<noteq> []\<close>
-  shows \<open>q' \<in> succs_seq_rec (rev A) {q}\<close> using assms(1)
+  shows \<open>q' \<in> hsuccs \<tau> (dsuccs_seq_rec (rev A) {q})\<close> using assms(1)
 proof (induct arbitrary: q' rule: rev_nonempty_induct[OF assms(2)])
   case single: (1 a)
   hence \<open>q \<Rightarrow>^a q'\<close> by blast
-  hence \<open>q' \<in> succs a {q}\<close> using succs_def by blast
-  thus ?case by simp 
+  then obtain q0 where \<open>q =\<rhd>a q0\<close> \<open>q0 \<Rightarrow>^\<tau> q'\<close> using steps.refl by auto 
+  hence \<open>q0 \<in> dsuccs a {q}\<close> using dsuccs_def by blast
+  hence  \<open>q0 \<in> dsuccs_seq_rec (rev [a]) {q}\<close> by simp 
+  hence \<open>\<exists>q0 \<in> dsuccs_seq_rec (rev [a]) {q}. q0 \<Rightarrow>^\<tau> q'\<close> using \<open>q0 \<Rightarrow>^\<tau> q'\<close> by auto
+  thus ?case using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev [a]) {q}\<close>] by auto
 next
   case snoc: (2 a as)
-  then obtain q0 where \<open>q \<Rightarrow>$as q0\<close> and \<open>q0 \<Rightarrow>^a q'\<close> using rev_seq_split by blast 
-  hence in_succs: \<open>q0 \<in> succs_seq_rec (rev as) {q}\<close> using snoc.hyps by auto
-  hence \<open>\<exists>q0 \<in> succs_seq_rec (rev as) {q}. q0 \<Rightarrow>^a q'\<close> using \<open>q0 \<Rightarrow>^a q'\<close> by auto
-  hence \<open>q' \<in> succs a (succs_seq_rec (rev as) {q})\<close> using succs_def by auto
-  hence \<open>q' \<in> succs_seq_rec (a#(rev as)) {q}\<close> by simp
-  thus ?case by simp
-qed
-
-lemma simp_succs_seq_rev: 
-  assumes 
-    \<open>Q = succs_seq_rec (rev A) {q0}\<close>
-  shows 
-    \<open>succs a Q = succs_seq_rec (rev (A@[a])) {q0}\<close>
-proof - 
-  show ?thesis by (simp add: assms) 
+  then obtain q1 where \<open>q \<Rightarrow>$as q1\<close> and \<open>q1 \<Rightarrow>^a q'\<close> using rev_seq_split by blast 
+  hence in_succs: \<open>q1 \<in> hsuccs \<tau> (dsuccs_seq_rec (rev as) {q})\<close> using snoc.hyps by auto
+  then obtain q0 where q0_def: \<open>q0 \<in> dsuccs_seq_rec (rev as) {q}\<close> \<open>q0 \<Rightarrow>^\<tau> q1\<close> 
+    using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev as) {q}\<close>] by auto
+  hence \<open>q0 \<Rightarrow>^a q'\<close> using \<open>q1 \<Rightarrow>^a q'\<close> steps_concat tau_tau by blast 
+  then obtain q2 where \<open>q0 =\<rhd>a q2\<close> \<open>q2 \<Rightarrow>^\<tau> q'\<close> using steps.refl by auto 
+  hence \<open>\<exists>q0 \<in> dsuccs_seq_rec (rev as) {q}. q0 =\<rhd>a q2\<close> using q0_def by auto
+  hence \<open>q2 \<in> dsuccs a (dsuccs_seq_rec (rev as) {q})\<close>  using dsuccs_def by auto
+  hence \<open>q2 \<in> dsuccs_seq_rec (a#(rev as)) {q}\<close> by auto
+  hence \<open>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}\<close> by auto
+  hence \<open>\<exists>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}. q2 \<Rightarrow>^\<tau> q'\<close> using \<open>q2 \<Rightarrow>^\<tau> q'\<close> by auto
+  thus ?case using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev (as@[a])) {q}\<close>] by auto
 qed
 
 end 
