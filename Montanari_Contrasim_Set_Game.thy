@@ -17,11 +17,11 @@ fun (in lts_tau) c_set_game_moves ::
                              
   simulation_challenge:
    \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p1 Q0) =
-     (p \<Rightarrow>a p1 \<and> Q = Q0 \<and> \<not> tau a)\<close> |  
+     (p =\<rhd>a p1 \<and> Q = Q0 \<and> \<not> tau a)\<close> |  
 
   simulation_answer:                        
     \<open>c_set_game_moves (DefenderSimNode a p1 Q) (AttackerNode p10 Q1) =   
-      (p1 = p10 \<and> Q1 = succs a Q \<and> Q1 \<noteq> {})\<close> |                                             
+      (p1 = p10 \<and> Q1 = dsuccs a Q \<and> Q1 \<noteq> {})\<close> |                                             
 
   swap_challenge:
     \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p1 Q0) =
@@ -29,7 +29,7 @@ fun (in lts_tau) c_set_game_moves ::
 
   swap_answer:
     \<open>c_set_game_moves (DefenderSwapNode p1 Q) (AttackerNode q1 P1) =   
-      (q1 \<in> succs \<tau> Q \<and> P1 = {p1})\<close> |                                         
+      (q1 \<in> hsuccs \<tau> Q \<and> P1 = {p1})\<close> |                                         
 
   c_set_game_moves_no_step:               
     \<open>c_set_game_moves _ _ = False\<close>
@@ -57,7 +57,7 @@ fun strategy_from_ZR_C :: \<open>('s \<Rightarrow> ('s set) \<Rightarrow> bool) 
     (AttackerNode (SOME q1 . (\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> R q1 {p1}) {p1})\<close> |
 
   \<open>strategy_from_ZR_C R ((DefenderSimNode a p1 Q)#play) = 
-    (AttackerNode p1 (SOME Q1 . Q1 = succs a Q \<and> R p1 Q1 \<and> Q1 \<noteq> {}))\<close> |
+    (AttackerNode p1 (SOME Q1 . Q1 = dsuccs a Q \<and> R p1 Q1 \<and> Q1 \<noteq> {}))\<close> |
  
   \<open>strategy_from_ZR_C _ _ = undefined\<close>
 
@@ -152,21 +152,21 @@ next
       assume \<open>\<exists>a Qpred. n0 = DefenderSimNode a p Qpred\<close>
       then obtain a Qpred where n0_def: \<open>n0 = DefenderSimNode a p Qpred\<close> by auto
       hence \<open>strategy_from_ZR_C (ZR (set_type C)) (n0#play) 
-          = AttackerNode p (SOME Q1. Q1 = succs a Qpred \<and> (ZR (set_type C)) p Q1 \<and> Q1 \<noteq> {})\<close> 
+          = AttackerNode p (SOME Q1. Q1 = dsuccs a Qpred \<and> (ZR (set_type C)) p Q1 \<and> Q1 \<noteq> {})\<close> 
         using strategy_from_ZR_C.simps(2) by auto
-      hence Q_def: \<open>Q = (SOME Q1. Q1 = succs a Qpred \<and> (ZR (set_type C)) p Q1  \<and> Q1 \<noteq> {})\<close> 
+      hence Q_def: \<open>Q = (SOME Q1. Q1 = dsuccs a Qpred \<and> (ZR (set_type C)) p Q1  \<and> Q1 \<noteq> {})\<close> 
         using strat by (simp add: p0moved.prems(1))
       have \<open>\<exists>ppred. hd play = (AttackerNode ppred Qpred) \<and> c_set_game_moves (hd play) n0\<close> 
         using set_defender_pred_is_attacker strategy_plays_subset[OF p0moved.hyps(1)] 
           assms(3, 4) n0_def by force 
       then obtain ppred where ppred_def: \<open>hd play = (AttackerNode ppred Qpred)\<close> 
           and \<open>c_set_game_moves (hd play) n0\<close> by auto
-      hence \<open>ppred \<Rightarrow>a p\<close> \<open>a \<noteq> \<tau>\<close> using n0_def by auto
+      hence \<open>ppred =\<rhd>a p\<close> \<open>a \<noteq> \<tau>\<close> using n0_def by auto
       hence \<open>hd play \<in> set (n0 # play)\<close> 
         using second_elem_in_play_set strategy_plays_subset[OF p0moved.hyps(1)] assms(3) n0_def
         by (simp add: assms(4))
       hence \<open>ZR (set_type C) ppred Qpred\<close> using p0moved.hyps(2) ppred_def by blast
-      hence \<open>succs a Qpred \<noteq> {} \<and> ZR (set_type C) p (succs a Qpred)\<close> 
+      hence \<open>dsuccs a Qpred \<noteq> {} \<and> ZR (set_type C) p (dsuccs a Qpred)\<close> 
        using \<open>ppred \<Rightarrow>a p\<close> assms(1,2,4) ZR_C_guarantees_action_succ \<open>a \<noteq> \<tau>\<close> by auto
       hence \<open>\<exists>Q. Q = (succs a Qpred) \<and> ZR (set_type C) p Q\<close> by auto
       from someI_ex[OF this] show \<open>ZR (set_type C) p Q\<close> 
