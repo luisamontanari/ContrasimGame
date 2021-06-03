@@ -93,6 +93,16 @@ proof -
   thus ?thesis using rev_seq_concat assms(1) by auto
 qed
 
+lemma rev_seq_dstep_concat : 
+  assumes 
+    \<open>q \<Rightarrow>$as q'\<close> 
+    \<open>q'=\<rhd>a q1\<close>
+  shows \<open>q \<Rightarrow>$(as@[a]) q1\<close>
+proof - 
+  from assms(2) have \<open>q' \<Rightarrow>^a q1\<close> using steps.refl by auto
+  thus ?thesis using assms rev_seq_step_concat by auto
+qed
+
 lemma word_tau_concat: 
   assumes 
     \<open>q \<Rightarrow>$A q'\<close>
@@ -171,7 +181,7 @@ primrec dsuccs_seq_rec :: "'a list \<Rightarrow> 's set \<Rightarrow> 's set" wh
 \<open>dsuccs_seq_rec [] Q  = Q\<close> | 
 \<open>dsuccs_seq_rec (a#as) Q  = dsuccs a (dsuccs_seq_rec as Q)\<close>
 
-lemma in_ds_implies_word_reachable : 
+lemma in_s_implies_word_reachable : 
   assumes 
     \<open>q' \<in> dsuccs_seq_rec (rev A) {q}\<close>
   shows \<open>q \<Rightarrow>$A q'\<close> using assms
@@ -218,6 +228,15 @@ next
   hence \<open>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}\<close> by auto
   hence \<open>\<exists>q2 \<in> dsuccs_seq_rec (rev (as@[a])) {q}. q2 \<Rightarrow>^\<tau> q'\<close> using \<open>q2 \<Rightarrow>^\<tau> q'\<close> by auto
   thus ?case using hsuccs_def[of _ \<open>dsuccs_seq_rec (rev (as@[a])) {q}\<close>] by auto
+qed
+
+lemma simp_dsuccs_seq_rev: 
+  assumes 
+    \<open>Q = dsuccs_seq_rec (rev A) {q0}\<close>
+  shows 
+    \<open>dsuccs a Q = dsuccs_seq_rec (rev (A@[a])) {q0}\<close>
+proof - 
+  show ?thesis by (simp add: assms) 
 qed
 
 end 
