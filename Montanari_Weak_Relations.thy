@@ -51,20 +51,10 @@ proof -
     using assms contrasim_def[of \<open>C\<close>] \<open>C p0 q0\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> by blast
   hence \<open>(set_type C) q' {p'}\<close> using set_type_def by auto
   hence inZR: \<open>ZR (set_type C) q' {p'}\<close> using R_is_in_ZR  by auto
-  have \<open>q' \<in> weak_tau_succs Q\<close>
-  proof (cases \<open>A = []\<close>)
-    case True
-    hence \<open>q0 \<Rightarrow>^\<tau> q'\<close> using \<open>q0 \<Rightarrow>$A q'\<close> by auto
-    hence \<open>q' \<in> weak_tau_succs {q0}\<close> using weak_tau_succs_def by simp
-    hence \<open>q' \<in> weak_tau_succs Q0\<close>  using \<open>Q0 = {q0}\<close>  by simp       
-    thus \<open>q' \<in> weak_tau_succs Q\<close>  using Q_def by (simp add: True) 
-  next
-    case False
-    hence \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) Q0)\<close> 
-      using \<open>Q0 = {q0}\<close> \<open>q0 \<Rightarrow>$ A q'\<close>
-      by (simp add: word_reachable_implies_in_dsuccs) 
-    thus \<open>q' \<in> weak_tau_succs Q\<close> using Q_def by simp 
-  qed
+  have \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) Q0)\<close> 
+    using \<open>Q0 = {q0}\<close> \<open>q0 \<Rightarrow>$ A q'\<close>
+    by (simp add: word_reachable_implies_in_dsuccs) 
+  hence \<open>q' \<in> weak_tau_succs Q\<close> using Q_def by simp 
   thus \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> ZR (set_type C) q' {p'}\<close> using inZR by auto
 qed
 

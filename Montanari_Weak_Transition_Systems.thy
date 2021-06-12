@@ -204,21 +204,18 @@ next
     using \<open>q0 =\<rhd>a q'\<close> steps.refl rev_seq_step_concat by blast 
 qed
 
+
 lemma word_reachable_implies_in_dsuccs : 
   assumes 
     \<open>q \<Rightarrow>$A q'\<close>
-    \<open>A \<noteq> []\<close>
-  shows \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) {q})\<close> using assms(1)
-proof (induct arbitrary: q' rule: rev_nonempty_induct[OF assms(2)])
-  case single: (1 a)
-  hence \<open>q \<Rightarrow>^a q'\<close> by blast
-  then obtain q0 where \<open>q =\<rhd>a q0\<close> \<open>q0 \<Rightarrow>^\<tau> q'\<close> using steps.refl by auto 
-  hence \<open>q0 \<in> dsuccs a {q}\<close> using dsuccs_def by blast
-  hence  \<open>q0 \<in> dsuccs_seq_rec (rev [a]) {q}\<close> by simp 
-  hence \<open>\<exists>q0 \<in> dsuccs_seq_rec (rev [a]) {q}. q0 \<Rightarrow>^\<tau> q'\<close> using \<open>q0 \<Rightarrow>^\<tau> q'\<close> by auto
-  thus ?case using weak_tau_succs_def[of\<open>dsuccs_seq_rec (rev [a]) {q}\<close>] by auto
+  shows \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) {q})\<close> using assms
+proof (induct A arbitrary: q' rule: rev_induct)
+  case Nil
+  hence \<open>q \<Rightarrow>^\<tau> q'\<close> using tau_tau weak_step_seq.simps(1) by blast 
+  hence \<open>q' \<in> weak_tau_succs {q}\<close> using weak_tau_succs_def by auto
+  thus ?case using dsuccs_seq_rec.simps(1) by auto
 next
-  case snoc: (2 a as)
+  case (snoc a as)
   then obtain q1 where \<open>q \<Rightarrow>$as q1\<close> and \<open>q1 \<Rightarrow>^a q'\<close> using rev_seq_split by blast 
   hence in_succs: \<open>q1 \<in> weak_tau_succs (dsuccs_seq_rec (rev as) {q})\<close> using snoc.hyps by auto
   then obtain q0 where q0_def: \<open>q0 \<in> dsuccs_seq_rec (rev as) {q}\<close> \<open>q0 \<Rightarrow>^\<tau> q1\<close> 
