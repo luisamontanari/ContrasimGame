@@ -1,4 +1,4 @@
-subsection \<open>Contrasimulation\<close>
+section \<open>Contrasimulation\<close>
 
 theory Contrasimulation
 imports
@@ -8,11 +8,26 @@ begin
 context lts_tau
 begin
 
+subsection \<open>Definition of Contrasimulation\<close>
+
 definition contrasim ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
 where
   \<open>contrasim R \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<and> R p q \<and> (p \<Rightarrow>$ A p') \<longrightarrow>
     (\<exists> q'. (q \<Rightarrow>$ A q') \<and> R q' p')\<close>
+
+lemma contrasim_simpler_def:
+  shows \<open>contrasim R =
+    (\<forall> p q p' A . R p q \<and> (p \<Rightarrow>$ A p') \<longrightarrow> (\<exists> q'. (q \<Rightarrow>$ A q') \<and> R q' p'))\<close>
+proof -
+  have \<open>\<And>A. \<forall>a\<in>set (filter (\<lambda>a. a \<noteq> \<tau>) A). a \<noteq> \<tau>\<close> by auto
+  then show ?thesis
+    unfolding contrasim_def
+    using word_steps_ignore_tau_addition word_steps_ignore_tau_removal
+    by metis
+qed
+
+subsection \<open>Intermediate Relation Mimicking Contrasim\<close>
 
 definition ZR :: "(('s \<Rightarrow> ('s set) \<Rightarrow> bool)) \<Rightarrow> ('s \<Rightarrow> ('s set) \<Rightarrow> bool)" where 
 \<open>ZR R p' Q' \<equiv> \<exists>p Q A. R p Q \<and> p \<Rightarrow>$A p' \<and> (\<forall>a \<in> set A. a \<noteq> \<tau>) \<and> Q' = (dsuccs_seq_rec (rev A) Q)\<close>
@@ -30,7 +45,7 @@ proof -
     by (metis bex_empty empty_set tau_tau)
 qed
 
-lemma ZR_C_guarantees_tau_succ : 
+lemma ZR_C_guarantees_tau_succ:
   assumes 
     \<open>contrasim C\<close>
     \<open>ZR (set_type C) p Q\<close>
