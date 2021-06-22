@@ -1,10 +1,8 @@
-subsection \<open>Montanari Weak Relations\<close>
+subsection \<open>Contrasimulation\<close>
 
-theory Montanari_Weak_Relations
+theory Contrasimulation
 imports
-  Weak_Transition_Systems
-  Weak_Relations_modified
-  Montanari_Weak_Transition_Systems
+  Weak_Relations
 begin
 
 context lts_tau

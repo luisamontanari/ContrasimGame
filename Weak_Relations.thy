@@ -1,7 +1,7 @@
 
 subsection \<open>Weak Simulation\<close>
 
-theory Weak_Relations_modified
+theory Weak_Relations
 imports
   Weak_Transition_Systems
   Strong_Relations
