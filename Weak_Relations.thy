@@ -310,6 +310,45 @@ proof -
     by blast
 qed
 
+lemma weak_sim_word_impl:
+  fixes
+    p q p' A
+  assumes
+    \<open>weak_simulation R\<close> \<open>R p q\<close> \<open>p \<Rightarrow>$ A  p'\<close>
+  shows
+    \<open>\<exists>q'. R p' q' \<and> q \<Rightarrow>$ A  q'\<close>
+using assms(2,3) proof (induct A arbitrary: p q)
+  case Nil
+  then show ?case
+    using assms(1) steps_retain_weak_sim by auto
+next
+  case (Cons a A)
+  then obtain p'' where p''_spec: \<open>p \<Rightarrow>^a p''\<close> \<open>p'' \<Rightarrow>$ A p'\<close> by auto
+  with Cons(2) assms(1) obtain q'' where q''_spec: \<open>q \<Rightarrow>^a q''\<close> \<open>R p'' q''\<close>
+    unfolding weak_sim_weak_premise by blast
+  then show ?case using Cons(1) p''_spec(2)
+    using weak_step_seq.simps(2) by blast
+qed
+
+lemma weak_sim_word_impl_contra:
+  assumes
+    \<open>\<forall> p q . R p q \<longrightarrow>
+      (\<forall> p' A. p \<Rightarrow>$A p' \<longrightarrow> (\<exists> q'. R p' q' \<and> q \<Rightarrow>$A q'))\<close>
+  shows
+    \<open>weak_simulation R\<close>
+proof -
+  from assms have
+    \<open>\<forall> p q p' A . R p q \<longrightarrow> p \<Rightarrow>$A p' \<longrightarrow> (\<exists> q'. R p' q' \<and> q \<Rightarrow>$A q')\<close> by blast
+  hence \<open>\<forall> p q p' a . R p q \<longrightarrow> p \<Rightarrow>$[a] p' \<longrightarrow> (\<exists> q'. R p' q' \<and> q \<Rightarrow>$[a] q')\<close> by blast
+  thus ?thesis unfolding weak_single_step weak_sim_weak_premise by blast
+qed
+
+lemma weak_sim_word:
+  \<open>weak_simulation R =
+    (\<forall> p q . R p q \<longrightarrow>
+      (\<forall> p' A. p \<Rightarrow>$A p' \<longrightarrow> (\<exists> q'. R p' q' \<and> q \<Rightarrow>$A q')))\<close>
+  using weak_sim_word_impl weak_sim_word_impl_contra by blast
+
 subsection \<open>Weak Bisimulation\<close>
 
 definition weak_bisimulation :: 
