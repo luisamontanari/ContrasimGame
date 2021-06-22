@@ -90,7 +90,7 @@ assumes
 shows \<open>\<exists>q'. R p' q' \<and> q \<longmapsto>*A  q'\<close>
   using assms(3,2,4) proof (induct)
   case (refl p' A)
-  hence \<open>R p' q  \<and> q \<longmapsto>* A  q\<close> using assms(2) steps.refl by simp
+  hence \<open>R p' q  \<and> q \<longmapsto>* A  q\<close> using assms(2) by (simp add: steps.refl)
   then show ?case by blast
 next
   case (step p A p' a p'')
@@ -460,6 +460,16 @@ lemma weak_bisim_union:
     \<open>weak_bisimulation (\<lambda> p q . R1 p q \<or> R2 p q)\<close>
   using assms unfolding weak_bisimulation_def by blast
 
+lemma weak_bisim_taufree_strong:
+  assumes
+    \<open>weak_bisimulation R\<close>
+    \<open>\<And> p q a. p \<longmapsto> a q \<Longrightarrow> \<not> tau a\<close>
+  shows
+    \<open>bisimulation R\<close>
+  using assms strong_weak_transition_system
+  unfolding weak_bisimulation_def bisimulation_def
+  by auto
+
 subsection \<open>Delay Simulation\<close>
 
 definition delay_simulation :: 
@@ -505,7 +515,7 @@ proof -
       (?tau a \<longrightarrow> lts.steps step2 q ?tau q') \<and> 
       (\<not> ?tau a \<longrightarrow> (\<exists>pq1 pq2. lts.steps step2 q ?tau pq1 \<and> step2 pq1 a pq2 
         \<and> lts.steps step2 pq2 ?tau q'))\<close>
-      using lts_tau.step_tau_refl[of \<tau> step2 q] lts.steps.refl[of step2 q ?tau]  by auto
+      using lts_tau.step_tau_refl[of \<tau> step2 q] by auto
   next
     fix p q p' a
     assume \<open>step2 p a p'\<close> \<open>R p q\<close>

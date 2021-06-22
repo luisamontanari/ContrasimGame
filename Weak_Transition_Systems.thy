@@ -188,6 +188,22 @@ next
   then show ?thesis using Cons A_step  \<open>q \<Rightarrow>^a q''\<close> by auto 
 qed
 
+lemma strong_weak_transition_system:
+  assumes
+    \<open>\<And> p q a. p \<longmapsto> a q \<Longrightarrow> \<not> tau a\<close>
+    \<open>\<not> tau a\<close>
+  shows
+    \<open>p \<Rightarrow>^a p' = p \<longmapsto> a p'\<close>
+proof
+  assume \<open>p \<Rightarrow>^a  p'\<close>
+  then obtain p0 p1 where \<open>p \<longmapsto>* tau p0\<close> \<open>p0 \<longmapsto>a p1\<close> \<open>p1 \<longmapsto>* tau p'\<close> using assms by blast
+  then have \<open>p = p0\<close> \<open>p1 = p'\<close> using assms(1) steps_no_step by blast+
+  with \<open>p0 \<longmapsto>a p1\<close> show \<open>p \<longmapsto>a  p'\<close> by blast
+next
+  assume \<open>p \<longmapsto>a  p'\<close>
+  thus \<open>p \<Rightarrow>^a  p'\<close> using step_weak_step_tau by blast
+qed
+
 
 lemma rev_seq_split : 
   assumes \<open>q \<Rightarrow>$ (xs @ [x])  q1\<close>

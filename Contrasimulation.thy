@@ -26,6 +26,91 @@ proof -
     using word_steps_ignore_tau_addition word_steps_ignore_tau_removal
     by metis
 qed
+abbreviation contrasimulated_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>c  _" [60, 60] 65)
+  where \<open>contrasimulated_by p q \<equiv> \<exists> R . contrasim R \<and> R p q\<close>
+
+lemma contrasim_preorder_is_contrasim:
+  shows \<open>contrasim (\<lambda> p q . p \<sqsubseteq>c q)\<close>
+  unfolding contrasim_def
+  by metis
+
+lemma contrasim_preorder_is_greatest:
+  assumes \<open>contrasim R\<close>
+  shows \<open>\<And> p q. R p q \<Longrightarrow> p \<sqsubseteq>c q\<close>
+  using assms by auto
+
+lemma contrasim_tau_step:
+  \<open>contrasim (\<lambda> p1 q1 . q1 \<longmapsto>* tau p1)\<close>
+  unfolding contrasim_def
+  using steps.simps tau_tau tau_word_concat
+  by metis
+
+lemma contrasim_trans_constructive:
+  fixes R1 R2
+  defines
+    \<open>R \<equiv> \<lambda> p q . \<exists> pq . (R1 p pq \<and> R2 pq q) \<or> (R2 p pq \<and> R1 pq q)\<close>
+  assumes
+    R1_def: \<open>contrasim R1\<close> \<open>R1 p pq\<close> and
+    R2_def: \<open>contrasim R2\<close> \<open>R2 pq q\<close>
+  shows
+    \<open>R p q\<close> \<open>contrasim R\<close>
+  using assms(2,3,4,5) unfolding R_def contrasim_def by metis+
+
+lemma contrasim_trans:
+  assumes
+    \<open>p \<sqsubseteq>c pq\<close>
+    \<open>pq \<sqsubseteq>c q\<close>
+  shows
+    \<open>p \<sqsubseteq>c q\<close>
+  using assms contrasim_trans_constructive by blast
+
+lemma contrasim_refl:
+  shows
+    \<open>p \<sqsubseteq>c p\<close>
+  using contrasim_tau_step steps.refl by blast
+
+lemma contrasim_coupled:
+  assumes
+    \<open>contrasim R\<close>
+    \<open>R p q\<close>
+  shows
+    \<open>\<exists> q'. q \<longmapsto>* tau q' \<and> R q' p\<close>
+  using assms steps.refl[of p tau] weak_step_seq.simps(1)
+  unfolding contrasim_simpler_def by blast
+
+lemma contrasim_taufree_symm:
+  assumes
+    \<open>contrasim R\<close>
+    \<open>R p q\<close>
+    \<open>stable_state q\<close>
+  shows
+    \<open>R q p\<close>
+  using contrasim_coupled assms stable_tauclosure_only_loop by blast
+
+lemma symm_contrasim_is_weak_bisim:
+  assumes
+    \<open>contrasim R\<close>
+    \<open>\<And> p q. R p q \<Longrightarrow> R q p\<close>
+  shows
+    \<open>weak_bisimulation R\<close>
+  using assms unfolding contrasim_simpler_def weak_sim_word weak_bisim_weak_sim by blast
+
+lemma contrasim_weakest_bisim:
+  assumes
+    \<open>contrasim R\<close>
+    \<open>\<And> p q a. p \<longmapsto> a q \<Longrightarrow> \<not> tau a\<close>
+  shows
+    \<open>bisimulation R\<close>
+  using assms contrasim_taufree_symm symm_contrasim_is_weak_bisim weak_bisim_taufree_strong
+  by blast
+
+lemma symm_weak_sim_is_contrasim:
+  assumes
+    \<open>weak_simulation R\<close>
+    \<open>\<And> p q. R p q \<Longrightarrow> R q p\<close>
+  shows
+    \<open>contrasim R\<close>
+  using assms unfolding contrasim_simpler_def weak_sim_word by blast
 
 subsection \<open>Intermediate Relation Mimicking Contrasim\<close>
 
