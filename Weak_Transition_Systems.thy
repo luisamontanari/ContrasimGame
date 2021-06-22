@@ -311,7 +311,58 @@ next
   hence last: \<open>xs = taufree (xs @ [b])\<close> using Cons by auto
   have \<open>taufree (x#xs@[b]) = x#taufree (xs @ [b])\<close> using \<open>\<not>tau x\<close> by auto
   hence \<open>x # xs = x# taufree (xs@ [b])\<close> using last by auto
-  then show ?case using Cons.prems last by auto 
+  then show ?case using Cons.prems last by auto
+qed
+
+lemma word_steps_ignore_tau_addition:
+  assumes
+    \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
+    \<open>p \<Rightarrow>$ A p'\<close>
+    \<open>filter (\<lambda>a. a \<noteq> \<tau>) A' = A\<close>
+  shows
+    \<open>p \<Rightarrow>$ A' p'\<close>
+  using assms
+proof (induct A' arbitrary: p A)
+  case Nil': Nil
+  then show ?case by simp
+next
+  case Cons': (Cons a' A' p)
+  show ?case proof (cases \<open>a' = \<tau>\<close>)
+    case True
+    with Cons'.prems have \<open>filter (\<lambda>a. a \<noteq> \<tau>) A' = A\<close> by simp
+    with Cons' have \<open>p \<Rightarrow>$ A' p'\<close> by blast
+    with True show ?thesis using steps.refl by fastforce
+  next
+    case False
+    with Cons'.prems obtain A'' where
+      A''_spec: \<open>A = a'#A''\<close> \<open>filter (\<lambda>a. a \<noteq> \<tau>) A' = A''\<close> \<open>\<forall>a\<in>set A''. a \<noteq> \<tau> \<close> by auto
+    with Cons'.prems obtain p0 where
+      p0_spec: \<open>p \<Rightarrow>^a' p0\<close> \<open>p0 \<Rightarrow>$ A'' p'\<close> by auto
+    with Cons'.hyps A''_spec(2,3) have \<open>p0 \<Rightarrow>$ A'  p'\<close> by blast
+    with p0_spec show ?thesis by auto
+  qed
+qed
+
+lemma word_steps_ignore_tau_removal:
+  assumes
+    \<open>p \<Rightarrow>$ A p'\<close>
+  shows
+    \<open>p \<Rightarrow>$ (filter (\<lambda>a. a \<noteq> \<tau>) A) p'\<close>
+  using assms
+proof (induct A arbitrary: p)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a A)
+  show ?case proof (cases \<open>a = \<tau>\<close>)
+    case True
+    with Cons show ?thesis using tau_word_concat by auto
+  next
+    case False
+    with Cons.prems obtain p0 where p0_spec: \<open>p \<Rightarrow>^a p0\<close> \<open>p0 \<Rightarrow>$ A p'\<close> by auto
+    with Cons.hyps have \<open>p0 \<Rightarrow>$ (filter (\<lambda>a. a \<noteq> \<tau>) A) p'\<close> by blast
+    with \<open>p \<Rightarrow>^a p0\<close> False show ?thesis by auto
+  qed
 qed
 
 definition weak_tau_succs :: "'s set \<Rightarrow> 's set" where
