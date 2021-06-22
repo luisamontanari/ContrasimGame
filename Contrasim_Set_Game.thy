@@ -1,8 +1,7 @@
-theory Montanari_Contrasim_Set_Game
+theory Contrasim_Set_Game
 imports
   Simple_Game
-  Montanari_Weak_Relations
-  Montanari_Weak_Transition_Systems
+  Contrasimulation
 begin
 
 subsection \<open>The Contrasimulation Preorder Set Game\<close>
