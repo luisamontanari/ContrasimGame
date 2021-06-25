@@ -294,7 +294,7 @@ proof (safe)
   qed
 qed
 
-lemma strategy_from_delay_set_contrasim_sound : 
+lemma strategy_from_F_of_C_sound : 
   assumes
     \<open>contrasim C\<close>
     \<open>C p0 q0\<close>
@@ -462,7 +462,7 @@ proof -
   qed
 qed
 
-lemma delay_set_contrasim_game_sound: 
+lemma set_contrasim_game_sound: 
   assumes
     \<open>player0_winning_strategy f\<close>
     \<open>sound_strategy f\<close>
@@ -517,7 +517,7 @@ proof (safe)
         \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay A p p0 p1\<close> 
         using def_sim_pos_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(1,2) play_def play_hd by meson
-    then obtain Q where Q_def: \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
+    then obtain Q where \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
     hence \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_dsuccs_implies_word_reachable by auto
     then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a p0 (dsuccs_seq_rec (rev as) {q}) \<close> by auto
     hence A_play_def: \<open>n0#A_play \<in> plays_for_strategy f\<close> using gotoA snoc by auto
@@ -575,7 +575,7 @@ proof
       (\<lambda>p q. \<exists>play\<in>plays_for_strategy f.
                  hd play = AttackerNode p {q} \<and>
                  (hd play = initial \<or> (\<exists>P. hd (tl play) = DefenderSwapNode q P)))\<close>
-    using delay_set_contrasim_game_sound by blast
+    using set_contrasim_game_sound by blast
   moreover have \<open>(\<lambda>p q. \<exists>play\<in>plays_for_strategy f.
                  hd play = AttackerNode p {q} \<and>
                  (hd play = initial \<or> (\<exists>P. hd (tl play) = DefenderSwapNode q P))) p q\<close>
@@ -586,7 +586,7 @@ next
     \<open>\<exists> C. contrasim C \<and> C p q\<close>
   thus \<open>(\<exists>f. player0_winning_strategy f \<and> sound_strategy f)\<close>
     using set_contrasim_game_complete[OF _ _ assms]
-         strategy_from_delay_set_contrasim_sound[OF _ _ assms] by blast
+         strategy_from_F_of_C_sound[OF _ _ assms] by blast
 qed
 
 end
