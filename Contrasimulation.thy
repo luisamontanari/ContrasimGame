@@ -162,7 +162,7 @@ lemma F_of_C_guarantees_action_succ :
     \<open>F (set_type C) p Q\<close>
     \<open>p =\<rhd>a p'\<close>
     \<open>a \<noteq> \<tau>\<close>
-  shows \<open>dsuccs a Q \<noteq> {}  \<and> F (set_type C) p' (dsuccs a Q)\<close>
+  shows \<open>F (set_type C) p' (dsuccs a Q)\<close>
 proof -
   obtain p0 Q0 A q0
     where \<open>(set_type C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>Q0 = {q0}\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> 
@@ -181,15 +181,11 @@ proof -
     by fastforce
   hence \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev (A@[a])) {q0})\<close> 
     using word_reachable_implies_in_dsuccs by blast
-  then obtain q1 where in_dsuccs: \<open>q1 \<in> dsuccs_seq_rec (rev (A@[a])) {q0}\<close> \<open>q1 \<Rightarrow>^\<tau> q'\<close>
+  then obtain q1 where \<open>q1 \<in> dsuccs_seq_rec (rev (A@[a])) {q0}\<close> \<open>q1 \<Rightarrow>^\<tau> q'\<close>
     using weak_tau_succs_def[of \<open>dsuccs_seq_rec (rev (A@[a])) {q0}\<close>] by auto
-  hence \<open>q1 \<in> dsuccs_seq_rec (a#(rev A)) {q0}\<close> by auto
-  hence \<open>q1 \<in> dsuccs a (dsuccs_seq_rec (rev A) {q0})\<close>  by auto
-  hence notempty: \<open>q1 \<in> dsuccs a Q\<close> using Q_def \<open>Q0 = {q0}\<close> by auto
-  have \<open>F (set_type C) p' (dsuccs a Q)\<close> 
-    using in_dsuccs word F_def[of \<open>(set_type C)\<close>] \<open>(set_type C) p0 Q0\<close> 
+  thus ?thesis
+    using word F_def[of \<open>(set_type C)\<close>] \<open>(set_type C) p0 Q0\<close> 
       \<open>Q0 = {q0}\<close> Q_def notau simp_dsuccs_seq_rev by meson
-  with notempty show ?thesis by auto
 qed
 
 end
