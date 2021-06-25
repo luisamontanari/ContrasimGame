@@ -518,7 +518,7 @@ proof (safe)
         using def_sim_pos_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(1,2) play_def play_hd by meson
     then obtain Q where Q_def: \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
-    hence Q_all: \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_dsuccs_implies_word_reachable by auto
+    hence \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_dsuccs_implies_word_reachable by auto
     then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a p0 (dsuccs_seq_rec (rev as) {q}) \<close> by auto
     hence A_play_def: \<open>n0#A_play \<in> plays_for_strategy f\<close> using gotoA snoc by auto
     then obtain n1 where n1_move: \<open>c_set_game_moves n0 n1\<close>
