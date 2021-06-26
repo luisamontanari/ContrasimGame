@@ -70,7 +70,8 @@ proof -
   have \<open>n0 \<noteq> initial\<close> using assms (1, 3) by auto
   hence mov: \<open>c_set_game_moves (hd play) n0\<close> using assms(2)
     by (metis list.inject list.sel(1) plays.cases) 
-  from assms(1) have def_cases: \<open>\<exists>p1 Q. ((\<exists>a. n0 = DefenderSimNode a p1 Q) \<or> n0 = DefenderSwapNode p1 Q)\<close>  
+  from assms(1) have def_cases: 
+    \<open>\<exists>p1 Q. (\<exists>a. n0 = DefenderSimNode a p1 Q) \<or> n0 = DefenderSwapNode p1 Q\<close>  
     using c_set_game_defender_node.elims(2) by blast
   then obtain p1 Q where pQ_def: \<open>(\<exists>a. n0 = DefenderSimNode a p1 Q) \<or> n0 = DefenderSwapNode p1 Q\<close> 
     by auto
@@ -384,82 +385,80 @@ proof -
   thus ?thesis using \<open>p = p1\<close> n0_def by auto
 qed
 
+lemma def_never_stuck_on_sim_pos: 
+  assumes \<open>n0 = DefenderSimNode a p Q\<close>
+  shows \<open>\<exists>Q'. c_set_game_moves n0 (AttackerNode p Q')\<close>
+proof -
+  have \<open>c_set_game_moves (DefenderSimNode a p Q) (AttackerNode p (dsuccs a Q))\<close> by auto
+  thus ?thesis using assms by auto
+qed
+
+
 lemma def_sim_pos_with_prefix_in_play: 
   assumes 
     \<open>A \<noteq> []\<close>
     \<open>p \<Rightarrow>$A p1\<close> 
     \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-    \<open>player0_winning_strategy f\<close>
     \<open>sound_strategy f\<close>
     \<open>play \<in> plays_for_strategy f\<close>
     \<open>hd play = AttackerNode p {q}\<close>
   shows \<open>\<exists>play p0. ((DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}))#play) 
-      \<in> plays_for_strategy f \<and> word_reachable_via_delay A p p0 p1\<close> 
-proof - 
-  have  \<open>\<not>player1_wins play\<close> using assms(4, 6) player0_winning_strategy_def by auto
-  hence \<open>(c_set_game_defender_node (hd play) \<and> (\<nexists>p'. c_set_game_moves (hd play) p')) \<Longrightarrow> False\<close> 
-    using player1_wins_def by auto
-  hence Def_not_stuck: \<open>c_set_game_defender_node (hd play) \<Longrightarrow> (\<exists>p'. c_set_game_moves (hd play) p')\<close> 
+      \<in> plays_for_strategy f \<and> word_reachable_via_delay A p p0 p1\<close> using assms(1-3)
+proof (induct arbitrary:  p1 rule: rev_nonempty_induct[OF assms(1)])
+  case single: (1 a)
+  hence \<open>\<not>tau a\<close> using \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by (simp add: tau_def) 
+  hence \<open>p \<Rightarrow>$[a] p1\<close> using single by auto
+  hence p_step: \<open>p \<Rightarrow>^a p1\<close> by blast
+  then obtain p0 where \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> using Cons \<open>\<not>tau a\<close> steps.refl by auto
+  hence \<open>\<exists>n0. n0  = DefenderSimNode a p0 {q} \<and> c_set_game_moves (AttackerNode p {q}) n0\<close> 
+    using assms(4) \<open>\<not> tau a\<close> by simp
+  hence  \<open>((DefenderSimNode a p0 {q})#play) \<in> plays_for_strategy f\<close> using assms(5,6)
+    by (metis c_set_game_defender_node.simps(1) list.collapse no_empty_plays 
+          player1_position_def plays_for_strategy.p1move strategy_plays_subset)
+  hence inplay: \<open>((DefenderSimNode (last [a]) p0  (dsuccs_seq_rec (rev (butlast [a])) {q}))#play) \<in> plays_for_strategy f\<close>
     by auto
-  show ?thesis using assms(1-3)
-  proof (induct arbitrary:  p1 rule: rev_nonempty_induct[OF assms(1)])
-    case single: (1 a)
-    hence \<open>\<not>tau a\<close> using \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by (simp add: tau_def) 
-    hence \<open>p \<Rightarrow>$[a] p1\<close> using single by auto
-    hence p_step: \<open>p \<Rightarrow>^a p1\<close> by blast
-    then obtain p0 where \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> using Cons \<open>\<not>tau a\<close> steps.refl by auto
-    hence \<open>\<exists>n0. n0  = DefenderSimNode a p0 {q} \<and> c_set_game_moves (AttackerNode p {q}) n0\<close> 
-      using assms(4) \<open>\<not> tau a\<close> by simp
-    hence  \<open>((DefenderSimNode a p0 {q})#play) \<in> plays_for_strategy f\<close> using assms(6,7)
-      by (metis c_set_game_defender_node.simps(1) list.collapse no_empty_plays 
-            player1_position_def plays_for_strategy.p1move strategy_plays_subset)
-    hence inplay: \<open>((DefenderSimNode (last [a]) p0  (dsuccs_seq_rec (rev (butlast [a])) {q}))#play) \<in> plays_for_strategy f\<close>
-      by auto
-    have \<open>p  \<Rightarrow>$(butlast [a]) p\<close> by (simp add: steps.refl) 
-    hence \<open>word_reachable_via_delay [a] p p0 p1\<close> using word_reachable_via_delay_def \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> by auto
-    then show ?case using inplay by auto
-  next
-    case snoc: (2 a as)
-    hence \<open>\<not>tau a\<close> using \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by (simp add: tau_def) 
-    then obtain a2 as2 where as_def: \<open>as = as2@[a2]\<close> using list_rev_split[OF snoc.hyps(1)] by auto
-    have \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>$[a]  p1\<close> using rev_seq_split[OF snoc.prems(2)] by blast
-    hence \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>^a  p1\<close> by blast
-    hence \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>a  p1\<close> using  \<open>\<not>tau a\<close> by simp
-    then obtain p' where p'_def: \<open>p \<Rightarrow>$ as  p'\<close> and p'_step: \<open>p' \<Rightarrow>a  p1\<close> by auto
-    then obtain p11 where  \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> using steps.refl \<open>\<not> tau a\<close> tau_tau by blast
-    hence \<open>\<exists>play p0.
-       DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
-       \<in> plays_for_strategy f \<and> word_reachable_via_delay as p p0 p'\<close>  using p'_def snoc by auto
-    then obtain play p0
-      where play_def: \<open>DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
-       \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay as p p0 p'\<close> by auto
+  have \<open>p  \<Rightarrow>$(butlast [a]) p\<close> by (simp add: steps.refl) 
+  hence \<open>word_reachable_via_delay [a] p p0 p1\<close> using word_reachable_via_delay_def \<open>p =\<rhd>a p0\<close> \<open>p0 \<Rightarrow>^\<tau> p1\<close> by auto
+  then show ?case using inplay by auto
+next
+  case snoc: (2 a as)
+  hence \<open>\<not>tau a\<close> using \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by (simp add: tau_def) 
+  then obtain a2 as2 where as_def: \<open>as = as2@[a2]\<close> using list_rev_split[OF snoc.hyps(1)] by auto
+  have \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>$[a]  p1\<close> using rev_seq_split[OF snoc.prems(2)] by blast
+  hence \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>^a  p1\<close> by blast
+  hence \<open>\<exists>p'. p \<Rightarrow>$ as  p' \<and> p' \<Rightarrow>a  p1\<close> using  \<open>\<not>tau a\<close> by simp
+  then obtain p' where p'_def: \<open>p \<Rightarrow>$ as  p'\<close> and p'_step: \<open>p' \<Rightarrow>a  p1\<close> by auto
+  then obtain p11 where  \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> using steps.refl \<open>\<not> tau a\<close> tau_tau by blast
+  hence \<open>\<exists>play p0.
+     DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
+     \<in> plays_for_strategy f \<and> word_reachable_via_delay as p p0 p'\<close>  using p'_def snoc by auto
+  then obtain play p0
+    where play_def: \<open>DefenderSimNode (last as) p0 (dsuccs_seq_rec (rev (butlast as)) {q}) # play
+     \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay as p p0 p'\<close> by auto
 
-    hence \<open>DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q}) # play 
-                \<in> plays_for_strategy f\<close> using as_def by auto
-    then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q})\<close> 
-          and n0_in_play: \<open>n0#play \<in> plays_for_strategy f\<close> by auto
-    hence \<open>\<exists>n1. c_set_game_moves (DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q})) n1\<close> 
-      using Def_not_stuck by (meson assms(5) c_set_game_defender_node.simps(2) sound_strategy_def) 
-    then obtain n1 
-      where n1_def: \<open>c_set_game_moves (DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q})) n1\<close> 
-      by auto
-    hence n1_atk: \<open>n1 = AttackerNode p0 (dsuccs a2 ((dsuccs_seq_rec (rev as2) {q})))\<close> 
-      using move_DefSim_to_AtkNode[OF n1_def] by auto
-    have n1_in_play: \<open>n1#n0#play \<in> plays_for_strategy f\<close> using n1_def n0_in_play n0_def
-      by (metis assms(5) move_DefSim_to_AtkNode c_set_game_defender_node.simps(2) 
-          plays_for_strategy.simps sound_strategy_def) 
-    then obtain n0' 
-      where n0'_def : \<open>n0' = DefenderSimNode a p11 (dsuccs a2 ((dsuccs_seq_rec (rev as2) {q})))\<close> 
-      and n0'_mov: \<open>c_set_game_moves n1 n0'\<close> using p'_step n1_atk
-      by (metis (no_types, lifting) \<open>\<not> tau a\<close> \<open>p' =\<rhd> a p11\<close> word_reachable_via_delay_def simulation_challenge play_def(2) steps_concat tau_tau)
-    hence in_play: \<open>n0'#n1#n0#play \<in> plays_for_strategy f\<close> using n1_in_play
-      by (simp add: n1_atk player1_position_def plays_for_strategy.p1move) 
-    hence \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as2@[a2])) {q})\<close> using n0'_def  by auto
-    hence n0'_is_defSimNode: \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as)) {q})\<close> using as_def by auto
-    from \<open>p \<Rightarrow>$ as  p'\<close> \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> have \<open>word_reachable_via_delay (as@[a]) p p11 p1\<close> 
-      using word_reachable_via_delay_def by auto
-    then show ?case using n0'_is_defSimNode in_play by auto
-  qed
+  hence \<open>DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q}) # play 
+              \<in> plays_for_strategy f\<close> using as_def by auto
+  then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q})\<close> 
+        and n0_in_play: \<open>n0#play \<in> plays_for_strategy f\<close> by auto
+  then obtain n1 
+    where n1_def: \<open>c_set_game_moves (DefenderSimNode a2 p0 (dsuccs_seq_rec (rev as2) {q})) n1\<close> 
+    using def_never_stuck_on_sim_pos by meson
+  hence n1_atk: \<open>n1 = AttackerNode p0 (dsuccs a2 ((dsuccs_seq_rec (rev as2) {q})))\<close> 
+    using move_DefSim_to_AtkNode[OF n1_def] by auto
+  have n1_in_play: \<open>n1#n0#play \<in> plays_for_strategy f\<close> using n1_def n0_in_play n0_def
+    by (metis assms(4) move_DefSim_to_AtkNode c_set_game_defender_node.simps(2) 
+        plays_for_strategy.simps sound_strategy_def) 
+  then obtain n0' 
+    where n0'_def : \<open>n0' = DefenderSimNode a p11 (dsuccs a2 ((dsuccs_seq_rec (rev as2) {q})))\<close> 
+    and n0'_mov: \<open>c_set_game_moves n1 n0'\<close> using p'_step n1_atk
+    by (metis (no_types, lifting) \<open>\<not> tau a\<close> \<open>p' =\<rhd> a p11\<close> word_reachable_via_delay_def simulation_challenge play_def(2) steps_concat tau_tau)
+  hence in_play: \<open>n0'#n1#n0#play \<in> plays_for_strategy f\<close> using n1_in_play
+    by (simp add: n1_atk player1_position_def plays_for_strategy.p1move) 
+  hence \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as2@[a2])) {q})\<close> using n0'_def  by auto
+  hence n0'_is_defSimNode: \<open>n0' = DefenderSimNode a p11 (dsuccs_seq_rec (rev (as)) {q})\<close> using as_def by auto
+  from \<open>p \<Rightarrow>$ as  p'\<close> \<open>p' =\<rhd>a  p11\<close> \<open>p11 \<Rightarrow>^\<tau> p1\<close> have \<open>word_reachable_via_delay (as@[a]) p p11 p1\<close> 
+    using word_reachable_via_delay_def by auto
+  then show ?case using n0'_is_defSimNode in_play by auto
 qed
 
 lemma set_contrasim_game_sound: 
@@ -516,7 +515,7 @@ proof (safe)
      gotoA: \<open>DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}) # A_play
         \<in> plays_for_strategy f\<close> \<open>word_reachable_via_delay A p p0 p1\<close> 
         using def_sim_pos_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
-        \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(1,2) play_def play_hd by meson
+        \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(2) play_def play_hd by meson
     then obtain Q where \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
     hence \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close> using in_dsuccs_implies_word_reachable by auto
     then obtain n0 where n0_def: \<open>n0 = DefenderSimNode a p0 (dsuccs_seq_rec (rev as) {q}) \<close> by auto
