@@ -1,0 +1,52 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{isabelle,isabellesym}
+
+\usepackage{color}
+
+\usepackage[top=3cm,bottom=4.5cm]{geometry}
+
+\definecolor{keyword}{RGB}{0,153,102}
+\definecolor{command}{RGB}{0,102,153}
+\isabellestyle{tt}
+\renewcommand{\isacommand}[1]{\textcolor{command}{\textbf{#1}}}
+\renewcommand{\isakeyword}[1]{\textcolor{keyword}{\textbf{#1}}}
+
+% this should be the last package used
+\usepackage{pdfsetup}
+
+% urls in roman style, theory text in isabelle-similar-similar type-writer
+\urlstyle{rm}
+\isabellestyle{tt}
+
+\title{ \textbf{Coupled and Contra-Similarity} \\ \Large and How to Compute Them }
+\author{ Benjamin Bisping \qquad Luisa Montanari%
+  \footnote{Technische Universit\"at Berlin, Germany,
+    \texttt{\{benjamin.bisping,luisa.montanari\}@tu-berlin.de}.} }
+%
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A game characterization of coupled simulation and contrasimilarity, two weak forms of bisimilarity.
+\end{abstract}
+
+\tableofcontents
+
+% include generated text of all theories
+\input{session}
+
+%\phantomsection
+%\addcontentsline{toc}{section}{References}
+%\bibliographystyle{splncs04}
+%\bibliography{root}
+
+\end{document}
