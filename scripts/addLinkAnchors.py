@@ -12,13 +12,20 @@ for filename in os.listdir("html/Contrasimulation"):
 		print(filename)
 	xml = etree.parse(join("html/Contrasimulation/", filename))
 
-	defs = xml.xpath("//*[text()='locale' or text()='definition' or text()='inductive' or text()='coinductive'  or text()='lemma'  or text()='theorem'  or text()='corollary' or text()='abbreviation']/..")
+	defs = xml.xpath("//*[text()='locale' or text()='definition' or text()='inductive' or text()='primrec' or text()='coinductive'  or text()='lemma'  or text()='theorem'  or text()='corollary' or text()='abbreviation']/..")
 	for d in defs:
 		name = d.tail.strip()
-		if verbose:
-			print(name)
+	
 		if name:
+			if verbose:
+				print(name)
 			d.set('id', name)
+		else:
+			nameNode = d.getnext()
+			if verbose:
+				print(nameNode.text)
+			if nameNode.text:
+				nameNode.set('id', nameNode.text)
 	
 	with open(join("html/Contrasimulation/", filename), "w") as xmlOut:
   		xmlOut.write(etree.tostring(xml, encoding='utf-8', pretty_print=True))
