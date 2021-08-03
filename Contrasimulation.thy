@@ -26,6 +26,7 @@ proof -
     using word_steps_ignore_tau_addition word_steps_ignore_tau_removal
     by metis
 qed
+
 abbreviation contrasimulated_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>c  _" [60, 60] 65)
   where \<open>contrasimulated_by p q \<equiv> \<exists> R . contrasim R \<and> R p q\<close>
 
@@ -68,6 +69,19 @@ lemma contrasim_refl:
   shows
     \<open>p \<sqsubseteq>c p\<close>
   using contrasim_tau_step steps.refl by blast
+
+lemma contrasimilarity_equiv:
+  defines \<open>contrasimilarity \<equiv> \<lambda> p q. p \<sqsubseteq>c q \<and> q \<sqsubseteq>c p\<close>
+  shows \<open>equivp contrasimilarity\<close>
+proof -
+  have \<open>reflp contrasimilarity\<close>
+    using contrasim_refl unfolding contrasimilarity_def reflp_def by blast
+  moreover have \<open>symp contrasimilarity\<close>
+    unfolding contrasimilarity_def symp_def by blast
+  moreover have \<open>transp contrasimilarity\<close>
+    using contrasim_trans unfolding contrasimilarity_def transp_def by meson
+  ultimately show ?thesis using equivpI by blast
+qed
 
 lemma contrasim_coupled:
   assumes
