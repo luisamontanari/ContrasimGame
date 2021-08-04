@@ -56,8 +56,8 @@ fun strategy_from_F_of_C :: \<open>('s \<Rightarrow> ('s set) \<Rightarrow> bool
     (AttackerNode (SOME q1 . (\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> R q1 {p1}) {p1})\<close> |
 
   \<open>strategy_from_F_of_C R ((DefenderSimNode a p1 Q)#play) = 
-    (AttackerNode p1 (SOME Q1 . Q1 = dsuccs a Q \<and> R p1 Q1))\<close> |
- 
+    (AttackerNode p1 (dsuccs a Q))\<close> |
+
   \<open>strategy_from_F_of_C _ _ = undefined\<close>
 
 lemma set_defender_pred_is_attacker: 
@@ -152,9 +152,9 @@ next
       assume \<open>\<exists>a Qpred. n0 = DefenderSimNode a p Qpred\<close>
       then obtain a Qpred where n0_def: \<open>n0 = DefenderSimNode a p Qpred\<close> by auto
       hence \<open>strategy_from_F_of_C (F (set_type C)) (n0#play) 
-          = AttackerNode p (SOME Q1. Q1 = dsuccs a Qpred \<and> (F (set_type C)) p Q1)\<close> 
+          = AttackerNode p (dsuccs a Qpred)\<close> 
         using strategy_from_F_of_C.simps(2) by auto
-      hence Q_def: \<open>Q = (SOME Q1. Q1 = dsuccs a Qpred \<and> (F (set_type C)) p Q1)\<close> 
+      hence Q_def: \<open>Q = (dsuccs a Qpred)\<close> 
         using strat by (simp add: p0moved.prems(1))
       have \<open>\<exists>ppred. hd play = (AttackerNode ppred Qpred) \<and> c_set_game_moves (hd play) n0\<close> 
         using set_defender_pred_is_attacker strategy_plays_subset[OF p0moved.hyps(1)] 
@@ -168,10 +168,7 @@ next
       hence \<open>F (set_type C) ppred Qpred\<close> using p0moved.hyps(2) ppred_def by blast
       hence \<open>F (set_type C) p (dsuccs a Qpred)\<close> 
        using \<open>ppred =\<rhd>a p\<close> assms(1,2,4) F_of_C_guarantees_action_succ \<open>a \<noteq> \<tau>\<close> by auto
-      hence \<open>\<exists>Q. Q = (dsuccs a Qpred) \<and> F (set_type C) p Q\<close> by auto
-      from someI_ex[OF this] show \<open>F (set_type C) p Q\<close> 
-        unfolding Q_def
-        using n0_def p0moved.hyps(4) by auto
+     thus \<open>F (set_type C) p Q\<close> using Q_def by auto
     next
       assume \<open>(\<exists>q Ppred. n0 = DefenderSwapNode q Ppred \<and> Q = {q})\<close>
       then obtain q Ppred where n0_def: \<open>n0 = DefenderSwapNode q Ppred\<close> and Q_def: \<open>Q = {q}\<close> 
@@ -327,17 +324,11 @@ proof (safe)
       using F_of_C_guarantees_action_succ \<open>\<not> tau a\<close> \<open>p =\<rhd>a p'\<close> assms(1) tau_tau by blast 
     hence Q1_ex: \<open>\<exists>Q'. Q' = dsuccs a Q \<and> F (set_type C) p' Q'\<close> by auto
     from n0_def have st: \<open>strategy_from_F_of_C (F (set_type C)) (n0#play) = 
-    (AttackerNode p' (SOME Q1 . Q1 = dsuccs a Q \<and> (F (set_type C)) p' Q1))\<close> by auto
-    then obtain Q1 where 
-      \<open>AttackerNode p' (SOME Q1 . Q1 = dsuccs a Q \<and> (F (set_type C)) p' Q1) = AttackerNode p' Q1\<close>
-      by blast
-    hence Q1_def: \<open>Q1 = (SOME Q1 . Q1 = dsuccs a Q \<and> (F (set_type C)) p' Q1)\<close>
-      by auto
+    (AttackerNode p' (dsuccs a Q))\<close> by auto
+    then obtain Q1 where Q1_def: \<open>Q1 =  (dsuccs a Q)\<close> by blast
     have next_is_atk: \<open>strategy_from_F_of_C (F (set_type C)) (n0#play) = (AttackerNode p' Q1)\<close> 
       using st Q1_def by auto
-    with someI_ex[OF Q1_ex] Q1_def have mov_cond: \<open>Q1 = dsuccs a Q \<and> F (set_type C) p' Q1\<close>
-      by blast
-    have \<open>c_set_game_moves n0 (AttackerNode p' Q1)\<close> using n0_def mov_cond by auto
+    have \<open>c_set_game_moves n0 (AttackerNode p' Q1)\<close> using n0_def Q1_def by auto
     thus ?thesis using next_is_atk by auto
   next 
     assume \<open>\<exists>p' Q. n0 = DefenderSwapNode p' Q\<close>
