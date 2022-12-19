@@ -61,7 +61,8 @@ proof -
   have \<open>q_max \<in> above_q\<close>
     unfolding q_max_def above_list_spec[symmetric] using foldl_max_soundness .
   moreover have \<open>\<forall> q'' \<in> above_q. q_max \<le> q'' \<longrightarrow> q'' = q_max\<close>
-    unfolding q_max_def above_list_spec[symmetric] using foldl_max_maximal antisym by blast
+    unfolding q_max_def above_list_spec[symmetric] using foldl_max_maximal antisym
+    using local.order.eq_iff by presburger
   ultimately show ?thesis by blast
 qed
 
