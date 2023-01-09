@@ -16,7 +16,7 @@ begin
 definition player1_position :: \<open>'s \<Rightarrow> bool\<close>
   where \<open>player1_position s \<equiv> \<not> player0_position s\<close>
 
-\<comment>\<open>plays (to be precise: play p refixes) are lists. we model them 
+\<comment>\<open>plays (to be precise: play prefixes) are lists. we model them 
   with the most recent move at the beginning. (for our purpose it's enough to consider finite plays)\<close>
 type_synonym ('s2) play = \<open>'s2 list\<close>
 type_synonym ('s2) strategy = \<open>'s2 play \<Rightarrow> 's2\<close>

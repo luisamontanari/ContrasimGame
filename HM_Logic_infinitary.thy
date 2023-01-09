@@ -11,7 +11,7 @@ datatype ('a,'x)HML_formula =
 | HML_neg \<open>('a,'x)HML_formula\<close> 
 | HML_poss \<open>'a\<close> \<open>('a,'x)HML_formula\<close> 
 
-subsubsection \<open>Satisfaction Relation\<close>
+subsection \<open>Satisfaction Relation\<close>
 
 context lts_tau
 begin
@@ -22,7 +22,7 @@ function satisfies :: \<open>'s \<Rightarrow> ('a, 's) HML_formula \<Rightarrow>
     \<open>(p \<Turnstile> HML_true) = True\<close> 
   | \<open>(p \<Turnstile> HML_conj I F) = (\<forall> i \<in> I. p \<Turnstile> (F i))\<close> 
   | \<open>(p \<Turnstile> HML_neg \<phi>) = (\<not> p \<Turnstile> \<phi>)\<close> 
-  | \<open>(p \<Turnstile> HML_poss \<alpha> \<phi>) = (\<exists> p'. p \<longmapsto>\<alpha> p' \<and> p' \<Turnstile> \<phi>)\<close>
+  | \<open>(p \<Turnstile> HML_poss \<alpha> \<phi>) = (\<exists> p'. ((tau \<alpha> \<and> p \<longmapsto>* tau p') \<or> (\<not> tau \<alpha> \<and> p \<longmapsto>\<alpha> p')) \<and> p' \<Turnstile> \<phi>)\<close>
   using HML_formula.exhaust by (auto, blast)
 
 inductive_set HML_wf_rel :: \<open>('s \<times> ('a, 's) HML_formula) rel\<close> 
@@ -50,7 +50,7 @@ qed
 termination satisfies using HML_wf_rel_is_wf 
   by (standard, (simp add: HML_wf_rel.intros)+)
 
-subsubsection \<open>Distinguishing Formulas\<close>
+subsection \<open>Distinguishing Formulas\<close>
 
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close>
   where \<open>HML_equivalent p q 
@@ -66,6 +66,14 @@ lemma HML_equivalent_symm:
   assumes \<open>HML_equivalent p q\<close>
   shows \<open>HML_equivalent q p\<close>
   using HML_equivalent_def assms by presburger
+
+subsection \<open>Weak-NOR HML\<close>
+
+definition HML_weaknor ::
+  \<open>'x set \<Rightarrow> ('x \<Rightarrow> ('a,'x)HML_formula) \<Rightarrow> ('a,'x)HML_formula\<close>
+  where \<open>HML_weaknor I F = HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
+
+
 
 end \<comment> \<open>of \<open>context lts\<close>\<close>
 end \<comment> \<open>of \<open>theory\<close>\<close>
