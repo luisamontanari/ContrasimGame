@@ -3,7 +3,7 @@
 section \<open>Coupled Similarity\<close>
 
 theory Coupled_Simulation
-  imports Weak_Relations
+  imports Contrasimulation
 begin
 
 context lts_tau
@@ -490,7 +490,7 @@ lemma weak_sim_and_contrasim_implies_coupled_sim:
   shows
     \<open>coupled_simulation R\<close>
   unfolding coupled_simulation_weak_simulation
-  using contrasim_implies_coupling assms by blast
+  using contrasim_coupled assms by blast
 
 lemma coupledsim_implies_contrasim:
   assumes
@@ -558,7 +558,7 @@ lemma taufree_coupledsim_symm:
     \<open>coupled_simulation R\<close>
     \<open>R p q\<close>
   shows \<open>R q p\<close>
-  using assms(1,3) taufree_contrasim_symm coupledsim_implies_contrasim[OF assms(2)]
+  using assms(1,3) coupledsim_implies_contrasim[OF assms(2)] contrasim_taufree_symm
   by blast
 
 lemma taufree_coupledsim_weak_bisim:
@@ -566,7 +566,7 @@ lemma taufree_coupledsim_weak_bisim:
     \<open>\<And> p1 a p2 . (p1 \<longmapsto>a p2 \<Longrightarrow> \<not> tau a)\<close>
     \<open>coupled_simulation R\<close>
   shows \<open>weak_bisimulation R\<close>
-  using assms taufree_contrasim_implies_weak_bisim coupledsim_implies_contrasim[OF assms(2)]
+  using assms contrasim_taufree_symm symm_contrasim_is_weak_bisim coupledsim_implies_contrasim[OF assms(2)]
   by blast
 
 lemma coupledsim_stable_state_symm:
@@ -588,7 +588,7 @@ lemma coupledsim_max_coupled:
     \<open>\<exists> q' . q \<longmapsto>* tau q' \<and> q' \<sqsubseteq>cs p \<and> tau_max q'\<close>
 proof -
   obtain q1 where q1_spec: \<open>q \<longmapsto>* tau q1\<close> \<open>q1 \<sqsubseteq>cs p\<close> 
-    using assms(1) contrasim_implies_coupling coupledsim_implies_contrasim by fastforce
+    using assms(1) coupled_simulation_implies_coupling coupledsim_implies_contrasim by blast
   then obtain q' where \<open>q1 \<longmapsto>* tau q'\<close> \<open>(\<forall>q''. q' \<longmapsto>* tau q'' \<longrightarrow> q' = q'')\<close>
     using tau_max_deadlock assms(2,3) by blast
   then moreover have \<open>q' \<sqsubseteq>cs p\<close> \<open>q \<longmapsto>* tau q'\<close>

@@ -202,5 +202,61 @@ proof -
       \<open>Q0 = {q0}\<close> Q_def notau simp_dsuccs_seq_rev by meson
 qed
 
+subsection \<open>Over-approximating Contrasim by single-step version\<close>
+
+definition contrasim_step ::
+  \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
+where
+  \<open>contrasim_step R \<equiv> \<forall> p q p' a .
+    R p q \<and> (p \<Rightarrow>^a p') \<longrightarrow>
+    (\<exists> q'. (q \<Rightarrow>^a q')
+         \<and> R q' p')\<close>
+
+lemma contrasim_step_weaker_than_seq:
+  assumes
+    \<open>contrasim R\<close>
+  shows
+    \<open>contrasim_step R\<close>
+  unfolding contrasim_step_def
+proof ((rule allI impI)+)
+  fix p q p' a
+  assume
+    \<open>R p q \<and> p \<Rightarrow>^a  p'\<close>
+  hence
+    \<open>R p q\<close> \<open>p \<Rightarrow>^a  p'\<close> by safe
+  hence \<open>p \<Rightarrow>$ [a]  p'\<close> by safe
+  then obtain q' where \<open>R q' p'\<close> \<open>q \<Rightarrow>$ [a]  q'\<close>
+    using assms `R p q` unfolding contrasim_simpler_def by blast
+  hence \<open>q \<Rightarrow>^a  q'\<close> by blast
+  thus \<open>\<exists>q'. q \<Rightarrow>^a  q' \<and> R q' p'\<close> using `R q' p'` by blast
+qed
+
+lemma contrasim_step_seq_coincide_for_sims:
+  assumes
+    \<open>contrasim_step R\<close>
+    \<open>weak_simulation R\<close>
+  shows
+    \<open>contrasim R\<close>
+  unfolding contrasim_def
+proof (clarify)
+  fix p q p' A
+  assume
+    \<open>R p q\<close>
+    \<open>p \<Rightarrow>$ A  p'\<close>
+  thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close>
+  proof (induct A arbitrary: p p' q)
+    case Nil
+    then show ?case using assms(1) unfolding contrasim_step_def
+      using tau_tau weak_step_seq.simps(1) by blast
+  next
+    case (Cons a A)
+    then obtain p1 where p1_def: \<open>p \<Rightarrow>^a p1\<close> \<open>p1 \<Rightarrow>$ (A)  p'\<close> by auto
+    then obtain q1 where q1_def: \<open>q \<Rightarrow>^a q1\<close> \<open>R p1 q1\<close>
+      using assms(2) `R p q` unfolding weak_sim_weak_premise by blast
+    then obtain q' where \<open>q1 \<Rightarrow>$ (A)  q'\<close> \<open>R q' p'\<close> using p1_def(2) Cons(1) by blast
+    then show ?case using q1_def(1) by auto
+  qed
+qed
+
 end
 end

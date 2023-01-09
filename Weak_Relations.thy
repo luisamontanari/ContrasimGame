@@ -402,7 +402,7 @@ lemma weak_bisim_invert:
   shows
     \<open>weak_bisimulation (\<lambda> p q. R q p)\<close>
 using assms unfolding weak_bisimulation_def by auto
-  
+
 lemma bisim_weak_bisim:
   assumes \<open>bisimulation R\<close>
   shows \<open>weak_bisimulation R\<close>
@@ -488,8 +488,32 @@ lemma delay_simulation_implies_weak_simulation:
   using assms weak_step_delay_implies_weak_tau steps.refl
   unfolding delay_simulation_def weak_simulation_def by blast
 
+subsection \<open>Coupled Equivalences\<close>
+
+abbreviation coupling ::
+  \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
+  where \<open>coupling R \<equiv> \<forall> p q . R p q \<longrightarrow> (\<exists> q'. q \<longmapsto>*tau q' \<and> R q' p)\<close>
+
+lemma coupling_tau_max_symm:
+  assumes
+    \<open>R p q \<longrightarrow> (\<exists> q'. q \<longmapsto>*tau q' \<and> R q' p)\<close>
+    \<open>tau_max q\<close>
+    \<open>R p q\<close>
+  shows
+    \<open>R q p\<close>
+  using assms steps_no_step_pos[of q tau] by blast
+
+corollary coupling_stability_symm:
+  assumes
+    \<open>R p q \<longrightarrow> (\<exists> q'. q \<longmapsto>*tau q' \<and> R q' p)\<close>
+    \<open>stable_state q\<close>
+    \<open>R p q\<close>
+  shows
+    \<open>R q p\<close>
+  using coupling_tau_max_symm stable_tauclosure_only_loop assms by metis
+
 end \<comment>\<open>context @{locale lts_tau}\<close>
-  
+
 subsection \<open>Similarity ignores \<open>\<tau>\<close>-sinks\<close>
   
 lemma simulation_tau_sink_1:

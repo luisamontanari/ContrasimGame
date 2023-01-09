@@ -2,66 +2,11 @@ section \<open>Tau Sink Proofs\<close>
 
 theory Tau_Sink_Contrasim
 imports
-  Weak_Relations
-  Contrasimulation
+  Coupled_Simulation
 begin
 
-
-(*----------start import from coupled_simulation.thy------------------*)
 context lts_tau
 begin
-
-definition coupled_simulation ::
-  \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
-where
-  \<open>coupled_simulation R  \<equiv> \<forall> p q . 
-    R p q \<longrightarrow> 
-      (\<forall> p' a. p \<longmapsto>a p' \<longrightarrow> 
-        (\<exists> q'. R p' q' \<and> q \<Rightarrow>^a q')) \<and>
-      (\<exists> q'. q \<longmapsto>*tau q' \<and> R q' p)\<close>
-
-abbreviation coupled_simulated_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>cs  _" [60, 60] 65)
-  where \<open>coupled_simulated_by p q \<equiv> \<exists> R . coupled_simulation R \<and> R p q\<close>
-
-lemma coupledsim_step_gla17:
-  \<open>coupled_simulation (\<lambda> p1 q1 . q1 \<longmapsto>* tau p1)\<close>
-  unfolding coupled_simulation_def
-  using lts.steps.simps by metis
-
-corollary coupledsim_step:
-  assumes
-    \<open>p \<longmapsto>* tau  q\<close>
-  shows
-    \<open>q \<sqsubseteq>cs p\<close>
-  using assms coupledsim_step_gla17 by auto
-
-lemma coupledsim_refl:
-  \<open>p \<sqsubseteq>cs p\<close>
-  using coupledsim_step steps.refl by auto
-
-text \<open>If there is a sink every state can reach via tau steps, then weak simulation implies
-  (and thus coincides with) coupled simulation.\<close>
-lemma tau_sink_sim_coupledsim:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-    \<open>\<And> p . R sink p\<close>
-    \<open>weak_simulation R\<close>
-  shows
-    \<open>coupled_simulation R\<close>
-  unfolding coupled_simulation_def
-proof safe
-  show \<open> \<And>p q p' a. R p q \<Longrightarrow> p \<longmapsto>a  p' \<Longrightarrow> \<exists>q'. R p' q' \<and> q \<Rightarrow>^a  q'\<close>
-    using assms(3) unfolding weak_simulation_def by blast
-next
-  fix p q
-  assume \<open>R p q\<close>
-  hence \<open>q \<longmapsto>* tau sink \<and> R sink p\<close>
-    using assms(1,2) by blast
-  thus \<open>\<exists>q'. q \<longmapsto>* tau  q' \<and> R q' p\<close> by blast
-qed
-
-
-(*----------end import from coupled_simulation.thy------------------*)
 
 definition trace_simulation ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
