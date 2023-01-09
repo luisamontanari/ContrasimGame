@@ -19,8 +19,6 @@ lemma contrasim_implies_trace_sim:
   shows \<open>trace_simulation R\<close>
 by (metis assms contrasim_simpler_def trace_simulation_def) 
 
-
-
 definition tau_sink ::
   \<open>'s \<Rightarrow> bool\<close>
 where
@@ -48,7 +46,6 @@ proof -
   thus ?thesis using \<open>\<exists>B. A = a#B\<close> by fastforce
 qed
 
-
 lemma tau_sink_contrasimulates_all_states:
 fixes A :: " 'a list"
   assumes 
@@ -69,8 +66,6 @@ next
   show ?thesis using assms(2) contrasim_tau_step by auto 
 qed
 
-
-
 lemma tau_sink_coupled_simulates_all_states:
   assumes 
     \<open>tau_sink sink\<close>
@@ -86,36 +81,17 @@ lemma tau_sink_trace_sim_contrasim:
     \<open>trace_simulation R\<close>
   shows
     \<open>contrasim R\<close>
-  unfolding contrasim_def
-proof -
-  have \<open>\<And>p q p' A. R p q \<and> p \<Rightarrow>$A  p' \<and>  (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<Longrightarrow> \<exists>q'. q \<Rightarrow>$A  q'\<close>
-    using assms(3) unfolding trace_simulation_def by blast
-  hence \<open>\<And>p q p' A. R p q \<and> p \<Rightarrow>$A  p' \<and>  (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<Longrightarrow> q \<Rightarrow>$A  sink\<close> 
-    using assms(1) by (meson lts_tau.tau_tau lts_tau.word_tau_concat)
-  thus \<open>\<forall>p q p' A. (\<forall>a\<in>set A. a \<noteq> \<tau>) \<and> R p q \<and> p \<Rightarrow>$ A  p' \<longrightarrow> (\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p')\<close>
-    using assms(2) by fastforce
-qed
-
-
-(* nicer proof, but something's wrong with the proof state
-
-lemma tau_sink_trace_sim_contrasim2:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-    \<open>\<And> p . R sink p\<close>
-    \<open>trace_simulation R\<close>
-  shows
-    \<open>contrasim R\<close>
  unfolding contrasim_def
-proof -
-  fix p q p' A assume \<open>R p q \<and> p \<Rightarrow>$A  p' \<and>  (\<forall> a \<in> set(A). a \<noteq> \<tau>)\<close>
+proof clarify
+  fix p q p' A
+  assume \<open>R p q\<close> \<open>p \<Rightarrow>$A  p'\<close> \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
   hence \<open>\<exists>q'. q \<Rightarrow>$A  q'\<close>
     using assms(3) unfolding trace_simulation_def by blast
-  hence \<open>q \<Rightarrow>$A  sink\<close> using assms(1) by (metis lts_tau.word_tau_concat tau_tau)
-  thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close> using assms(2) by auto
+  hence \<open>q \<Rightarrow>$A  sink\<close>
+    using assms(1) tau_tau word_tau_concat by blast
+  thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close>
+    using assms(2) by auto
 qed
-*)
-
 
 end 
 end
