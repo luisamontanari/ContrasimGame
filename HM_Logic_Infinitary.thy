@@ -1,4 +1,4 @@
-theory HM_Logic_infinitary
+theory HM_Logic_Infinitary
   imports 
     Weak_Relations
 begin
@@ -72,10 +72,6 @@ subsection \<open>Weak-NOR HML\<close>
 definition HML_weaknor ::
   \<open>'x set \<Rightarrow> ('x \<Rightarrow> ('a,'x)HML_formula) \<Rightarrow> ('a,'x)HML_formula\<close>
   where \<open>HML_weaknor I F = HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
-
-
-
-
 
 end \<comment> \<open>of \<open>context lts\<close>\<close>
 end \<comment> \<open>of \<open>theory\<close>\<close>
