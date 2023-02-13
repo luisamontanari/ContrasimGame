@@ -128,62 +128,65 @@ lemma symm_weak_sim_is_contrasim:
 
 subsection \<open>Intermediate Relation Mimicking Contrasim\<close>
 
-definition F :: "(('s \<Rightarrow> ('s set) \<Rightarrow> bool)) \<Rightarrow> ('s \<Rightarrow> ('s set) \<Rightarrow> bool)" where 
-\<open>F R p' Q' \<equiv> \<exists>p Q A. R p Q \<and> p \<Rightarrow>$A p' \<and> (\<forall>a \<in> set A. a \<noteq> \<tau>) \<and> Q' = (dsuccs_seq_rec (rev A) Q)\<close>
+definition mimicking :: "('s \<Rightarrow> 's set \<Rightarrow> bool) \<Rightarrow> 's \<Rightarrow> 's set \<Rightarrow> bool" where 
+\<open>mimicking R p' Q' \<equiv> \<exists>p Q A.
+  R p Q \<and> p \<Rightarrow>$A p' \<and> 
+  (\<forall>a \<in> set A. a \<noteq> \<tau>) \<and> 
+  Q' = (dsuccs_seq_rec (rev A) Q)\<close>
 
-definition set_type :: "('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> ('s \<Rightarrow> ('s set) \<Rightarrow> bool)" where 
-\<open>set_type R p Q \<equiv> \<exists>q. R p q \<and> Q = {q}\<close>
+definition set_lifted :: "('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> 's \<Rightarrow> 's set \<Rightarrow> bool" where 
+\<open>set_lifted R p Q \<equiv> \<exists>q. R p q \<and> Q = {q}\<close>
 
-lemma R_is_in_F_of_R : 
+lemma R_is_in_mimicking_of_R : 
   assumes \<open>R p Q\<close>
-  shows \<open>F R p Q\<close>
+  shows \<open>mimicking R p Q\<close>
 proof -
   have Q_cond: \<open>Q = dsuccs_seq_rec (rev []) Q\<close>  by simp 
   have p_cond: \<open>p \<Rightarrow>$[] p\<close> using steps.simps weak_step_seq.simps(1) by blast 
-  thus \<open>F R p Q\<close> using Q_cond F_def \<open>R p Q\<close>
+  thus \<open>mimicking R p Q\<close> using Q_cond mimicking_def \<open>R p Q\<close>
     by (metis bex_empty empty_set tau_tau)
 qed
 
-lemma F_of_C_guarantees_tau_succ:
-  assumes 
+lemma mimicking_of_C_guarantees_tau_succ:
+  assumes
     \<open>contrasim C\<close>
-    \<open>F (set_type C) p Q\<close>
+    \<open>mimicking (set_lifted C) p Q\<close>
     \<open>p \<Rightarrow>^\<tau> p'\<close>
-  shows \<open>\<exists>q'. q' \<in> (weak_tau_succs Q) \<and> F (set_type C) q' {p'}\<close>
+  shows \<open>\<exists>q'. q' \<in> (weak_tau_succs Q) \<and> mimicking (set_lifted C) q' {p'}\<close>
 proof -
   obtain p0 Q0 A q0
-      where \<open>(set_type C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> \<open>Q0 = {q0}\<close> 
+      where \<open>(set_lifted C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> \<open>Q0 = {q0}\<close> 
         and Q_def: \<open>Q = (dsuccs_seq_rec (rev A) Q0)\<close> 
-      using F_def assms set_type_def by metis
-  hence \<open>C p0 q0\<close> using set_type_def by auto 
+      using mimicking_def assms set_lifted_def by metis
+  hence \<open>C p0 q0\<close> using set_lifted_def by auto 
   have \<open>p0 \<Rightarrow>$(A@[\<tau>]) p'\<close> using \<open>p0 \<Rightarrow>$A p\<close>  \<open>p \<Rightarrow>^\<tau>  p'\<close> rev_seq_step_concat by auto
   hence word: \<open>p0 \<Rightarrow>$A p'\<close> 
     by (metis \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> app_tau_taufree_list tau_def weak_step_over_tau)
   then obtain q' where \<open>q0 \<Rightarrow>$A q'\<close> \<open>C q' p'\<close> 
     using assms contrasim_def[of \<open>C\<close>] \<open>C p0 q0\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> by blast
-  hence \<open>(set_type C) q' {p'}\<close> using set_type_def by auto
-  hence inF: \<open>F (set_type C) q' {p'}\<close> using R_is_in_F_of_R  by auto
+  hence \<open>(set_lifted C) q' {p'}\<close> using set_lifted_def by auto
+  hence in_mimicking: \<open>mimicking (set_lifted C) q' {p'}\<close> using R_is_in_mimicking_of_R  by auto
   have \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) Q0)\<close> 
     using \<open>Q0 = {q0}\<close> \<open>q0 \<Rightarrow>$ A q'\<close>
     by (simp add: word_reachable_implies_in_dsuccs) 
   hence \<open>q' \<in> weak_tau_succs Q\<close> using Q_def by simp 
-  thus \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> F (set_type C) q' {p'}\<close> using inF by auto
+  thus \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> mimicking (set_lifted C) q' {p'}\<close> using in_mimicking by auto
 qed
 
-lemma F_of_C_guarantees_action_succ :
+lemma mimicking_of_C_guarantees_action_succ:
  assumes 
     \<open>contrasim C\<close>
-    \<open>F (set_type C) p Q\<close>
+    \<open>mimicking (set_lifted C) p Q\<close>
     \<open>p =\<rhd>a p'\<close>
     \<open>a \<noteq> \<tau>\<close>
-  shows \<open>F (set_type C) p' (dsuccs a Q)\<close>
+  shows \<open>mimicking (set_lifted C) p' (dsuccs a Q)\<close>
 proof -
   obtain p0 Q0 A q0
-    where \<open>(set_type C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>Q0 = {q0}\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> 
+    where \<open>(set_lifted C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>Q0 = {q0}\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> 
       and Q_def: \<open>Q = (dsuccs_seq_rec (rev A) Q0)\<close> 
-    using F_def assms set_type_def by metis
+    using mimicking_def assms set_lifted_def by metis
   then obtain CS where CS_def: \<open>contrasim CS \<and> CS p0 q0\<close> 
-    using assms set_type_def by (metis singleton_inject) 
+    using assms set_lifted_def by (metis singleton_inject) 
   have notau: \<open>\<forall>a \<in> set (A@[a]). a \<noteq> \<tau>\<close> 
     using \<open>a \<noteq> \<tau>\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> by auto
   have  \<open>p \<Rightarrow>a  p'\<close> using assms(3,4) steps.refl tau_def by auto 
@@ -198,7 +201,7 @@ proof -
   then obtain q1 where \<open>q1 \<in> dsuccs_seq_rec (rev (A@[a])) {q0}\<close> \<open>q1 \<Rightarrow>^\<tau> q'\<close>
     using weak_tau_succs_def[of \<open>dsuccs_seq_rec (rev (A@[a])) {q0}\<close>] by auto
   thus ?thesis
-    using word F_def[of \<open>(set_type C)\<close>] \<open>(set_type C) p0 Q0\<close> 
+    using word mimicking_def[of \<open>(set_lifted C)\<close>] \<open>(set_lifted C) p0 Q0\<close> 
       \<open>Q0 = {q0}\<close> Q_def notau simp_dsuccs_seq_rev by meson
 qed
 
