@@ -10,27 +10,27 @@ datatype ('s, 'a) c_set_game_node =
   AttackerNode 's "'s set" |
   DefenderSimNode 'a 's "'s set" |
   DefenderSwapNode 's "'s set"
-                                                           
-fun (in lts_tau) c_set_game_moves ::      
+
+fun (in lts_tau) c_set_game_moves ::
   \<open>('s, 'a) c_set_game_node \<Rightarrow> ('s, 'a) c_set_game_node \<Rightarrow> bool\<close> where
-                             
+
   simulation_challenge:
    \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p1 Q0) =
-     (p =\<rhd>a p1 \<and> Q = Q0 \<and> \<not> tau a)\<close> |  
+     (p =\<rhd>a p1 \<and> Q = Q0 \<and> \<not> tau a)\<close> |
 
   simulation_answer:
-    \<open>c_set_game_moves (DefenderSimNode a p1 Q) (AttackerNode p10 Q1) =   
-      (p1 = p10 \<and> Q1 = dsuccs a Q)\<close> |                                             
+    \<open>c_set_game_moves (DefenderSimNode a p1 Q) (AttackerNode p10 Q1) =
+      (p1 = p10 \<and> Q1 = dsuccs a Q)\<close> |
 
   swap_challenge:
     \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p1 Q0) =
-     (p \<Rightarrow>^\<tau> p1 \<and> Q = Q0)\<close> |  
+     (p \<Rightarrow>^\<tau> p1 \<and> Q = Q0)\<close> |
 
   swap_answer:
-    \<open>c_set_game_moves (DefenderSwapNode p1 Q) (AttackerNode q1 P1) =   
-      (q1 \<in> weak_tau_succs Q \<and> P1 = {p1})\<close> |                                         
+    \<open>c_set_game_moves (DefenderSwapNode p1 Q) (AttackerNode q1 P1) =
+      (q1 \<in> weak_tau_succs Q \<and> P1 = {p1})\<close> |
 
-  c_set_game_moves_no_step:               
+  c_set_game_moves_no_step:
     \<open>c_set_game_moves _ _ = False\<close>
 
 fun c_set_game_defender_node :: \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> where

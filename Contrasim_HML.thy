@@ -77,7 +77,7 @@ proof (induct arbitrary: p q)
     case (Conj I F)
     then show ?thesis sorry
   qed
-qed
+  oops
 
 (*
 lemma contrasim_implies_HML_weak_equivalent:

@@ -8,8 +8,10 @@ chapter \<open>Infinitary Hennessy-Milner Logic\<close>
 datatype ('a,'x)HML_formula =
   HML_true 
 | HML_conj \<open>'x set\<close> \<open>'x \<Rightarrow> ('a,'x)HML_formula\<close>  (\<open>AND _ _\<close>)
-| HML_neg \<open>('a,'x)HML_formula\<close>                  (\<open>~_\<close>)
-| HML_poss \<open>'a\<close> \<open>('a,'x)HML_formula\<close>            (\<open>\<langle>_\<rangle>_\<close>)
+| HML_neg \<open>('a,'x)HML_formula\<close>                  (\<open>~_\<close> [20] 60)
+| HML_poss \<open>'a\<close> \<open>('a,'x)HML_formula\<close>            (\<open>\<langle>_\<rangle>_\<close> [60] 60)
+
+term \<open>\<langle>\<tau>\<rangle>\<langle>1\<rangle>\<langle>2\<rangle>\<langle>a\<rangle> ((\<lambda> x. \<langle>2\<rangle>x) C)\<close>
 
 subsection \<open>Satisfaction Relation\<close>
 
@@ -21,7 +23,7 @@ function satisfies :: \<open>'s \<Rightarrow> ('a, 's) HML_formula \<Rightarrow>
   where
     \<open>(p \<Turnstile> HML_true) = True\<close> 
   | \<open>(p \<Turnstile> HML_conj I F) = (\<forall> i \<in> I. p \<Turnstile> (F i))\<close> 
-  | \<open>(p \<Turnstile> HML_neg \<phi>) = (\<not> p \<Turnstile> \<phi>)\<close> 
+  | \<open>(p \<Turnstile> HML_neg \<phi>) = (\<not> p \<Turnstile> \<phi>)\<close>
   | \<open>(p \<Turnstile> HML_poss \<alpha> \<phi>) = (\<exists> p'. ((tau \<alpha> \<and> p \<longmapsto>* tau p') \<or> (\<not> tau \<alpha> \<and> p \<longmapsto>\<alpha> p')) \<and> p' \<Turnstile> \<phi>)\<close>
   using HML_formula.exhaust by (auto, blast)
 
