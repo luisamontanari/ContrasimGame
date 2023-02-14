@@ -50,6 +50,16 @@ lemma strategy0_step:
   using assms
   by (induct rule: plays_for_0strategy.cases, auto)
 
+\<comment>\<open>plays for a given player 1 strategy\<close>
+inductive_set plays_for_1strategy :: \<open>'s strategy \<Rightarrow> 's \<Rightarrow> 's play set\<close>
+  for f initial where
+  init: \<open>[initial] \<in> plays_for_1strategy f initial\<close> |
+  p0move: \<open>n0#play \<in> plays_for_1strategy f initial \<Longrightarrow> player0_position n0 \<Longrightarrow> n0 \<longmapsto>\<heartsuit> n0'
+    \<Longrightarrow> n0'#n0#play \<in> plays_for_1strategy f initial\<close> |
+  p1move: \<open>n1#play \<in> plays_for_1strategy f initial \<Longrightarrow> player1_position n1 \<Longrightarrow> n1 \<longmapsto>\<heartsuit> f (n1#play)
+    \<Longrightarrow> (f (n1#play))#n1#play \<in> plays_for_1strategy f initial\<close>
+
+
 definition positional_strategy :: \<open>'s strategy \<Rightarrow> bool\<close> where
   \<open>positional_strategy f \<equiv> \<forall>r1 r2 n. f (n # r1) = f (n # r2)\<close>
 
@@ -58,10 +68,18 @@ definition sound_0strategy :: \<open>'s strategy \<Rightarrow> 's \<Rightarrow> 
   \<open>sound_0strategy f initial \<equiv>
     \<forall> n0 play . n0#play \<in> plays_for_0strategy f initial \<and> player0_position n0 \<longrightarrow> n0 \<longmapsto>\<heartsuit> f (n0#play)\<close>
 
+definition sound_1strategy :: \<open>'s strategy \<Rightarrow> 's \<Rightarrow> bool\<close> where
+  \<open>sound_1strategy f initial \<equiv>
+    \<forall> n1 play . n1#play \<in> plays_for_1strategy f initial \<and> player1_position n1 \<longrightarrow> n1 \<longmapsto>\<heartsuit> f (n1#play)\<close>
+
 lemma strategy0_plays_subset:
   assumes \<open>play \<in> plays_for_0strategy f initial\<close>
   shows \<open>play \<in> plays initial\<close>
   using assms by (induct rule: plays_for_0strategy.induct, auto simp add: plays.intros)
+lemma strategy1_plays_subset:
+  assumes \<open>play \<in> plays_for_1strategy f initial\<close>
+  shows \<open>play \<in> plays initial\<close>
+  using assms by (induct rule: plays_for_1strategy.induct, auto simp add: plays.intros)
 
 lemma no_empty_plays:
   assumes \<open>[] \<in> plays initial\<close>
@@ -93,6 +111,18 @@ proof -
     by (metis list.sel(1) player0_winning_strategy_def player0_wins_def player1_wins_immediately_def
         sound_0strategy_def strategy0_plays_subset)
 qed
+
+
+definition player0_wins_immediately :: \<open>'s play \<Rightarrow> bool\<close> where
+  \<open>player0_wins_immediately play \<equiv> player1_position (hd play) \<and> (\<nexists> p' . (hd play) \<longmapsto>\<heartsuit> p')\<close>
+
+\<comment> \<open>in comparison to the defender, the attacker also has to bound the depth of plays.\<close>
+definition player1_winning_strategy :: \<open>'s strategy \<Rightarrow> 's \<Rightarrow> bool\<close> where
+  \<open>player1_winning_strategy f initial \<equiv>
+    \<exists>maxn. (\<forall> play \<in> plays_for_1strategy f initial . \<not> player0_wins_immediately play \<and> length play \<le> maxn)\<close>
+
+definition player1_wins :: \<open>'s \<Rightarrow> bool\<close> where
+  \<open>player1_wins s \<equiv> (\<exists> f . player1_winning_strategy f s \<and> sound_1strategy f s)\<close>
 
 end
 
