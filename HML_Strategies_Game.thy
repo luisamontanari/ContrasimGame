@@ -14,31 +14,56 @@ fixes
   winning_dist :: \<open>('s, 'a) c_set_game_node \<Rightarrow> nat\<close>
 assumes
   \<comment>\<open>This assumption seems to create an inconsistency.... :/ Will have to restrict it to non-immediately attacker-won positions (?)\<close>
-  winning_dist_decreasing: \<open>\<And>pos. winning_dist (strat pos) < winning_dist pos\<close>
+  winning_dist_attacker_decreasing:
+    \<open>\<And>pos. player1_position pos \<Longrightarrow> winning_dist (strat pos) < winning_dist pos\<close> and
+  winning_dist_defender_constant:
+    \<open>\<And>pos. player0_position pos \<Longrightarrow> game_move pos pos' \<Longrightarrow>  winning_dist pos' \<le> winning_dist pos\<close>
 begin
 
 lemma INCONSISTENCY:
-  False using winning_dist_decreasing wf_measure[of winning_dist] wf_def
-  by (meson UNIV_I in_measure wf_eq_minimal)
+  False using winning_dist_attacker_decreasing winning_dist_defender_constant wf_measure[of winning_dist] wf_def
+  oops
 
 text \<open>This construction of attacker formulas from a game only works if \<open>strat\<close> is a (non-cyclic)
   attacker strategy. (If it's winning and sound, the constructed formula should be distinguishing.)\<close>
 
 function attack_formula :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_formula\<close> where
   \<open>attack_formula (AttackerNode p Q) =
-    attack_formula (strat ((AttackerNode p Q)))\<close>
+    attack_formula (strat (AttackerNode p Q))\<close>
 | \<open>attack_formula (DefenderSimNode a p Q) =
     \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p (dsuccs a Q)))\<close>
 | \<open>attack_formula (DefenderSwapNode p Q) =
-    (HML_weaknor (weak_tau_succs Q) (\<lambda>q. (attack_formula (AttackerNode q {p}))))\<close>
+    (if Q = {} then HML_true else
+    (HML_weaknor (weak_tau_succs Q) (\<lambda>q. (attack_formula (AttackerNode q {p})))))\<close>
   using c_set_game_defender_node.cases
   by (auto, blast)
 
 termination attack_formula
-  using winning_dist_decreasing
-    wf_measure[of winning_dist]
-  unfolding wf_def
-  by auto
+proof -
+  define m where \<open>m \<equiv> \<lambda>pos. if player1_position pos then 2 * winning_dist pos else Suc (2 * winning_dist pos)\<close>
+  thus ?thesis
+    using local.termination[OF wf_measure[of m]]
+      winning_dist_defender_constant winning_dist_attacker_decreasing linorder_not_le
+    unfolding m_def measure_def
+    by (auto simp add: less_Suc_eq_le Suc_double_not_eq_double Suc_lessI)
+qed
+\<comment> \<open>zipperposition thinks that one can still prove an inconsistency here ...? :|\<close>
+
+thm attack_formula.induct
+
+lemma False using attack_formula.induct sledgehammer
+
+lemma \<open>(\<forall> p Q. P  (strat (AttackerNode p Q)) \<longrightarrow> P (AttackerNode p Q)) \<longrightarrow>
+  (\<forall>a p Q. P (AttackerNode p (dsuccs a Q)) \<longrightarrow> P (DefenderSimNode a p Q)) \<longrightarrow> (\<forall>p Q. (\<forall> x. P (AttackerNode x {p})) \<longrightarrow> P (DefenderSwapNode p Q)) \<Longrightarrow> P b\<close>
+  nitpick
+  oops
+
+declare [[simp_trace]]
+
+lemma Apparently_something_is_inconsistent:
+  shows \<open>(\<forall>P b. (\<forall> p Q. P  (strat (AttackerNode p Q)) \<longrightarrow> P (AttackerNode p Q)) \<longrightarrow>
+  (\<forall>a p Q. P (AttackerNode p (dsuccs a Q)) \<longrightarrow> P (DefenderSimNode a p Q)) \<longrightarrow> (\<forall>p Q. (\<forall> x. P (AttackerNode x {p})) \<longrightarrow> P (DefenderSwapNode p Q)) \<longrightarrow> P b) \<longrightarrow> False\<close> apply auto
+
 
 lemma attack_options: 
   assumes
@@ -66,10 +91,9 @@ proof -
   thus ?thesis by simp
 qed
 
-thm attack_formula.induct
 
-lemma Apparently_something_is_inconsistent:
-  shows False using attack_formula.induct by blast
+
+
 
 lemma distinction_soundness:
   fixes p Q p0 Q0
