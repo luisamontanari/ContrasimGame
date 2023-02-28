@@ -8,19 +8,19 @@ begin
 context lts_tau
 begin
 
-definition trace_simulation ::
+definition trace_inclusion ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
 where
-  \<open>trace_simulation R  \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) 
+  \<open>trace_inclusion R  \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) 
   \<and> R p q \<and> p \<Rightarrow>$ A p' \<longrightarrow> (\<exists> q'. q \<Rightarrow>$ A q')\<close>
 
 abbreviation weakly_trace_included_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>T  _" [60, 60] 65)
-  where \<open>weakly_trace_included_by p q \<equiv> \<exists> R . trace_simulation R \<and> R p q\<close>
+  where \<open>weakly_trace_included_by p q \<equiv> \<exists> R . trace_inclusion R \<and> R p q\<close>
 
-lemma contrasim_implies_trace_sim:
+lemma contrasim_implies_trace_incl:
   assumes \<open>contrasim R\<close>
-  shows \<open>trace_simulation R\<close>
-by (metis assms contrasim_simpler_def trace_simulation_def) 
+  shows \<open>trace_inclusion R\<close>
+by (metis assms contrasim_simpler_def trace_inclusion_def) 
 
 definition tau_sink ::
   \<open>'s \<Rightarrow> bool\<close>
@@ -82,14 +82,14 @@ lemma tau_sink_trace_includes_all_states:
     \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
   shows 
     \<open>sink \<sqsubseteq>T p\<close>
-  by (metis assms(2) contrasim_tau_step lts_tau.contrasim_implies_trace_sim) 
+  by (metis assms(2) contrasim_tau_step lts_tau.contrasim_implies_trace_incl) 
 
 
-lemma tau_sink_trace_sim_contrasim:
+lemma tau_sink_trace_incl_contrasim:
   assumes
     \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
     \<open>\<And> p . R sink p\<close>
-    \<open>trace_simulation R\<close>
+    \<open>trace_inclusion R\<close>
   shows
     \<open>contrasim R\<close>
  unfolding contrasim_def
@@ -97,14 +97,14 @@ proof clarify
   fix p q p' A
   assume \<open>R p q\<close> \<open>p \<Rightarrow>$A  p'\<close> \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
   hence \<open>\<exists>q'. q \<Rightarrow>$A  q'\<close>
-    using assms(3) unfolding trace_simulation_def by blast
+    using assms(3) unfolding trace_inclusion_def by blast
   hence \<open>q \<Rightarrow>$A  sink\<close>
     using assms(1) tau_tau word_tau_concat by blast
   thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close>
     using assms(2) by auto
 qed
 
-lemma trace_preorder_sink_invariant:
+lemma trace_inclusion_sink_invariant:
   fixes
     step sink R
   defines
@@ -212,12 +212,12 @@ proof -
 
   show ?thesis
   proof (rule)
-    assume \<open>\<exists>R. lts_tau.trace_simulation step2 \<tau> R \<and> R p q\<close>
-    then obtain R where weak_sim_R: \<open>lts_tau.trace_simulation step2 \<tau> R\<close>
+    assume \<open>\<exists>R. lts_tau.trace_inclusion step2 \<tau> R \<and> R p q\<close>
+    then obtain R where weak_sim_R: \<open>lts_tau.trace_inclusion step2 \<tau> R\<close>
       and Rpq: \<open>R p q\<close>
       by blast
-    have \<open>lts_tau.trace_simulation step \<tau> R\<close>
-      unfolding lts_tau.trace_simulation_def
+    have \<open>lts_tau.trace_inclusion step \<tau> R\<close>
+      unfolding lts_tau.trace_inclusion_def
     proof clarify
       fix p q p' A
       assume subassms: 
@@ -228,7 +228,7 @@ proof -
        ?seq step2 \<tau> p A p' \<longrightarrow>
        (\<exists>q'. ?seq step2 \<tau> q A q')\<close> 
         using weak_sim_R 
-        unfolding lts_tau.trace_simulation_def by simp
+        unfolding lts_tau.trace_inclusion_def by simp
       hence \<open>(\<forall>a\<in>set A. a \<noteq> \<tau>) \<and>
        ?seq step \<tau> p A p' \<longrightarrow>
        (\<exists>q'. ?seq step \<tau> q A q')\<close>
@@ -237,15 +237,15 @@ proof -
       thus "\<exists>q'. ?seq step \<tau> q A q'"
         by (simp add: subassms)
     qed
-    thus \<open>\<exists>R. lts_tau.trace_simulation step \<tau> R \<and> R p q\<close>
+    thus \<open>\<exists>R. lts_tau.trace_inclusion step \<tau> R \<and> R p q\<close>
       using Rpq by auto
   next 
-    assume \<open>\<exists>R. lts_tau.trace_simulation step \<tau> R \<and> R p q\<close>
-    then obtain R where weak_sim_R: \<open>lts_tau.trace_simulation step \<tau> R\<close>
+    assume \<open>\<exists>R. lts_tau.trace_inclusion step \<tau> R \<and> R p q\<close>
+    then obtain R where weak_sim_R: \<open>lts_tau.trace_inclusion step \<tau> R\<close>
       and Rpq: \<open>R p q\<close>
       by blast
-    have \<open>lts_tau.trace_simulation step2 \<tau> R\<close> 
-      unfolding lts_tau.trace_simulation_def
+    have \<open>lts_tau.trace_inclusion step2 \<tau> R\<close> 
+      unfolding lts_tau.trace_inclusion_def
     proof clarify
       fix p q p' A
       assume subassms: 
@@ -254,9 +254,9 @@ proof -
         \<open>?seq step2 \<tau> p A p'\<close>
       thus \<open>\<exists>q'. ?seq step2 \<tau> q A q'\<close>
         using step2_to_step step_to_step2
-        by (metis (full_types) lts_tau.trace_simulation_def weak_sim_R)
+        by (metis (full_types) lts_tau.trace_inclusion_def weak_sim_R)
     qed
-    thus \<open>\<exists>R. lts_tau.trace_simulation step2 \<tau> R \<and> R p q\<close> using Rpq by auto
+    thus \<open>\<exists>R. lts_tau.trace_inclusion step2 \<tau> R \<and> R p q\<close> using Rpq by auto
   qed
 qed
 
