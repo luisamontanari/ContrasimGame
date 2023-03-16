@@ -47,45 +47,59 @@ thm attack_formula.induct
 
 lemma False using attack_formula.induct oops (*sledgehammer*)
 
-lemma \<open>(\<forall> p Q. P  (strat (AttackerNode p Q)) \<longrightarrow> P (AttackerNode p Q)) \<longrightarrow>
-  (\<forall>a p Q. P (AttackerNode p (dsuccs a Q)) \<longrightarrow> P (DefenderSimNode a p Q)) \<longrightarrow> (\<forall>p Q. (\<forall> x. P (AttackerNode x {p})) \<longrightarrow> P (DefenderSwapNode p Q)) \<Longrightarrow> P b\<close>
-  nitpick
-  oops
-
-declare [[simp_trace]]
-
-lemma Apparently_something_is_inconsistent:
-  shows \<open>(\<forall>P b. (\<forall> p Q. P  (strat (AttackerNode p Q)) \<longrightarrow> P (AttackerNode p Q)) \<longrightarrow>
-  (\<forall>a p Q. P (AttackerNode p (dsuccs a Q)) \<longrightarrow> P (DefenderSimNode a p Q)) \<longrightarrow> (\<forall>p Q. (\<forall> x. P (AttackerNode x {p})) \<longrightarrow> P (DefenderSwapNode p Q)) \<longrightarrow> P b) \<longrightarrow> False\<close> apply auto
-
+lemma attacker_defender_switch:
+  assumes
+    \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
+  shows
+    \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
+    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p' )\<close>
+  using strat_stays_winning[OF assms] by (cases \<open>strat (AttackerNode p Q)\<close>, auto)
 
 lemma attack_options: 
   assumes
-    \<open>player1_winning_strategy (strategy_from_positional strat) (AttackerNode p Q)\<close>
-    \<open>sound_1strategy (strategy_from_positional strat) (AttackerNode p Q)\<close>
+    \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
   shows
     \<open>(\<exists>a p'. attack_formula (AttackerNode p Q) = \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p' (dsuccs a Q))))
-    \<or> (\<exists>p'. attack_formula (AttackerNode p Q) = (HML_weaknor (weak_tau_succs Q) (\<lambda>q. (attack_formula (AttackerNode q {p'})))))\<close>
+    \<or> (\<exists>p'. attack_formula (AttackerNode p Q) = (HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> Q then (attack_formula (AttackerNode q {p'})) else HML_true )))
+    \<or> (Q = {} \<and> attack_formula (AttackerNode p Q) = HML_true)\<close>
 proof -
-  have \<open>[AttackerNode p Q] \<in> plays_for_1strategy (strategy_from_positional strat) (AttackerNode p Q)\<close>
-    using plays_for_1strategy.init by auto
-  with assms(1) have unstuck:
-    \<open>\<exists>p'. c_set_game_moves (AttackerNode p Q) p'\<close>
-    unfolding player1_winning_strategy_def player0_wins_immediately_def by fastforce
-  with assms(2) have \<open>c_set_game_moves (AttackerNode p Q) (strat (AttackerNode p Q))\<close>
-    unfolding sound_1strategy_def strategy_from_positional_def
-    using plays_for_1strategy.init by fastforce
-  hence \<open>(\<exists>a p'. p =\<rhd>a p' \<and> \<not> tau a \<and> strat (AttackerNode p Q) = (DefenderSimNode a p' Q))
-    \<or> (\<exists>p'. p \<Rightarrow>^\<tau> p' \<and> strat (AttackerNode p Q) = (DefenderSwapNode p' Q))\<close>
-    using c_set_game_defender_node.elims(1) c_set_game_moves_no_step(5) simulation_challenge swap_challenge
-    by (smt (verit))
-  hence  \<open>(\<exists>a p'. attack_formula (AttackerNode p Q) = (attack_formula (DefenderSimNode a p' Q)))
-    \<or> (\<exists>p'. attack_formula (AttackerNode p Q) = (attack_formula (DefenderSwapNode p' Q)))\<close>
-    by auto
-  thus ?thesis by simp
+  from assms have \<open>attack_formula (AttackerNode p Q) = attack_formula (strat (AttackerNode p Q))\<close> by simp
+  moreover from attacker_defender_switch assms have
+    \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
+    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p' )\<close> by blast
+  ultimately have 
+    \<open>(\<exists>a p'. (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
+    \<or>(\<exists>p'. (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close>
+    by metis
+  thus ?thesis unfolding dsuccs_def
+    by (metis attack_formula.simps(2) attack_formula.simps(3) dsuccs_def)
 qed
 
-
+lemma distinction_soundness:
+  fixes p Q p0 Q0
+  defines
+    \<open>pQ == AttackerNode p Q\<close>
+  defines
+    \<open>\<phi> == attack_formula pQ\<close>
+  assumes
+    \<open>pQ \<in> attacker_winning_region\<close>
+  shows
+    \<open>p \<Turnstile> \<phi> \<and> (\<forall>q\<in>Q. \<not> q \<Turnstile> \<phi>)\<close>
+  using finite_win assms(3) unfolding assms(1,2)
+proof (induct)
+  case (less pQ)
+  show ?case proof (cases \<open>attack_formula pQ\<close>)
+qed
+proof (induct rule: attack_formula.induct[of _ \<open>(AttackerNode p Q)\<close>])
+  case (1 p Q)
+  then show ?case
+next
+  case (2 a p Q)
+  then show ?case sorry
+next
+  case (3 p Q)
+  then show ?case sorry
+qed
 
 
 
