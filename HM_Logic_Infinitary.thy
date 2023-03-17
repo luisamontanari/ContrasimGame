@@ -79,6 +79,11 @@ lemma HML_subformulas_wf: \<open>wf HML_subformulas\<close>
   using HML_direct_subformulas_wf HML_subformulas_def wf_trancl
   by fastforce
 
+lemma conj_only_depends_on_indexset:
+  assumes \<open>\<forall>i\<in>I. f1 i = f2 i\<close>
+  shows \<open>(p \<Turnstile> HML_conj I f1) = (p \<Turnstile> HML_conj I f2)\<close>
+  using assms by auto
+
 subsection \<open>Distinguishing Formulas\<close>
 
 definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close>
