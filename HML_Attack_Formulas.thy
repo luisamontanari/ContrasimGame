@@ -9,14 +9,6 @@ locale c_game_with_attacker_formula  =
 for
   trans :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> and
   \<tau> :: \<open>'a\<close>
-(* +
-fixes
-  wr :: \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close>
-assumes 
-  \<open>\<forall>p. wr (DefenderSwapNode p {})\<close>
-  \<open>\<forall>atk_node. \<exists>g. (c_set_game_moves atk_node g) \<and> wr g \<longrightarrow> wr atk_node\<close>
-  \<open>\<forall>def_node g. (c_set_game_moves def_node g) \<and> wr g \<longrightarrow> wr def_node\<close>
-*)
 begin
 
 function wr ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
@@ -25,14 +17,12 @@ function wr ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close>
      else (\<forall>g. c_set_game_moves (DefenderSwapNode p Q) g \<and> wr g))\<close>
   | \<open>wr (AttackerNode p Q) = (\<exists>g. c_set_game_moves (AttackerNode p Q) g \<and> wr g)\<close>
   | \<open>wr (DefenderSimNode a p Q) = (\<forall>g. c_set_game_moves (DefenderSimNode a p Q) g \<and> wr g)\<close>
-  using c_set_game_node.exhaust apply blast
-       apply simp
-       apply simp
-       apply simp
-       apply simp
-       apply simp
-  apply simp
+  using c_set_game_node.exhaust
+       apply blast
+       apply simp+
   done
+
+
 fun is_dist ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close>
   where
    \<open>is_dist \<phi> p q = (p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>)\<close>
@@ -77,22 +67,20 @@ next
   then show ?case by auto
 qed
 
-(*
-fun attack_strat :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_formula \<Rightarrow> ('s, 'a) c_set_game_node\<close>
-  where
-  
-  \<open>attack_strat (AttackerNode p Q) (\<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) = DefenderSimNode a (SOME p' . p =\<rhd>a p' \<and> p' \<Turnstile> \<phi> \<and>
-                                           (\<forall>q'. q' \<in> dsuccs a Q \<longrightarrow> is_dist \<phi> p' q')) Q\<close> |
+fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
+  where 
+\<open>atk_strat ((AttackerNode p Q)#play) = 
+(SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> wr g')\<close>
+| \<open>atk_strat _ = undefined\<close>
 
-  \<open>attack_strat (AttackerNode p Q) (HML_weaknor I F) = DefenderSwapNode (SOME p' . p \<Rightarrow>^\<tau> p' \<and> 
-                                           (\<forall>q'. q' \<in> weak_tau_succs Q  \<longrightarrow>
-                                           (\<exists>i. i \<in> I \<and> is_dist (F i) q' p'))) Q\<close> |
 
-  \<open>attack_strat _ _ = undefined\<close>
-  apply auto
-  apply (simp add: lts_tau.HML_weaknor_def)
-  sledgehammer
-*)
 
+lemma attacker_wins_in_winning_region: 
+  assumes \<open>wr (AttackerNode p Q)\<close>
+  shows \<open>player1_winning_strategy atk_strat (AttackerNode p Q)\<close>
+  (*unfolding player1_winning_strategy_def*)
+proof -
+  show ?thesis sorry
+qed
 end
 end
