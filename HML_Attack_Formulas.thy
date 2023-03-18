@@ -8,73 +8,74 @@ locale c_game_with_attacker_formula  =
   c_set_game trans \<tau>
 for
   trans :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> and
-  \<tau> :: \<open>'a\<close> +
+  \<tau> :: \<open>'a\<close>
+(* +
 fixes
   wr :: \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close>
 assumes 
   \<open>\<forall>p. wr (DefenderSwapNode p {})\<close>
   \<open>\<forall>atk_node. \<exists>g. (c_set_game_moves atk_node g) \<and> wr g \<longrightarrow> wr atk_node\<close>
   \<open>\<forall>def_node g. (c_set_game_moves def_node g) \<and> wr g \<longrightarrow> wr def_node\<close>
-
+*)
 begin
 
+function wr ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
+  where 
+    \<open>wr (DefenderSwapNode p Q) = (if Q = {} then True
+     else (\<forall>g. c_set_game_moves (DefenderSwapNode p Q) g \<and> wr g))\<close>
+  | \<open>wr (AttackerNode p Q) = (\<exists>g. c_set_game_moves (AttackerNode p Q) g \<and> wr g)\<close>
+  | \<open>wr (DefenderSimNode a p Q) = (\<forall>g. c_set_game_moves (DefenderSimNode a p Q) g \<and> wr g)\<close>
+  using c_set_game_node.exhaust apply blast
+       apply simp
+       apply simp
+       apply simp
+       apply simp
+       apply simp
+  apply simp
+  done
 fun is_dist ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close>
   where
    \<open>is_dist \<phi> p q = (p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>)\<close>
 
-ML \<open>Ctr_Sugar.ctr_sugar_of @{context} @{type_name HML_formula} |> Option.map #ctrs\<close>
-
-(*
-(induct arbitrary: n p Q rule: plays_for_0strategy.induct[OF assms(3)])
-*)
-
-thm  HML_weak_formulas.induct
 
 lemma all_states_sat_empty_conjunction:
-  shows \<open>\<And>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
+  shows \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
 proof - 
-  show ?thesis sorry
+  have \<open>\<forall>q F. q \<Turnstile> (HML_conj {} (\<lambda>f. HML_neg (F f)))\<close> by auto
+  thus ?thesis
+    by (metis HML_formula.distinct(9, 11)
+        HML_formula.inject(3) HML_weaknor_def satisfies.elims(3) step_tau_refl tau_def)
+qed
+
+lemma tau_a_obs_implies_delay_step: 
+  assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
+  shows \<open>\<exists>p'. p =\<rhd>a p' \<and> p' \<Turnstile> \<phi>\<close>
+proof - 
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p'' \<and> p'' \<Turnstile> \<langle>a\<rangle>\<phi>\<close>
+    using assms 
+    by auto
+  thus ?thesis
+    using satisfies.simps(4) steps_concat tau_tau by blast
 qed
 
 
-lemma beweisziel: 
+lemma dist_formula_implies_wr_inclusion: 
   assumes \<open>\<phi> \<in> HML_weak_formulas\<close>
-  shows \<open>\<And>q. q \<in> Q \<and>(is_dist \<phi> p q) \<Longrightarrow> wr (AttackerNode p Q)\<close>
-proof (induct rule: HML_weak_formulas.induct[OF assms])
-  case 1
-  have \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close> sledgehammer
-  then show ?case sorry
+  shows \<open>\<forall>q. q \<in> Q \<and> (is_dist \<phi> p q) \<Longrightarrow> wr (AttackerNode p Q)\<close>
+proof (induct arbitrary: p Q rule: HML_weak_formulas.induct[OF assms])
+  case Base: 1
+  have \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
+    by (simp add: all_states_sat_empty_conjunction)
+  then show ?case
+    using Base is_dist.elims(2) by blast
 next
-  case (2 \<phi> a)
-  then show ?case sorry
+  case Obs: (2 \<phi> a)
+  thus ?case 
+    by (meson is_dist.elims(2))
 next
-  case (3 I F)
-  then show ?case sorry
+  case Conj: (3 I F)
+  then show ?case by auto
 qed
-
-
-(*
-proof (induct \<phi> rule: HML_weak_formulas.induct[OF assms])
-qed
-
-*)
-
-(*
-
-assumptions in local: 
-(oder lemmas mit sorry)
-es gibt winning region: ist abgeschlossen
--wenn attacker von p in winning region mit einem zug kommt, ist p in wr
--wenn defender mit allen zügen von g in wr kommen MUSS, dann ist g in wr
-
-
-kann man vllt auch induktiv hinschreiben? 
-(mit base: Swap(p, {})_d  ist in wr )
-
-beweisziel: phi dist's p from Q \<longrightarrow> (p, Q) in wr
-
-
-*)
 
 (*
 fun attack_strat :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_formula \<Rightarrow> ('s, 'a) c_set_game_node\<close>
@@ -93,9 +94,5 @@ fun attack_strat :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_fo
   sledgehammer
 *)
 
-
 end
-end
-
-
 end
