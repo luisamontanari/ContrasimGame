@@ -103,9 +103,17 @@ lemma Atk_node_wins_in_2_moves:
   assumes 
         \<open>wr (AttackerNode p' (dsuccs a Q))\<close>
         \<open>p =\<rhd>a p'\<close>
+        \<open>\<not>tau a\<close>
   shows \<open>wr (AttackerNode p Q)\<close>
 proof - 
-  oops
+  have AtkToSim: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
+    using assms(2, 3) by simp
+  have \<open>\<forall>g. c_set_game_moves 
+(DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
+    by (simp add: move_DefSim_to_AtkNode)
+  hence \<open>wr (DefenderSimNode a p' Q)\<close> sorry
+  thus ?thesis using AtkToSim sorry
+qed
 
 
 lemma dist_formula_implies_wr_inclusion: 
@@ -151,23 +159,44 @@ next
         then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
       next
         case False
-        hence AtkToSim: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
-          using p'_def by simp
-        have SimToAtk: \<open>\<forall>g. c_set_game_moves 
-(DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
-          by (metis c_set_game.move_DefSim_to_AtkNode)
         hence \<open>wr (AttackerNode p' (dsuccs a Q))\<close> 
           using Atk_node_wins_if_Q_is_empty dsuccs_empty by auto
-        hence \<open>wr (DefenderSimNode a p' Q)\<close>  using SimToAtk sorry
-        thus \<open>wr (AttackerNode p Q)\<close>  using AtkToSim sorry
+        thus \<open>wr (AttackerNode p Q)\<close>
+          using Atk_node_wins_in_2_moves False p'_def by blast
       qed
     next
       case dsuccs_nonempty: False
-      hence \<open>wr (AttackerNode p' (dsuccs a Q))\<close> using Obs.hyps phi_distinguishing by auto
-      thus ?thesis sorry
+      hence wr_pred_atk_node: \<open>wr (AttackerNode p' (dsuccs a Q))\<close> using Obs.hyps phi_distinguishing by auto
+      thus ?thesis 
+      proof(cases \<open>tau a\<close>)
+        case True
+        hence \<open>dsuccs a Q = weak_tau_succs Q\<close> 
+          unfolding dsuccs_def weak_tau_succs_def by simp
+        hence \<open>wr (AttackerNode p' (weak_tau_succs Q))\<close> 
+          using wr_pred_atk_node by auto
+
+(*
+this is a problem. in this case, phi = <eps><eps>phi' and ?thesis is not necessarily true
+
+*)
+        then show ?thesis sorry
+      next
+        case False
+        then show ?thesis 
+          using wr_pred_atk_node Atk_node_wins_in_2_moves p'_def by blast
+      qed
     qed
   next
     case Conj: (3 I F)
+    then obtain p' where \<open>p \<Rightarrow>^\<tau> p'\<close> \<open>p' \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
+      unfolding HML_weaknor_def by auto
+    hence \<open>\<And>q . q \<in> Q  \<Longrightarrow> \<not>q  \<Turnstile>  HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
+      by (metis Conj.prems(3) HML_weaknor_def is_dist_set.elims(2))
+    hence \<open>\<And>q q'. q \<in> Q \<Longrightarrow> \<not>q \<Rightarrow>^\<tau> q' \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
+      using satisfies.simps(4) tau_tau by blast
+    hence \<open>\<And>q'. \<not>q' \<in> (weak_tau_succs Q) \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
+      using weak_tau_succs_def by auto
+    hence \<open>\<exists>i. i \<in> I \<and> (\<forall>q'. q' \<in> (weak_tau_succs Q) \<longrightarrow> \<not>q'  \<Turnstile> (F i))\<close> sorry
     then show ?case sorry
   qed
 qed
