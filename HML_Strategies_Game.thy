@@ -35,20 +35,43 @@ function attack_formula :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s)
   \<open>attack_formula (AttackerNode p Q) =
     (if (AttackerNode p Q) \<in> attacker_winning_region then attack_formula (strat (AttackerNode p Q)) else HML_true)\<close>
 | \<open>attack_formula (DefenderSimNode a p Q) =
-    \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p (dsuccs a Q)))\<close>
+    (if (DefenderSimNode a p Q) \<in> attacker_winning_region then \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p (dsuccs a Q))) else HML_true)\<close>
 | \<open>attack_formula (DefenderSwapNode p Q) =
-    (if Q = {} then HML_true else
+    (if Q = {} \<or> DefenderSwapNode p Q \<notin> attacker_winning_region then HML_true else
     (HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then (attack_formula (AttackerNode q {p})) else HML_true )))\<close>
   using c_set_game_defender_node.cases
   by (auto, blast)
 
 termination attack_formula
-  using finite_win strat_stays_winning defender_keeps_losing
-  sorry
-
-thm attack_formula.induct
-
-lemma False using attack_formula.induct oops (*sledgehammer*)
+  using finite_win
+proof (standard, safe)
+  fix p Q
+  assume \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
+  thus \<open>(strat (AttackerNode p Q), AttackerNode p Q) \<in> attacker_order\<close>
+    unfolding attacker_order_def
+    using strat_stays_winning
+    by auto
+next
+  fix a p Q
+  assume attacker_wins: \<open>DefenderSimNode a p Q \<in> attacker_winning_region\<close>
+  hence \<open>AttackerNode p (dsuccs a Q) \<in> attacker_winning_region\<close>
+    using defender_keeps_losing simulation_answer by force
+  with attacker_wins show \<open>(AttackerNode p (dsuccs a Q), DefenderSimNode a p Q) \<in> attacker_order\<close>
+    unfolding attacker_order_def
+    by (simp add: r_into_trancl')
+next
+  fix p Q q' q
+  assume case_assms:
+    \<open>q' \<in> weak_tau_succs Q\<close>
+    \<open>(AttackerNode q' {p}, DefenderSwapNode p Q) \<notin> attacker_order\<close>
+    \<open>DefenderSwapNode p Q \<in> attacker_winning_region\<close>
+    \<open>q \<in> Q\<close>
+  hence \<open>AttackerNode q' {p} \<notin> attacker_winning_region\<close>
+    unfolding attacker_order_def by auto
+  moreover from case_assms have \<open>AttackerNode q' {p} \<in> attacker_winning_region\<close>
+    using swap_answer defender_keeps_losing by force
+  ultimately show \<open>q \<in> {}\<close> by blast
+qed
 
 lemma attacker_defender_switch:
   assumes
@@ -72,14 +95,17 @@ proof -
   from assms have \<open>attack_formula (AttackerNode p Q) = attack_formula (strat (AttackerNode p Q))\<close> by simp
   moreover from attacker_defender_switch assms have
     \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
-    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p' )\<close> by blast
+    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close> by blast
   ultimately have 
     \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and>
       (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
     \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and>
       (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close>
     by metis
-  thus ?thesis by (standard, force+)
+  moreover from assms have \<open>strat (AttackerNode p Q) \<in> attacker_winning_region\<close>
+    by (simp add: strat_stays_winning)
+  ultimately show ?thesis using assms empty_iff 
+    by fastforce
 qed
 
 lemma distinction_soundness:
