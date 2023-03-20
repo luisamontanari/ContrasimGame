@@ -3,5 +3,6 @@ session "Contrasimulation" = "HOL" +
   theories
     Contrasim_Set_Game
     Basic_Contrasim_Game
+    CS_Fixpoint_Algo_Delay
   document_files
     "root.tex"
