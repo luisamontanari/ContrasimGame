@@ -3,7 +3,7 @@ theory HM_Logic_Infinitary
     Weak_Relations
 begin
 
-chapter \<open>Infinitary Hennessy-Milner Logic\<close>
+section \<open>Infinitary Hennessy-Milner Logic\<close>
 
 datatype ('a,'x)HML_formula =
   HML_true 
