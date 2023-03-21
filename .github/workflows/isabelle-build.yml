@@ -26,12 +26,18 @@ jobs:
         uses: benkeks/isabelle-action@v1.3
         with:
           args: build -d . Contrasimulation
-      - name: Setup Pages
-        uses: actions/configure-pages@v2
-      - name: Copy documentation
-        run: "cp /github/home/.isabelle/Isabelle2022/browser_info/Unsorted/Contrasimulation/ ./_site/"
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Archive artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Contrasim-Theory-HTML
+          path: |
+            /github/home/.isabelle/Isabelle2022/browser_info/Unsorted/Contrasimulation/
+      #- name: Setup Pages
+      #  uses: actions/configure-pages@v2
+      #- name: Copy documentation
+      #  run: "cp /github/home/.isabelle/Isabelle2022/browser_info/Unsorted/Contrasimulation/ ./_site/"
+      #- name: Upload artifact
+      #  uses: actions/upload-pages-artifact@v1
 
 #  deploy:
 #    environment:
