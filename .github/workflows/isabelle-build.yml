@@ -21,17 +21,16 @@ jobs:
   isabelle-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.4.0
       - name: Isabelle-action
-        uses: benkeks/isabelle-action@v1.3
+        uses: benkeks/isabelle-action@v1.4
         with:
-          args: build -d . Contrasimulation
+          args: build -P out -d . Contrasimulation
       - name: Archive artifact
         uses: actions/upload-artifact@v3
         with:
           name: Contrasim-Theory-HTML
-          path: |
-            /github/home/.isabelle/Isabelle2022/browser_info/Unsorted/Contrasimulation/
+          path: "out"
       #- name: Setup Pages
       #  uses: actions/configure-pages@v2
       #- name: Copy documentation
