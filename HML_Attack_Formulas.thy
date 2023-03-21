@@ -8,7 +8,14 @@ locale c_game_with_attacker_formula  =
   c_set_game trans \<tau>
 for
   trans :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> and
-  \<tau> :: \<open>'a\<close>
+  \<tau> :: \<open>'a\<close> + 
+fixes 
+  wr ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
+assumes 
+    \<open>wr (DefenderSwapNode p Q) = (if Q = {} then True
+     else (\<forall>g. c_set_game_moves (DefenderSwapNode p Q) g \<longrightarrow> wr g))\<close>
+    \<open>wr (AttackerNode p Q) = (\<exists>g. c_set_game_moves (AttackerNode p Q) g \<and> wr g)\<close>
+    \<open>wr (DefenderSimNode a p Q) = (\<forall>g. c_set_game_moves (DefenderSimNode a p Q) g \<longrightarrow> wr g)\<close>
 begin
 
 fun is_dist ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close>
@@ -47,12 +54,13 @@ proof -
   thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
 qed
 
-function wr ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
+
+function wr2 ::  \<open>('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
   where 
-    \<open>wr (DefenderSwapNode p Q) = (if Q = {} then True
-     else (\<forall>g. c_set_game_moves (DefenderSwapNode p Q) g \<and> wr g))\<close>
-  | \<open>wr (AttackerNode p Q) = (\<exists>g. c_set_game_moves (AttackerNode p Q) g \<and> wr g)\<close>
-  | \<open>wr (DefenderSimNode a p Q) = (\<forall>g. c_set_game_moves (DefenderSimNode a p Q) g \<and> wr g)\<close>
+    \<open>wr2 (DefenderSwapNode p Q) = (if Q = {} then True
+     else (\<forall>g. c_set_game_moves (DefenderSwapNode p Q) g \<longrightarrow> wr2 g))\<close>
+  | \<open>wr2 (AttackerNode p Q) = (\<exists>g. c_set_game_moves (AttackerNode p Q) g \<and> wr2 g)\<close>
+  | \<open>wr2 (DefenderSimNode a p Q) = (\<forall>g. c_set_game_moves (DefenderSimNode a p Q) g \<longrightarrow> wr2 g)\<close>
   using c_set_game_node.exhaust
        apply blast
        apply simp+
@@ -92,10 +100,12 @@ lemma Atk_node_wins_if_Q_is_empty:
   assumes \<open>Q = {}\<close>
   shows \<open>wr (AttackerNode p Q)\<close>
 proof - 
-  have \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p Q)\<close> 
+  have atk_move: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p Q)\<close> 
     by (simp add: steps.refl)
-  have \<open>wr (DefenderSwapNode p Q)\<close> using assms sorry
-  thus ?thesis sorry
+  have \<open>wr (DefenderSwapNode p Q)\<close> using assms
+    by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
+  thus ?thesis using atk_move 
+    by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
 qed
 
 
@@ -111,8 +121,10 @@ proof -
   have \<open>\<forall>g. c_set_game_moves 
 (DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
     by (simp add: move_DefSim_to_AtkNode)
-  hence \<open>wr (DefenderSimNode a p' Q)\<close> sorry
-  thus ?thesis using AtkToSim sorry
+  hence \<open>wr (DefenderSimNode a p' Q)\<close> using assms(1)
+    by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
+  thus ?thesis using AtkToSim     
+    by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
 qed
 
 
@@ -188,16 +200,42 @@ this is a problem. in this case, phi = <eps><eps>phi' and ?thesis is not necessa
     qed
   next
     case Conj: (3 I F)
-    then obtain p' where \<open>p \<Rightarrow>^\<tau> p'\<close> \<open>p' \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
+    then obtain p' where \<open>p \<Rightarrow>^\<tau> p'\<close> and p_sat:  \<open>p' \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
       unfolding HML_weaknor_def by auto
-    hence \<open>\<And>q . q \<in> Q  \<Longrightarrow> \<not>q  \<Turnstile>  HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
+    have \<open>\<And>q . q \<in> Q  \<Longrightarrow> \<not>q  \<Turnstile>  HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
       by (metis Conj.prems(3) HML_weaknor_def is_dist_set.elims(2))
     hence \<open>\<And>q q'. q \<in> Q \<Longrightarrow> \<not>q \<Rightarrow>^\<tau> q' \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
       using satisfies.simps(4) tau_tau by blast
     hence \<open>\<And>q'. \<not>q' \<in> (weak_tau_succs Q) \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
       using weak_tau_succs_def by auto
-    hence \<open>\<exists>i. i \<in> I \<and> (\<forall>q'. q' \<in> (weak_tau_succs Q) \<longrightarrow> \<not>q'  \<Turnstile> (F i))\<close> sorry
-    then show ?case sorry
+    hence Ex: \<open>\<And>q'.  q' \<in> (weak_tau_succs Q) \<Longrightarrow> (\<exists>i. i \<in> I \<and> q'  \<Turnstile>  (F i))\<close>
+      by auto
+    have atk_move: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p' Q)\<close>
+      using \<open>p \<Rightarrow>^\<tau> p'\<close> by auto
+    have Ex_i: \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
+          (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i)) \<and> P1 = {p'}\<close>
+      using Ex by auto
+    hence \<open>\<forall>q1 P1. 
+          c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
+          (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i) \<and> (\<forall>p'. p' \<in> P1 \<longrightarrow> \<not> p' \<Turnstile> (F i)))\<close>
+      using p_sat by auto
+    hence  \<open>\<forall>q1 P1. 
+          c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
+          (\<exists>i. i \<in> I \<and> is_dist_set (F i) q1 P1)\<close> 
+      unfolding is_dist_set.simps using p_sat by blast
+    hence all_atk_succs_in_wr: 
+          \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
+          wr ((AttackerNode q1 P1))\<close> 
+      using Conj.hyps Ex_i by blast
+    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> 
+          (\<exists> q1 P1. g = (AttackerNode q1 P1))\<close> 
+      using move_DefSwap_to_AtkNode by blast
+    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> wr g\<close> 
+      using all_atk_succs_in_wr by auto
+    hence \<open>wr (DefenderSwapNode p' Q)\<close> 
+      by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
+    then show ?case using atk_move
+      by (metis c_game_with_attacker_formula_axioms c_game_with_attacker_formula_def)
   qed
 qed
 

@@ -370,13 +370,30 @@ lemma move_DefSim_to_AtkNode :
   shows \<open>n0 = AttackerNode p (dsuccs a Q)\<close>
 proof - 
   have \<open>\<exists>p1 Q1. n0 = AttackerNode p1 Q1\<close>
-    by (metis assms c_set_game_defender_node.elims(2) c_set_game_defender_node.elims(3) local.c_set_game_moves_no_step(1) local.c_set_game_moves_no_step(6)) 
+    by (metis assms c_set_game_defender_node.elims(2, 3) local.c_set_game_moves_no_step(1, 6))
   then obtain p1 Q1 where n0_def: \<open>n0 = AttackerNode p1 Q1\<close> by auto
   hence \<open>p = p1\<close> using assms local.simulation_answer by blast 
   from n0_def have \<open>Q1 = dsuccs a Q\<close> 
     using assms local.simulation_answer by blast
   thus ?thesis using \<open>p = p1\<close> n0_def by auto
 qed
+
+lemma move_DefSwap_to_AtkNode : 
+  assumes 
+    \<open>c_set_game_moves (DefenderSwapNode p' Q) n0\<close>
+  shows \<open>\<exists>q'. n0 = AttackerNode q' {p'} \<and> q' \<in> weak_tau_succs Q\<close>
+proof - 
+  have \<open>\<not>c_set_game_defender_node n0\<close> 
+    using assms c_set_game_moves_no_step(3, 4) c_set_game_defender_node.elims(2)
+    by metis
+  hence \<open>\<exists>q1 P1. n0 = AttackerNode q1 P1\<close>
+    by (meson c_set_game_defender_node.elims(3))
+  then obtain q1 P1 where n0_def: \<open>n0 = AttackerNode q1 P1\<close> by auto
+  hence \<open>P1 = {p'}\<close> using assms local.swap_answer by blast 
+  from n0_def have \<open>q1 \<in>  weak_tau_succs Q\<close> using assms by auto
+  thus ?thesis using  \<open>P1 = {p'}\<close> n0_def by simp
+qed
+
 
 lemma def_never_stuck_on_sim_pos: 
   assumes \<open>n0 = DefenderSimNode a p Q\<close>
