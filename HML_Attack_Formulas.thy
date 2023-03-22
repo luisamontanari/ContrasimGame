@@ -19,70 +19,34 @@ fun is_dist_set ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's
   where
    \<open>is_dist_set \<phi> p Q = (p \<Turnstile> \<phi> \<and> (\<forall>q. q \<in> Q \<longrightarrow> \<not> q \<Turnstile> \<phi>))\<close>
 
-
-lemma all_states_sat_empty_conj:
-  shows \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
-proof - 
-  have \<open>\<forall>q F. q \<Turnstile> (HML_conj {} (\<lambda>f. HML_neg (F f)))\<close> by auto
-  thus ?thesis                     
-    by (metis HML_formula.distinct(9, 11)
-        HML_formula.inject(3) HML_weaknor_def satisfies.elims(3) step_tau_refl tau_def)
-qed
-
-lemma tau_a_obs_implies_delay_step: 
-  assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
-  shows \<open>\<exists>p'. p =\<rhd>a p' \<and> p' \<Turnstile> \<phi>\<close>
-proof - 
-  obtain p'' where \<open>p \<Rightarrow>^\<tau> p'' \<and> p'' \<Turnstile> \<langle>a\<rangle>\<phi>\<close> using assms by auto
-  thus ?thesis using satisfies.simps(4) steps_concat tau_tau by blast
-qed
-
-lemma delay_step_implies_tau_a_obs: 
-  assumes 
-    \<open>p =\<rhd>a p'\<close>
-    \<open>p' \<Turnstile> \<phi>\<close>
-  shows \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
-proof - 
-  obtain p'' where \<open>p \<Rightarrow>^\<tau> p''\<close> and \<open>p'' \<Rightarrow>^a p'\<close> using assms steps.refl tau_tau by blast
-  thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
-qed
-
-
 inductive_set atk_WR :: \<open>('s, 'a) c_set_game_node set\<close> where
   Base: \<open>DefenderSwapNode _ {} \<in> atk_WR\<close> |
   Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR) \<Longrightarrow> (AttackerNode p Q) \<in> atk_WR\<close> |
   Def: \<open>(c_set_game_moves g g' \<and> c_set_game_defender_node g \<Longrightarrow> g' \<in> atk_WR) \<Longrightarrow> g \<in> atk_WR\<close> 
 
-thm atk_WR.induct
-
-(*
 fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
   where 
 \<open>atk_strat ((AttackerNode p Q)#play) = 
 (SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR)\<close>
 | \<open>atk_strat _ = undefined\<close>
 
+thm atk_WR.induct
 
 lemma attacker_wins_in_winning_region: 
-  assumes \<open>wr (AttackerNode p Q)\<close>
+  assumes \<open>AttackerNode p Q \<in> atk_WR\<close>
   shows \<open>player1_winning_strategy atk_strat (AttackerNode p Q)\<close>
-  (*unfolding player1_winning_strategy_def*)
-proof (induct rule: atk_WR.induct)
-  obtain g where \<open>c_set_game_moves (AttackerNode p Q) g \<and> wr g\<close> using assms sledgehammer
-  show ?thesis sorry
-qed
-
-*)
-
-lemma tau_obs_implies_delay: 
-  assumes 
-    \<open>q \<Rightarrow>^\<tau> q'\<close> 
-    \<open>q' \<longmapsto>a q''\<close>
-  shows \<open>q =\<rhd>a q''\<close>
-proof -
-  have \<open>q  \<longmapsto>* tau q' \<and> q'  \<longmapsto>a q''\<close> using assms by auto
-  then show ?thesis
-    using steps.step by blast
+proof (induct rule: atk_WR.induct[OF assms])
+  case (1 p)
+  have \<open>weak_tau_succs {} = {}\<close> unfolding weak_tau_succs_def by auto
+  hence \<open>\<nexists>g'. c_set_game_moves (DefenderSwapNode p {}) g'\<close> 
+    using move_DefSwap_to_AtkNode by fastforce
+  thus ?case by (simp add: stuck_0_all_strats_win)
+next
+  case (2 p Q g')
+  then show ?case sorry
+next
+  case (3 g g')
+  then show ?case sorry
 qed
 
 lemma Atk_node_wins_if_Q_is_empty: 

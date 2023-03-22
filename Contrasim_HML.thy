@@ -36,6 +36,34 @@ lemma backwards_truth:
   using satisfies.simps(4) steps_concat tau_tau apply blast
   by (smt (z3) HML_weaknor_def satisfies.simps(4) steps_concat tau_tau)
 
+lemma all_states_sat_empty_conj:
+  shows \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
+proof - 
+  have \<open>\<forall>q F. q \<Turnstile> (HML_conj {} (\<lambda>f. HML_neg (F f)))\<close> by auto
+  thus ?thesis                     
+    by (metis HML_formula.distinct(9, 11)
+        HML_formula.inject(3) HML_weaknor_def satisfies.elims(3) step_tau_refl tau_def)
+qed 
+
+lemma tau_a_obs_implies_delay_step: 
+  assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
+  shows \<open>\<exists>p'. p =\<rhd>a p' \<and> p' \<Turnstile> \<phi>\<close>
+proof - 
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p'' \<and> p'' \<Turnstile> \<langle>a\<rangle>\<phi>\<close> using assms by auto
+  thus ?thesis using satisfies.simps(4) steps_concat tau_tau by blast
+qed
+
+lemma delay_step_implies_tau_a_obs: 
+  assumes 
+    \<open>p =\<rhd>a p'\<close>
+    \<open>p' \<Turnstile> \<phi>\<close>
+  shows \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
+proof - 
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p''\<close> and \<open>p'' \<Rightarrow>^a p'\<close> using assms steps.refl tau_tau by blast
+  thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
+qed
+
+
 lemma contrasim_implies_HML_weak_equivalent:
   assumes
     \<open>(\<phi>, \<psi>) \<in> HML_subformulas \<or> \<phi> = \<psi>\<close>

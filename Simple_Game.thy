@@ -116,6 +116,7 @@ qed
 definition player0_wins_immediately :: \<open>'s play \<Rightarrow> bool\<close> where
   \<open>player0_wins_immediately play \<equiv> player1_position (hd play) \<and> (\<nexists> p' . (hd play) \<longmapsto>\<heartsuit> p')\<close>
 
+
 \<comment> \<open>in comparison to the defender, the attacker also has to bound the depth of plays.\<close>
 definition player1_winning_strategy :: \<open>'s strategy \<Rightarrow> 's \<Rightarrow> bool\<close> where
   \<open>player1_winning_strategy f initial \<equiv>
@@ -123,6 +124,42 @@ definition player1_winning_strategy :: \<open>'s strategy \<Rightarrow> 's \<Rig
 
 definition player1_wins :: \<open>'s \<Rightarrow> bool\<close> where
   \<open>player1_wins s \<equiv> (\<exists> f . player1_winning_strategy f s \<and> sound_1strategy f s)\<close>
+
+
+
+lemma stuck_0_all_strats_win:
+  assumes \<open>player0_position initial\<close> \<open>(\<nexists> p' . initial \<longmapsto>\<heartsuit> p')\<close>
+  shows  \<open>\<forall>f. player1_winning_strategy f initial\<close>
+proof -
+  have \<open>\<And>pl. pl \<in> plays initial \<Longrightarrow> pl = [initial]\<close>
+  proof -
+    fix pl
+    assume \<open>pl \<in> plays initial\<close>
+    thus \<open>pl = [initial]\<close> using assms(2) by (induct, auto)
+  qed
+  hence \<open>\<forall>f. (\<forall> play \<in> plays_for_1strategy f initial . \<not> player0_wins_immediately play \<and> length play \<le> 1)\<close>
+    by (metis assms(1) butlast.simps(1) butlast_conv_take diff_is_0_eq' 
+       le_numeral_extra(4) length_tl list.sel(1, 2) list.size(3) 
+       one_eq_numeral_iff player0_wins_immediately_def 
+       strategy1_plays_subset take_Cons_numeral take_all_iff)
+  thus ?thesis using player1_winning_strategy_def by auto
+qed
+
+lemma stuck_player1_win:
+ assumes \<open>player0_position initial\<close> \<open>(\<nexists> p' . initial \<longmapsto>\<heartsuit> p')\<close>
+  shows \<open>player1_wins initial\<close>
+proof -
+  have all_plays_stuck: \<open>\<And>pl. pl \<in> plays initial \<Longrightarrow> pl = [initial]\<close>
+  proof -
+    fix pl
+    assume \<open>pl \<in> plays initial\<close>
+    thus \<open>pl = [initial]\<close> using assms(2) by (induct, auto)
+  qed
+  have \<open>sound_1strategy (\<lambda>x. hd x) initial\<close> 
+    unfolding sound_1strategy_def 
+    using all_plays_stuck assms(1) strategy1_plays_subset by auto
+  thus ?thesis unfolding player1_wins_def using assms stuck_0_all_strats_win by auto
+qed
 
 end
 
