@@ -27,7 +27,7 @@ fun is_dist_set ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's
    \<open>is_dist_set \<phi> p Q = (p \<Turnstile> \<phi> \<and> (\<forall>q. q \<in> Q \<longrightarrow> \<not> q \<Turnstile> \<phi>))\<close>
 
 
-lemma all_states_sat_empty_conjunction:
+lemma all_states_sat_empty_conj:
   shows \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
 proof - 
   have \<open>\<forall>q F. q \<Turnstile> (HML_conj {} (\<lambda>f. HML_neg (F f)))\<close> by auto
@@ -82,8 +82,6 @@ proof -
   show ?thesis sorry
 qed
 *)
-thm HML_weak_formulas.induct
-
 
 lemma tau_obs_implies_delay: 
   assumes 
@@ -133,7 +131,6 @@ lemma dist_formula_implies_wr_inclusion:
     \<open>\<phi> \<in> HML_weak_formulas\<close>
     \<open>is_dist_set \<phi> p Q\<close>
   shows \<open>wr (AttackerNode p Q)\<close>
-  (*shows \<open>\<forall>q. q \<in> Q \<and> (is_dist \<phi> p q) \<longrightarrow> wr (AttackerNode p Q)\<close>*)
 proof(cases \<open>Q = {}\<close>)
   case True
   then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
@@ -143,7 +140,7 @@ next
   proof (induct arbitrary: p Q rule: HML_weak_formulas.induct[OF assms(1)])
     case Base: 1
     have \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
-      by (simp add: all_states_sat_empty_conjunction)
+      by (simp add: all_states_sat_empty_conj)
     hence \<open>False\<close> 
       using Base.prems(1, 3) by simp
     then show ?case by auto
@@ -158,8 +155,6 @@ next
       unfolding dsuccs_def by blast
     hence phi_distinguishing: \<open>is_dist_set \<phi> p' (dsuccs a Q)\<close> 
       using p'_def by simp
-(*
-    hence \<open>wr (AttackerNode p' (dsuccs a Q))\<close>*)
     thus ?case
     proof (cases \<open>dsuccs a Q = {}\<close>)
       case dsuccs_empty: True
@@ -177,21 +172,17 @@ next
           using Atk_node_wins_in_2_moves False p'_def by blast
       qed
     next
-      case dsuccs_nonempty: False
+      case False
       hence wr_pred_atk_node: \<open>wr (AttackerNode p' (dsuccs a Q))\<close> using Obs.hyps phi_distinguishing by auto
       thus ?thesis 
       proof(cases \<open>tau a\<close>)
         case True
-        hence \<open>dsuccs a Q = weak_tau_succs Q\<close> 
-          unfolding dsuccs_def weak_tau_succs_def by simp
-        hence \<open>wr (AttackerNode p' (weak_tau_succs Q))\<close> 
-          using wr_pred_atk_node by auto
-
-(*
-this is a problem. in this case, phi = <eps><eps>phi' and ?thesis is not necessarily true
-
-*)
-        then show ?thesis sorry
+        hence \<open>\<forall>p. (p \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) = (p  \<Turnstile> \<phi>)\<close>
+          using delay_step_implies_tau_a_obs p'_def satisfies.simps(4) tau_tau 
+            Obs.hyps(1) backwards_truth
+          by (meson lts.refl)
+        hence \<open>is_dist_set \<phi> p Q\<close> using Obs.prems by auto
+        thus ?thesis using Obs.hyps Obs.prems by blast
       next
         case False
         then show ?thesis 
