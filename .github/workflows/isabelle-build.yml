@@ -34,7 +34,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Copy documentation
-        run: "cp ./out/ ./_site/"
+        run: "cp -r ./out/ ./_site/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
