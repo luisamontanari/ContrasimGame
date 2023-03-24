@@ -1,7 +1,7 @@
 theory HML_Strategies_Game
   imports
     Contrasim_Set_Game
-    Contrasim_HML
+    HM_Logic_Infinitary
 begin
 
 locale c_game_with_attacker_strategy  =

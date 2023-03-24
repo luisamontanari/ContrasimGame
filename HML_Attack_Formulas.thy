@@ -1,7 +1,7 @@
 theory HML_Attack_Formulas
   imports
     Contrasim_Set_Game
-    Contrasim_HML
+    HM_Logic_Infinitary
 begin
 
 locale c_game_with_attacker_formula  =
@@ -11,43 +11,53 @@ for
   \<tau> :: \<open>'a\<close> 
 begin
 
-inductive_set atk_WR :: \<open>('s, 'a) c_set_game_node set\<close> where
-  Base: \<open>DefenderSwapNode _ {} \<in> atk_WR\<close> |
-  Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR) \<Longrightarrow> (AttackerNode p Q) \<in> atk_WR\<close> |
-  Def: \<open>(c_set_game_moves g g' \<and> c_set_game_defender_node g \<Longrightarrow> g' \<in> atk_WR) \<Longrightarrow> g \<in> atk_WR\<close> 
+inductive_set attacker_winning_region :: \<open>('s, 'a) c_set_game_node set\<close> where
+  Base: \<open>DefenderSwapNode _ {} \<in> attacker_winning_region\<close> |
+  Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region) \<Longrightarrow> (AttackerNode p Q) \<in> attacker_winning_region\<close> |
+  Def: \<open>(c_set_game_moves g g' \<and> c_set_game_defender_node g \<Longrightarrow> g' \<in> attacker_winning_region) \<Longrightarrow> g \<in> attacker_winning_region\<close> 
 
+(*
+definition attacker_order where 
+      \<open>attacker_order \<equiv> {(g', g). c_set_game_moves g g' \<and>
+      g \<in> attacker_winning_region \<and> g' \<in> attacker_winning_region \<and>
+      (player1_position g \<longrightarrow> g' = strat g)}\<^sup>+\<close>
+
+*)
+
+(*
 fun maintains_WR :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node) 
       \<Rightarrow> ('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
   where
- \<open>maintains_WR f g = (\<forall>play. c_set_game_moves g (f (g#play)) \<and> f (g#play) \<in> atk_WR)\<close>
+ \<open>maintains_WR f g = (\<forall>play. c_set_game_moves g (f (g#play)) \<and> f (g#play) \<in> attacker_winning_region)\<close>
+
 
 definition atk_strat_set :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node) set\<close>
   where 
-    \<open>atk_strat_set = {f. (\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
+    \<open>atk_strat_set = {f. (\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))}\<close>
 
 fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
   where 
     \<open>atk_strat ((AttackerNode p Q)#play) =  
-  (SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR)\<close>
+  (SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region)\<close>
   | \<open>atk_strat _ = undefined\<close>
 
 lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
 proof - 
-  have \<open>\<And>p Q. (AttackerNode p Q \<in> atk_WR) \<Longrightarrow> maintains_WR atk_strat (AttackerNode p Q)\<close>
+  have \<open>\<And>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<Longrightarrow> maintains_WR atk_strat (AttackerNode p Q)\<close>
   proof -
     fix p Q
-    assume subassm: \<open>AttackerNode p Q \<in> atk_WR\<close>
+    assume subassm: \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
     let ?g = \<open>AttackerNode p Q\<close>
-    have \<open>\<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> atk_WR\<close> using subassm
-      by (metis lts_tau.swap_challenge atk_WRp.Def atk_WRp_atk_WR_eq lts_tau.tau_tau steps.refl)
-    hence ex: \<open> \<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> atk_WR\<close>
-      by (metis atk_WRp.Def atk_WRp_atk_WR_eq)
+    have \<open>\<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> attacker_winning_region\<close> using subassm
+      by (metis lts_tau.swap_challenge attacker_winning_regionp.Def attacker_winning_regionp_attacker_winning_region_eq lts_tau.tau_tau steps.refl)
+    hence ex: \<open> \<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> attacker_winning_region\<close>
+      by (metis attacker_winning_regionp.Def attacker_winning_regionp_attacker_winning_region_eq)
     have \<open>\<forall>g play. atk_strat (g#play) =  atk_strat (g#[])\<close>
       by (metis (no_types, lifting) atk_strat.elims atk_strat.simps(1) list.inject)
     hence \<open>\<forall>play. \<exists>g'. g' = atk_strat (?g#play)\<close> by simp
     hence \<open>\<forall>play. c_set_game_moves ?g (atk_strat (?g#play)) \<and> 
-          atk_strat (?g#play) \<in> atk_WR \<close> 
+          atk_strat (?g#play) \<in> attacker_winning_region \<close> 
       using ex atk_strat.simps(1)[of p Q] someI_ex
       by (simp add: verit_sko_ex_indirect)
     thus \<open>maintains_WR atk_strat (AttackerNode p Q)\<close> 
@@ -56,30 +66,30 @@ proof -
   hence \<open>atk_strat \<in> atk_strat_set\<close> unfolding atk_strat_set_def by auto
   thus ?thesis by auto
 qed
-
+*)
 
 (*
 lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
   unfolding atk_strat_set_def
 proof (rule ccontr)
-  assume \<open>\<not>{f. (\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
+  assume \<open>\<not>{f. (\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))} \<noteq> {}\<close>
-  hence ex: \<open>\<And>f. \<not>(\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
+  hence ex: \<open>\<And>f. \<not>(\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence  \<open>\<And>f. \<exists>p Q. (AttackerNode p Q \<in> atk_WR \<and> \<not>maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence  \<open>\<And>f. \<exists>p Q play. (AttackerNode p Q \<in> atk_WR \<and> 
+  hence  \<open>\<And>f. \<exists>p Q. (AttackerNode p Q \<in> attacker_winning_region \<and> \<not>maintains_WR f (AttackerNode p Q))\<close> by auto
+  hence  \<open>\<And>f. \<exists>p Q play. (AttackerNode p Q \<in> attacker_winning_region \<and> 
          \<not>c_set_game_moves (AttackerNode p Q) (f ((AttackerNode p Q)#play)) 
-         \<or> \<not>f ((AttackerNode p Q)#play) \<in> atk_WR)\<close>
-    by (metis (mono_tags, opaque_lifting) atk_WR.Def list.sel(1) 
+         \<or> \<not>f ((AttackerNode p Q)#play) \<in> attacker_winning_region)\<close>
+    by (metis (mono_tags, opaque_lifting) attacker_winning_region.Def list.sel(1) 
         maintains_WR.simps simple_game.player0_wins_immediately_def)
 
 
   fix f 
-  obtain p Q where pQ_def: \<open>(AttackerNode p Q) \<in> atk_WR\<close> and 
+  obtain p Q where pQ_def: \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close> and 
     no_main: \<open>\<not>maintains_WR f (AttackerNode p Q)\<close>
     using ex by blast 
   let ?g = \<open>AttackerNode p Q\<close>
-  have \<open>\<exists>play. \<not>c_set_game_moves ?g (f (?g#play)) \<or> \<not>f (?g#play) \<in> atk_WR\<close>
+  have \<open>\<exists>play. \<not>c_set_game_moves ?g (f (?g#play)) \<or> \<not>f (?g#play) \<in> attacker_winning_region\<close>
     using maintains_WR.simps no_main pQ_def by simp
 
   thus \<open>False\<close> sledgehammer  sorry
@@ -90,82 +100,171 @@ qed
 fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
   where 
 \<open>atk_strat ((AttackerNode p Q)#play) =  
-(SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR)\<close>
+(SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region)\<close>
 | \<open>atk_strat _ = undefined\<close>*)
 
-thm atk_WR.induct
+thm attacker_winning_region.induct
 
 thm someI_ex
 *)
 
-(*
 lemma attacker_wins_in_winning_region: 
   assumes 
-    \<open>AttackerNode p Q \<in> atk_WR\<close>
-  shows \<open>\<exists>f \<in> atk_strat_set. player1_winning_strategy f (AttackerNode p Q)\<close>
-proof (induct rule: atk_WR.induct[OF assms(1)])
+    \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
+  shows \<open>\<exists>f. player1_winning_strategy f (AttackerNode p Q) \<and> positional_strategy f \<close>
+proof (induct rule: attacker_winning_region.induct[OF assms(1)])
   case (1 p)
+  obtain f where f_def: \<open>positional_strategy f\<close> 
+    using positional_strategy_def by fastforce
   have \<open>weak_tau_succs {} = {}\<close> unfolding weak_tau_succs_def by auto
   hence \<open>\<nexists>g'. c_set_game_moves (DefenderSwapNode p {}) g'\<close> 
     using move_DefSwap_to_AtkNode by fastforce
-  thus ?case using stuck_0_all_strats_win atk_strat_set_nonempty by auto
+  thus ?case using stuck_0_all_strats_win f_def by auto
 next
   case Atk: (2 p Q g')
-  then obtain f where \<open>f \<in> atk_strat_set\<close> \<open>player1_winning_strategy f g'\<close> by auto
+  let ?g = \<open>AttackerNode p Q\<close>
+  obtain f where f_win: \<open>player1_winning_strategy f g'\<close> 
+    and f_pos: \<open>positional_strategy f\<close> using Atk by auto
   then obtain n where n_def: \<open>\<forall>play\<in>plays_for_1strategy f g'.
       \<not> player0_wins_immediately play \<and> length play \<le> n\<close>
     using player1_winning_strategy_def by auto
-  hence \<open>\<exists>f'. \<forall>play. f'((AttackerNode p Q)#play) =  g'\<close>  by fastforce
+  show ?case 
+  proof (cases \<open>\<exists>play \<in> plays_for_1strategy f g'. ?g \<in> set(play)\<close>)
+    case True
+    then obtain play where 
+      \<open>play \<in> plays_for_1strategy f g'\<close>
+      \<open>?g \<in> set(play)\<close> by auto
+    hence \<open>player1_winning_strategy f ?g\<close> sorry
+    then show ?thesis sorry
+  next
+    case False
+    define f' where \<open>f' \<equiv> (\<lambda>play. (if hd play = ?g then g' else (f play)))\<close>
+    have \<open>positional_strategy f'\<close> unfolding f'_def 
+      using f_pos positional_strategy_def by auto
+    thm plays_for_1strategy.induct
+    hence not_g: \<open>\<forall>play g. play \<in> plays_for_1strategy f g' \<and> g \<in> set play \<longrightarrow> g  \<noteq> ?g\<close> 
+      using False by auto
+    thm plays_for_1strategy.induct[of _ _ g']
+    have \<open>\<And>play. play \<in> plays_for_1strategy f' g' \<Longrightarrow> play \<in> plays_for_1strategy f g'\<close>
+    proof -
+      fix play 
+      assume subassms: \<open>play \<in> plays_for_1strategy f' g'\<close>
+      show \<open>play \<in> plays_for_1strategy f g'\<close>
+        proof (induct rule: plays_for_1strategy.induct[OF subassms])
+          case 1
+          then show ?case by (simp add: plays_for_1strategy.init)
+        next
+          case (2 n0 play n1)
+          then show ?case by (simp add: plays_for_1strategy.p0move)
+        next
+          case (3 n1 play)
+          then show ?case
+            proof(cases \<open>n1 = ?g\<close>)
+              case True
+              hence \<open>False\<close>  using "3.hyps"(2) False by fastforce
+              then show ?thesis by auto
+            next
+              case False
+              then show ?thesis
+                using f'_def "3.hyps" plays_for_1strategy.p1move 
+                by fastforce
+            qed
+         qed
+       qed
+
+       thm plays_for_1strategy.induct
+       hence f'_win_on_g': \<open>\<forall>play\<in>plays_for_1strategy f' g'.
+          \<not> player0_wins_immediately play \<and> length play \<le> n\<close>  using f_win n_def by blast
+       hence winning_tail: \<open>\<forall>play\<in>plays_for_1strategy f' ?g. 
+\<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> 
+         using f'_def
+       proof(clarify)
+         fix play 
+         assume subassm: \<open>play\<in>plays_for_1strategy f' ?g\<close>
+         show \<open>\<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> 
+         proof(induct rule: plays_for_1strategy.induct[OF subassm])
+           case 1
+           then show ?case by simp
+         next
+           case (2 n0 play n1)
+           then obtain xs where 
+             xs_def: \<open>n0 # play = xs @ [AttackerNode p Q]\<close> 
+                     \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
+           then have \<open>xs \<noteq> [] \<and> hd xs = n0\<close> using "2.hyps"(3)
+             by (metis c_set_game_defender_node.simps(1) hd_append2 list.sel(1) self_append_conv2)
+           hence \<open>n1#xs \<in> plays_for_1strategy f' g'\<close> 
+             using "2.hyps" plays_for_1strategy.p0move
+             by (smt (verit) append_eq_Cons_conv xs_def)
+           then show ?case using xs_def(1) by auto
+         next
+           case hd_attacker: (3 n1 play)
+           then obtain xs where 
+             xs_def: \<open>n1 # play = xs @ [AttackerNode p Q]\<close> 
+                     \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
+           then show ?case 
+           proof (cases \<open>xs = []\<close>)
+             case True
+             hence \<open>n1 = ?g\<close>
+               using xs_def(1) by auto
+             hence \<open>f' (n1#play) = g'\<close> using f'_def by auto
+             then show ?thesis
+               using True plays_for_1strategy.init xs_def(1) by auto
+           next
+             case False
+             hence head: \<open>hd xs = n1\<close> using xs_def 
+               by (metis hd_append2 list.sel(1))
+             have in_plays: \<open>f' (n1 # play) # n1 # play = f' (n1 # play) # xs @ [?g]\<close>
+               by (simp add: xs_def(1)) 
+             have \<open>f' (n1 # play) # xs \<in> plays_for_1strategy f' g'\<close> 
+               using plays_for_1strategy.p1move[OF hd_attacker(1) hd_attacker.hyps(3, 4)] head
+               by (smt (verit) False \<open>positional_strategy f'\<close> append1_eq_conv 
+                   hd_attacker.hyps(2, 4) list.sel(1) plays_for_1strategy.simps 
+                   positional_strategy_def xs_def(1))
+             then show ?thesis using in_plays by auto
+           qed
+         qed
+       qed
+       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> length xs \<le> n)\<close>
+         using f'_win_on_g' by auto
+       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. length play \<le> (Suc n)\<close> using nat_le_linear by auto
 (*
-define f' as the strategy that acts like f from g' on, but that defines f(g) = g'. 
-may need to prove that an attacker strat can never be cyclical
-*)
+       from winning_tail have \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<not>player0_wins_immediately play\<close> *)
+       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> 
+             (xs = [] \<or> \<not>player0_wins_immediately xs)\<close>
+         using winning_tail f'_win_on_g' by auto
 
-  then obtain f':: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close> 
-    where \<open>\<forall>play. f'((AttackerNode p Q)#play) =  g'\<close> 
-\<open> plays_for_1strategy f' g'= plays_for_1strategy f g'\<close> sledgehammer
-  thm Atk.hyps 
-thm Atk
-
-(*
-  hence \<open>\<forall>play\<in>plays_for_1strategy atk_strat (AttackerNode p Q).
-      \<not> player0_wins_immediately play \<and> length play \<le> (Suc n)\<close> sledgehammer
-*)
-
-  thm player1_winning_strategy_def
   then show ?case sorry
 next
   case Def: (3 g g')
-  then show ?case sorry
+  then show ?case  sorry
 qed
 
-*)
 
 lemma Atk_node_wins_if_Q_is_empty: 
   assumes \<open>Q = {}\<close>
-  shows \<open>AttackerNode p Q \<in> atk_WR\<close>
+  shows \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
 proof - 
   have atk_move: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p Q)\<close> 
     by (simp add: steps.refl)
-  have \<open>DefenderSwapNode p Q \<in> atk_WR\<close> using assms atk_WR.Base by simp
-  thus ?thesis using atk_move atk_WR.Atk by blast
+  have \<open>DefenderSwapNode p Q \<in> attacker_winning_region\<close> using assms attacker_winning_region.Base by simp
+  thus ?thesis using atk_move attacker_winning_region.Atk by blast
 qed
 
 
 lemma Atk_node_wins_in_2_moves: 
   assumes 
-        \<open>AttackerNode p' (dsuccs a Q) \<in> atk_WR\<close>
+        \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close>
         \<open>p =\<rhd>a p'\<close>
         \<open>\<not>tau a\<close>
-  shows \<open>AttackerNode p Q \<in> atk_WR\<close>
+  shows \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
 proof - 
   have AtkToSim: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
     using assms(2, 3) by simp
   have \<open>\<forall>g. c_set_game_moves 
 (DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
     by (simp add: move_DefSim_to_AtkNode)
-  hence \<open>(DefenderSimNode a p' Q) \<in> atk_WR\<close> using assms(1) atk_WR.Def by blast
-  thus ?thesis using AtkToSim atk_WR.Def by blast
+  hence \<open>(DefenderSimNode a p' Q) \<in> attacker_winning_region\<close> using assms(1) attacker_winning_region.Def by blast
+  thus ?thesis using AtkToSim attacker_winning_region.Def by blast
 qed
 
 
@@ -173,7 +272,7 @@ lemma dist_formula_implies_wr_inclusion:
   assumes 
     \<open>\<phi> \<in> HML_weak_formulas\<close>
     \<open>distinguishes_from_set \<phi> p Q\<close>
-  shows \<open>(AttackerNode p Q) \<in> atk_WR\<close>
+  shows \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
 proof(cases \<open>Q = {}\<close>)
   case True
   then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
@@ -208,13 +307,13 @@ next
         then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
       next
         case False
-        hence \<open>AttackerNode p' (dsuccs a Q) \<in> atk_WR\<close> 
+        hence \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> 
           using Atk_node_wins_if_Q_is_empty dsuccs_empty by auto
         thus ?thesis using Atk_node_wins_in_2_moves False p'_def by blast
       qed
     next
       case False
-      hence wr_pred_atk_node: \<open>AttackerNode p' (dsuccs a Q) \<in> atk_WR\<close> using Obs.hyps phi_distinguishing by auto
+      hence wr_pred_atk_node: \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> using Obs.hyps phi_distinguishing by auto
       thus ?thesis 
       proof(cases \<open>tau a\<close>)
         case True
@@ -257,15 +356,15 @@ next
       unfolding distinguishes_from_set.simps using p_sat by blast
     hence all_atk_succs_in_wr: 
           \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (AttackerNode q1 P1 \<in> atk_WR)\<close> 
+          (AttackerNode q1 P1 \<in> attacker_winning_region)\<close> 
       using Conj.hyps Ex_i by blast
     hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> 
           (\<exists> q1 P1. g = (AttackerNode q1 P1))\<close> 
       using move_DefSwap_to_AtkNode by blast
-    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> g \<in> atk_WR\<close> 
+    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> g \<in> attacker_winning_region\<close> 
       using all_atk_succs_in_wr by auto
-    hence \<open>DefenderSwapNode p' Q \<in> atk_WR\<close> using atk_WR.Def by blast
-    then show ?case using atk_move atk_WR.Atk by blast
+    hence \<open>DefenderSwapNode p' Q \<in> attacker_winning_region\<close> using attacker_winning_region.Def by blast
+    then show ?case using atk_move attacker_winning_region.Atk by blast
   qed
 qed
 

@@ -109,5 +109,52 @@ lemma HML_equivalent_symm:
   shows \<open>HML_equivalent q p\<close>
   using HML_equivalent_def assms by presburger
 
+
+subsection \<open>Weak-NOR Hennessy-Milner Logic\<close>
+
+definition HML_weaknor ::
+  \<open>'x set \<Rightarrow> ('x \<Rightarrow> ('a,'x)HML_formula) \<Rightarrow> ('a,'x)HML_formula\<close>
+  where \<open>HML_weaknor I F = HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
+
+definition HML_weaknot ::
+  \<open>('a,'x)HML_formula \<Rightarrow> ('a,'x)HML_formula\<close>
+  where \<open>HML_weaknot \<phi> = HML_weaknor {undefined} (\<lambda>i. \<phi>)\<close>
+
+inductive_set HML_weak_formulas :: \<open>('a,'x)HML_formula set\<close> where
+  Base: \<open>HML_true \<in> HML_weak_formulas\<close> |
+  Obs: \<open>\<phi> \<in> HML_weak_formulas \<Longrightarrow> (\<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) \<in> HML_weak_formulas\<close> |
+  Conj: \<open>(\<And>i. i \<in> I \<Longrightarrow> F i \<in> HML_weak_formulas) \<Longrightarrow> HML_weaknor I F \<in> HML_weak_formulas\<close>
+
+lemma weak_backwards_truth:
+  assumes
+    \<open>\<phi> \<in> HML_weak_formulas\<close>
+    \<open>p \<longmapsto>* tau  p'\<close>
+    \<open>p' \<Turnstile> \<phi>\<close>
+  shows
+    \<open>p \<Turnstile> \<phi>\<close>
+  using assms
+  apply (cases)
+  apply force
+  using satisfies.simps(4) steps_concat tau_tau apply blast
+  by (smt (z3) HML_weaknor_def satisfies.simps(4) steps_concat tau_tau)
+
+lemma tau_a_obs_implies_delay_step: 
+  assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
+  shows \<open>\<exists>p'. p =\<rhd>a p' \<and> p' \<Turnstile> \<phi>\<close>
+proof - 
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p'' \<and> p'' \<Turnstile> \<langle>a\<rangle>\<phi>\<close> using assms by auto
+  thus ?thesis using satisfies.simps(4) steps_concat tau_tau by blast
+qed
+
+lemma delay_step_implies_tau_a_obs: 
+  assumes 
+    \<open>p =\<rhd>a p'\<close>
+    \<open>p' \<Turnstile> \<phi>\<close>
+  shows \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
+proof - 
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p''\<close> and \<open>p'' \<Rightarrow>^a p'\<close> using assms steps.refl tau_tau by blast
+  thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
+qed
+
 end \<comment> \<open>of \<open>context lts\<close>\<close>
 end \<comment> \<open>of \<open>theory\<close>\<close>

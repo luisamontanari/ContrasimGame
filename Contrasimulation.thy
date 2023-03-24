@@ -85,7 +85,7 @@ qed
 
 
 lemma contrasim_implies_trace_incl:
-  assumes \<open>contrasim R\<close>
+  assumes \<open>contrasimulation R\<close>
   shows \<open>trace_inclusion R\<close>
 by (metis assms contrasim_simpler_def trace_inclusion_def) 
 
