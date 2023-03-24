@@ -116,6 +116,7 @@ thm atk_WR.induct
 thm someI_ex
 *)
 
+(*
 lemma attacker_wins_in_winning_region: 
   assumes 
     \<open>AttackerNode p Q \<in> atk_WR\<close>
@@ -155,6 +156,8 @@ next
   case Def: (3 g g')
   then show ?case sorry
 qed
+
+*)
 
 lemma Atk_node_wins_if_Q_is_empty: 
   assumes \<open>Q = {}\<close>
@@ -197,8 +200,7 @@ next
   then show ?thesis using assms
   proof (induct arbitrary: p Q rule: HML_weak_formulas.induct[OF assms(1)])
     case Base: 1
-    have \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
-      by (simp add: all_states_sat_empty_conj)
+    have \<open>\<forall>q. q \<Turnstile> HML_true\<close> by simp
     hence \<open>False\<close> 
       using Base.prems(1, 3) by simp
     then show ?case by auto
