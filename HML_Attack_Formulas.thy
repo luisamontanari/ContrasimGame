@@ -16,98 +16,6 @@ inductive_set attacker_winning_region :: \<open>('s, 'a) c_set_game_node set\<cl
   Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region) \<Longrightarrow> (AttackerNode p Q) \<in> attacker_winning_region\<close> |
   Def: \<open>c_set_game_defender_node g \<Longrightarrow> (\<And>g'. c_set_game_moves g g' \<Longrightarrow> g' \<in> attacker_winning_region) \<Longrightarrow> g \<in> attacker_winning_region\<close>
 
-(*
-definition attacker_order where 
-      \<open>attacker_order \<equiv> {(g', g). c_set_game_moves g g' \<and>
-      g \<in> attacker_winning_region \<and> g' \<in> attacker_winning_region \<and>
-      (player1_position g \<longrightarrow> g' = strat g)}\<^sup>+\<close>
-
-*)
-
-(*
-fun maintains_WR :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node) 
-      \<Rightarrow> ('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
-  where
- \<open>maintains_WR f g = (\<forall>play. c_set_game_moves g (f (g#play)) \<and> f (g#play) \<in> attacker_winning_region)\<close>
-
-
-definition atk_strat_set :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node) set\<close>
-  where 
-    \<open>atk_strat_set = {f. (\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
-                          maintains_WR f (AttackerNode p Q))}\<close>
-
-fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
-  where 
-    \<open>atk_strat ((AttackerNode p Q)#play) =  
-  (SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region)\<close>
-  | \<open>atk_strat _ = undefined\<close>
-
-lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
-proof - 
-  have \<open>\<And>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<Longrightarrow> maintains_WR atk_strat (AttackerNode p Q)\<close>
-  proof -
-    fix p Q
-    assume subassm: \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
-    let ?g = \<open>AttackerNode p Q\<close>
-    have \<open>\<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> attacker_winning_region\<close> using subassm
-      by (metis lts_tau.swap_challenge attacker_winning_regionp.Def attacker_winning_regionp_attacker_winning_region_eq lts_tau.tau_tau steps.refl)
-    hence ex: \<open> \<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> attacker_winning_region\<close>
-      by (metis attacker_winning_regionp.Def attacker_winning_regionp_attacker_winning_region_eq)
-    have \<open>\<forall>g play. atk_strat (g#play) =  atk_strat (g#[])\<close>
-      by (metis (no_types, lifting) atk_strat.elims atk_strat.simps(1) list.inject)
-    hence \<open>\<forall>play. \<exists>g'. g' = atk_strat (?g#play)\<close> by simp
-    hence \<open>\<forall>play. c_set_game_moves ?g (atk_strat (?g#play)) \<and> 
-          atk_strat (?g#play) \<in> attacker_winning_region \<close> 
-      using ex atk_strat.simps(1)[of p Q] someI_ex
-      by (simp add: verit_sko_ex_indirect)
-    thus \<open>maintains_WR atk_strat (AttackerNode p Q)\<close> 
-      unfolding maintains_WR.simps by auto
-  qed
-  hence \<open>atk_strat \<in> atk_strat_set\<close> unfolding atk_strat_set_def by auto
-  thus ?thesis by auto
-qed
-*)
-
-(*
-lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
-  unfolding atk_strat_set_def
-proof (rule ccontr)
-  assume \<open>\<not>{f. (\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
-                          maintains_WR f (AttackerNode p Q))} \<noteq> {}\<close>
-  hence ex: \<open>\<And>f. \<not>(\<forall>p Q. (AttackerNode p Q \<in> attacker_winning_region) \<longrightarrow> 
-                          maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence  \<open>\<And>f. \<exists>p Q. (AttackerNode p Q \<in> attacker_winning_region \<and> \<not>maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence  \<open>\<And>f. \<exists>p Q play. (AttackerNode p Q \<in> attacker_winning_region \<and> 
-         \<not>c_set_game_moves (AttackerNode p Q) (f ((AttackerNode p Q)#play)) 
-         \<or> \<not>f ((AttackerNode p Q)#play) \<in> attacker_winning_region)\<close>
-    by (metis (mono_tags, opaque_lifting) attacker_winning_region.Def list.sel(1) 
-        maintains_WR.simps simple_game.player0_wins_immediately_def)
-
-
-  fix f 
-  obtain p Q where pQ_def: \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close> and 
-    no_main: \<open>\<not>maintains_WR f (AttackerNode p Q)\<close>
-    using ex by blast 
-  let ?g = \<open>AttackerNode p Q\<close>
-  have \<open>\<exists>play. \<not>c_set_game_moves ?g (f (?g#play)) \<or> \<not>f (?g#play) \<in> attacker_winning_region\<close>
-    using maintains_WR.simps no_main pQ_def by simp
-
-  thus \<open>False\<close> sledgehammer  sorry
-qed
-
-
-(*
-fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
-  where 
-\<open>atk_strat ((AttackerNode p Q)#play) =  
-(SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region)\<close>
-| \<open>atk_strat _ = undefined\<close>*)
-
-thm attacker_winning_region.induct
-
-thm someI_ex
-*)
-
 lemma attacker_wins_in_winning_region: 
   assumes 
     \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
@@ -253,7 +161,7 @@ for all g_i with g\<longrightarrow>g_i, f'(g_i) = f_i(g_i).
     hence \<open>g' \<in> attacker_winning_region\<close> using Def.hyps by auto
     hence \<open>\<exists>f. player1_winning_strategy f g' \<and>
         positional_strategy f\<close> using Def.hyps True by auto
-    then show ?thesis sledgehammer sorry
+    then show ?thesis  sorry
   next
     case False
     hence \<open>\<forall>play. player1_wins_immediately (g#play)\<close>sorry
