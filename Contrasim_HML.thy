@@ -18,7 +18,7 @@ definition HML_weaknot ::
   where \<open>HML_weaknot \<phi> = HML_weaknor {undefined} (\<lambda>i. \<phi>)\<close>
 
 inductive_set HML_weak_formulas :: \<open>('a,'x)HML_formula set\<close> where
-  Base: \<open>HML_weaknor {} (\<lambda>i. HML_true) \<in> HML_weak_formulas\<close> |
+  Base: \<open>HML_true \<in> HML_weak_formulas\<close> |
   Obs: \<open>\<phi> \<in> HML_weak_formulas \<Longrightarrow> (\<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) \<in> HML_weak_formulas\<close> |
   Conj: \<open>(\<And>i. i \<in> I \<Longrightarrow> F i \<in> HML_weak_formulas) \<Longrightarrow> HML_weaknor I F \<in> HML_weak_formulas\<close>
 
@@ -31,19 +31,11 @@ lemma backwards_truth:
     \<open>p' \<Turnstile> \<phi>\<close>
   shows
     \<open>p \<Turnstile> \<phi>\<close>
-  using assms apply (cases)
-    apply (metis emptyE lts_tau.HML_weaknor_def lts_tau.satisfies.simps(4) lts_tau.tau_tau satisfies.simps(2))
+  using assms
+  apply (cases)
+  apply force
   using satisfies.simps(4) steps_concat tau_tau apply blast
   by (smt (z3) HML_weaknor_def satisfies.simps(4) steps_concat tau_tau)
-
-lemma all_states_sat_empty_conj:
-  shows \<open>\<forall>q. q \<Turnstile> (HML_weaknor {} (\<lambda>i. HML_true))\<close>
-proof - 
-  have \<open>\<forall>q F. q \<Turnstile> (HML_conj {} (\<lambda>f. HML_neg (F f)))\<close> by auto
-  thus ?thesis                     
-    by (metis HML_formula.distinct(9, 11)
-        HML_formula.inject(3) HML_weaknor_def satisfies.elims(3) step_tau_refl tau_def)
-qed 
 
 lemma tau_a_obs_implies_delay_step: 
   assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
@@ -63,7 +55,8 @@ proof -
   thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
 qed
 
-
+(*
+>>>>>>> 5f05f28886b86201c3667c75082b3624830ea338
 lemma contrasim_implies_HML_weak_equivalent:
   assumes
     \<open>(\<phi>, \<psi>) \<in> HML_subformulas \<or> \<phi> = \<psi>\<close>
@@ -106,6 +99,7 @@ proof (induct arbitrary: p q)
     then show ?thesis sorry
   qed
   oops
+*)
 
 (*
 lemma contrasim_implies_HML_weak_equivalent:

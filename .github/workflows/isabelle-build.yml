@@ -18,24 +18,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  github-pages:
+  isabelle-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.4.0
       - name: Isabelle-action
-        uses: benkeks/isabelle-action@v1.2
-      #- name: Setup Pages
-      #  uses: actions/configure-pages@v2
+        uses: benkeks/isabelle-action@v1.5
+        with:
+          args: build -P out -d . Contrasimulation
+#      - name: Archive artifact
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: Contrasim-Theory-HTML
+#          path: "out"
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Copy documentation
+        run: "cp -r ./out/ ./_site/"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
-#  deploy:
-#    environment:
-#      name: github-pages
-#      url: ${{ steps.deployment.outputs.page_url }}
-#    runs-on: ubuntu-latest
-#    needs: github-pages
-#    steps:
-#      - name: Deploy to GitHub Pages
-#        id: deployment
-#        uses: actions/deploy-pages@v1
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: isabelle-build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2

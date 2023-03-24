@@ -196,5 +196,32 @@ proof (induct arbitrary: p Q \<phi>)
   qed
 qed
 
+lemma distinction_in_language:
+  fixes p Q
+  defines
+    \<open>pQ == AttackerNode p Q\<close>
+  defines
+    \<open>\<phi> == attack_formula pQ\<close>
+  assumes
+    \<open>pQ \<in> attacker_winning_region\<close>
+  shows
+    \<open>\<phi> \<in> HML_weak_formulas\<close>
+  using assms(2,3) unfolding assms(1)
+proof (induct arbitrary: \<phi> rule: attack_formula.induct)
+  case (1 p Q)
+  then show ?case using strat_stays_winning by auto
+next
+  case (2 a p Q)
+  then show ?case
+    by (simp add: HML_weak_formulas.Base HML_weak_formulas.Obs)
+next
+  case (3 p Q)
+  hence \<open>\<forall>q' \<in> weak_tau_succs Q. attack_formula (AttackerNode q' {p}) \<in> HML_weak_formulas\<close>
+    using weak_tau_succs_def HML_weak_formulas.Base by fastforce
+  then show ?case
+    using HML_weak_formulas.Base \<open>DefenderSwapNode p Q \<in> attacker_winning_region\<close>
+    by (auto simp add: HML_weak_formulas.Conj)
+qed
+
 end
 end
