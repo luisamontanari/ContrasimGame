@@ -44,23 +44,61 @@ definition atk_strat_set :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> 
     \<open>atk_strat_set = {f. (\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))}\<close>
 
+fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close>
+  where 
+    \<open>atk_strat ((AttackerNode p Q)#play) =  
+  (SOME g'. c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR)\<close>
+  | \<open>atk_strat _ = undefined\<close>
+
+lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
+proof - 
+  have \<open>\<And>p Q. (AttackerNode p Q \<in> atk_WR) \<Longrightarrow> maintains_WR atk_strat (AttackerNode p Q)\<close>
+  proof -
+    fix p Q
+    assume subassm: \<open>AttackerNode p Q \<in> atk_WR\<close>
+    let ?g = \<open>AttackerNode p Q\<close>
+    have \<open>\<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> atk_WR\<close> using subassm
+      by (metis lts_tau.swap_challenge atk_WRp.Def atk_WRp_atk_WR_eq lts_tau.tau_tau steps.refl)
+    hence ex: \<open> \<exists>g'. c_set_game_moves ?g g' \<and> g' \<in> atk_WR\<close>
+      by (metis atk_WRp.Def atk_WRp_atk_WR_eq)
+    have \<open>\<forall>g play. atk_strat (g#play) =  atk_strat (g#[])\<close>
+      by (metis (no_types, lifting) atk_strat.elims atk_strat.simps(1) list.inject)
+    hence \<open>\<forall>play. \<exists>g'. g' = atk_strat (?g#play)\<close> by simp
+    hence \<open>\<forall>play. c_set_game_moves ?g (atk_strat (?g#play)) \<and> 
+          atk_strat (?g#play) \<in> atk_WR \<close> 
+      using ex atk_strat.simps(1)[of p Q] someI_ex
+      by (simp add: verit_sko_ex_indirect)
+    thus \<open>maintains_WR atk_strat (AttackerNode p Q)\<close> 
+      unfolding maintains_WR.simps by auto
+  qed
+  hence \<open>atk_strat \<in> atk_strat_set\<close> unfolding atk_strat_set_def by auto
+  thus ?thesis by auto
+qed
+
+
+(*
 lemma atk_strat_set_nonempty : \<open>atk_strat_set \<noteq> {}\<close> 
   unfolding atk_strat_set_def
 proof (rule ccontr)
   assume \<open>\<not>{f. (\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))} \<noteq> {}\<close>
-  hence \<open>\<And>f. \<not>(\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
+  hence ex: \<open>\<And>f. \<not>(\<forall>p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow> 
                           maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence ex: \<open>\<And>f. \<exists>p Q. (AttackerNode p Q \<in> atk_WR \<and> \<not>maintains_WR f (AttackerNode p Q))\<close> by auto
-  hence no_main: \<open>\<exists> p Q. (AttackerNode p Q \<in> atk_WR) \<longrightarrow>  (\<forall>f. \<not>maintains_WR f (AttackerNode p Q))\<close>
+  hence  \<open>\<And>f. \<exists>p Q. (AttackerNode p Q \<in> atk_WR \<and> \<not>maintains_WR f (AttackerNode p Q))\<close> by auto
+  hence  \<open>\<And>f. \<exists>p Q play. (AttackerNode p Q \<in> atk_WR \<and> 
+         \<not>c_set_game_moves (AttackerNode p Q) (f ((AttackerNode p Q)#play)) 
+         \<or> \<not>f ((AttackerNode p Q)#play) \<in> atk_WR)\<close>
     by (metis (mono_tags, opaque_lifting) atk_WR.Def list.sel(1) 
-        maintains_WR.elims(1) simple_game.player0_wins_immediately_def)
-  then obtain p Q where \<open>(AttackerNode p Q) \<in> atk_WR\<close>
-    by (metis atk_WR.Def c_set_game_defender_node.simps(1))
-  let g = AttackerNode p Q
-  hence \<open>\<forall>f. \<exists>play. \<not>c_set_game_moves g (f (g#play)) \<or> \<not>f (g#play) \<in> atk_WR\<close>
-    using maintains_WR.simps no_main
-    sledgehammer
+        maintains_WR.simps simple_game.player0_wins_immediately_def)
+
+
+  fix f 
+  obtain p Q where pQ_def: \<open>(AttackerNode p Q) \<in> atk_WR\<close> and 
+    no_main: \<open>\<not>maintains_WR f (AttackerNode p Q)\<close>
+    using ex by blast 
+  let ?g = \<open>AttackerNode p Q\<close>
+  have \<open>\<exists>play. \<not>c_set_game_moves ?g (f (?g#play)) \<or> \<not>f (?g#play) \<in> atk_WR\<close>
+    using maintains_WR.simps no_main pQ_def by simp
 
   thus \<open>False\<close> sledgehammer  sorry
 qed
@@ -76,28 +114,40 @@ fun atk_strat :: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_s
 thm atk_WR.induct
 
 thm someI_ex
+*)
 
 lemma attacker_wins_in_winning_region: 
   assumes 
     \<open>AttackerNode p Q \<in> atk_WR\<close>
-  shows \<open>\<exists>f. f \<in> atk_strat_set \<and> player1_winning_strategy f (AttackerNode p Q)\<close>
+  shows \<open>\<exists>f \<in> atk_strat_set. player1_winning_strategy f (AttackerNode p Q)\<close>
 proof (induct rule: atk_WR.induct[OF assms(1)])
   case (1 p)
   have \<open>weak_tau_succs {} = {}\<close> unfolding weak_tau_succs_def by auto
   hence \<open>\<nexists>g'. c_set_game_moves (DefenderSwapNode p {}) g'\<close> 
     using move_DefSwap_to_AtkNode by fastforce
-  thus ?case sledgehammer by (simp add: stuck_0_all_strats_win)
+  thus ?case using stuck_0_all_strats_win atk_strat_set_nonempty by auto
 next
   case Atk: (2 p Q g')
+  then obtain f where \<open>f \<in> atk_strat_set\<close> \<open>player1_winning_strategy f g'\<close> by auto
   then obtain n where n_def: \<open>\<forall>play\<in>plays_for_1strategy f g'.
       \<not> player0_wins_immediately play \<and> length play \<le> n\<close>
     using player1_winning_strategy_def by auto
-  hence \<open>\<forall>play. atk_strat ((AttackerNode p Q)#play) =  g'\<close> 
-    using Atk.hyps sledgehammer
+  hence \<open>\<exists>f'. \<forall>play. f'((AttackerNode p Q)#play) =  g'\<close>  by fastforce
+(*
+define f' as the strategy that acts like f from g' on, but that defines f(g) = g'. 
+may need to prove that an attacker strat can never be cyclical
+*)
 
+  then obtain f':: \<open>('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node\<close> 
+    where \<open>\<forall>play. f'((AttackerNode p Q)#play) =  g'\<close> 
+\<open> plays_for_1strategy f' g'= plays_for_1strategy f g'\<close> sledgehammer
+  thm Atk.hyps 
+thm Atk
 
+(*
   hence \<open>\<forall>play\<in>plays_for_1strategy atk_strat (AttackerNode p Q).
       \<not> player0_wins_immediately play \<and> length play \<le> (Suc n)\<close> sledgehammer
+*)
 
   thm player1_winning_strategy_def
   then show ?case sorry
