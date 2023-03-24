@@ -478,6 +478,8 @@ where
   \<open>trace_inclusion R  \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) 
   \<and> R p q \<and> p \<Rightarrow>$ A p' \<longrightarrow> (\<exists> q'. q \<Rightarrow>$ A q')\<close>
 
+abbreviation weakly_trace_included_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>T  _" [60, 60] 65)
+  where \<open>weakly_trace_included_by p q \<equiv> \<exists> R . trace_inclusion R \<and> R p q\<close>
 
 subsection \<open>Delay Simulation\<close>
 
