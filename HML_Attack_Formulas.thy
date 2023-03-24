@@ -14,7 +14,7 @@ begin
 inductive_set attacker_winning_region :: \<open>('s, 'a) c_set_game_node set\<close> where
   Base: \<open>DefenderSwapNode _ {} \<in> attacker_winning_region\<close> |
   Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region) \<Longrightarrow> (AttackerNode p Q) \<in> attacker_winning_region\<close> |
-  Def: \<open>(c_set_game_moves g g' \<and> c_set_game_defender_node g \<Longrightarrow> g' \<in> attacker_winning_region) \<Longrightarrow> g \<in> attacker_winning_region\<close> 
+  Def: \<open>c_set_game_defender_node g \<Longrightarrow> (\<And>g'. c_set_game_moves g g' \<Longrightarrow> g' \<in> attacker_winning_region) \<Longrightarrow> g \<in> attacker_winning_region\<close>
 
 (*
 definition attacker_order where 
@@ -112,7 +112,7 @@ lemma attacker_wins_in_winning_region:
   assumes 
     \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
   shows \<open>\<exists>f. player1_winning_strategy f (AttackerNode p Q) \<and> positional_strategy f \<close>
-proof (induct rule: attacker_winning_region.induct[OF assms(1)])
+proof (induct  rule: attacker_winning_region.induct[OF assms(1)])
   case (1 p)
   obtain f where f_def: \<open>positional_strategy f\<close> 
     using positional_strategy_def by fastforce
@@ -150,93 +150,115 @@ next
       fix play 
       assume subassms: \<open>play \<in> plays_for_1strategy f' g'\<close>
       show \<open>play \<in> plays_for_1strategy f g'\<close>
-        proof (induct rule: plays_for_1strategy.induct[OF subassms])
-          case 1
-          then show ?case by (simp add: plays_for_1strategy.init)
+      proof (induct rule: plays_for_1strategy.induct[OF subassms])
+        case 1
+        then show ?case by (simp add: plays_for_1strategy.init)
+      next
+        case (2 n0 play n1)
+        then show ?case by (simp add: plays_for_1strategy.p0move)
+      next
+        case (3 n1 play)
+        then show ?case
+        proof(cases \<open>n1 = ?g\<close>)
+          case True
+          hence \<open>False\<close>  using "3.hyps"(2) False by fastforce
+          then show ?thesis by auto
         next
-          case (2 n0 play n1)
-          then show ?case by (simp add: plays_for_1strategy.p0move)
-        next
-          case (3 n1 play)
-          then show ?case
-            proof(cases \<open>n1 = ?g\<close>)
-              case True
-              hence \<open>False\<close>  using "3.hyps"(2) False by fastforce
-              then show ?thesis by auto
-            next
-              case False
-              then show ?thesis
-                using f'_def "3.hyps" plays_for_1strategy.p1move 
-                by fastforce
-            qed
-         qed
-       qed
-
-       thm plays_for_1strategy.induct
-       hence f'_win_on_g': \<open>\<forall>play\<in>plays_for_1strategy f' g'.
+          case False
+          then show ?thesis
+            using f'_def "3.hyps" plays_for_1strategy.p1move 
+            by fastforce
+        qed
+      qed
+    qed
+    hence f'_win_on_g': \<open>\<forall>play\<in>plays_for_1strategy f' g'.
           \<not> player0_wins_immediately play \<and> length play \<le> n\<close>  using f_win n_def by blast
-       hence winning_tail: \<open>\<forall>play\<in>plays_for_1strategy f' ?g. 
+    hence winning_tail: \<open>\<forall>play\<in>plays_for_1strategy f' ?g. 
 \<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> 
-         using f'_def
-       proof(clarify)
-         fix play 
-         assume subassm: \<open>play\<in>plays_for_1strategy f' ?g\<close>
-         show \<open>\<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> 
-         proof(induct rule: plays_for_1strategy.induct[OF subassm])
-           case 1
-           then show ?case by simp
-         next
-           case (2 n0 play n1)
-           then obtain xs where 
-             xs_def: \<open>n0 # play = xs @ [AttackerNode p Q]\<close> 
-                     \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
-           then have \<open>xs \<noteq> [] \<and> hd xs = n0\<close> using "2.hyps"(3)
-             by (metis c_set_game_defender_node.simps(1) hd_append2 list.sel(1) self_append_conv2)
-           hence \<open>n1#xs \<in> plays_for_1strategy f' g'\<close> 
-             using "2.hyps" plays_for_1strategy.p0move
-             by (smt (verit) append_eq_Cons_conv xs_def)
-           then show ?case using xs_def(1) by auto
-         next
-           case hd_attacker: (3 n1 play)
-           then obtain xs where 
-             xs_def: \<open>n1 # play = xs @ [AttackerNode p Q]\<close> 
-                     \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
-           then show ?case 
-           proof (cases \<open>xs = []\<close>)
-             case True
-             hence \<open>n1 = ?g\<close>
-               using xs_def(1) by auto
-             hence \<open>f' (n1#play) = g'\<close> using f'_def by auto
-             then show ?thesis
-               using True plays_for_1strategy.init xs_def(1) by auto
-           next
-             case False
-             hence head: \<open>hd xs = n1\<close> using xs_def 
-               by (metis hd_append2 list.sel(1))
-             have in_plays: \<open>f' (n1 # play) # n1 # play = f' (n1 # play) # xs @ [?g]\<close>
-               by (simp add: xs_def(1)) 
-             have \<open>f' (n1 # play) # xs \<in> plays_for_1strategy f' g'\<close> 
-               using plays_for_1strategy.p1move[OF hd_attacker(1) hd_attacker.hyps(3, 4)] head
-               by (smt (verit) False \<open>positional_strategy f'\<close> append1_eq_conv 
-                   hd_attacker.hyps(2, 4) list.sel(1) plays_for_1strategy.simps 
-                   positional_strategy_def xs_def(1))
-             then show ?thesis using in_plays by auto
-           qed
-         qed
-       qed
-       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> length xs \<le> n)\<close>
-         using f'_win_on_g' by auto
-       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. length play \<le> (Suc n)\<close> using nat_le_linear by auto
+    proof(clarify)
+      fix play 
+      assume subassm: \<open>play\<in>plays_for_1strategy f' ?g\<close>
+      show \<open>\<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> 
+      proof(induct rule: plays_for_1strategy.induct[OF subassm])
+        case 1 show ?case by simp
+      next
+        case (2 n0 play n1)
+        then obtain xs where 
+          xs_def: \<open>n0 # play = xs @ [AttackerNode p Q]\<close> 
+                  \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
+        then have \<open>xs \<noteq> [] \<and> hd xs = n0\<close> using "2.hyps"(3)
+          by (metis c_set_game_defender_node.simps(1) hd_append2 list.sel(1) self_append_conv2)
+        hence \<open>n1#xs \<in> plays_for_1strategy f' g'\<close> 
+          using "2.hyps" plays_for_1strategy.p0move
+          by (smt (verit) append_eq_Cons_conv xs_def)
+        then show ?case using xs_def(1) by auto
+      next
+        case hd_attacker: (3 n1 play)
+        then obtain xs where 
+          xs_def: \<open>n1 # play = xs @ [AttackerNode p Q]\<close>                     
+                  \<open>(xs = [] \<or> xs \<in> plays_for_1strategy f' g')\<close> by auto
+        then show ?case 
+        proof (cases \<open>xs = []\<close>)
+          case True
+          hence \<open>n1 = ?g\<close>
+            using xs_def(1) by auto
+          hence \<open>f' (n1#play) = g'\<close> using f'_def by auto
+          then show ?thesis
+            using True plays_for_1strategy.init xs_def(1) by auto
+        next
+          case False
+          hence head: \<open>hd xs = n1\<close> using xs_def 
+            by (metis hd_append2 list.sel(1))
+          have in_plays: \<open>f' (n1 # play) # n1 # play = f' (n1 # play) # xs @ [?g]\<close>
+            by (simp add: xs_def(1)) 
+          have \<open>f' (n1 # play) # xs \<in> plays_for_1strategy f' g'\<close> 
+            using plays_for_1strategy.p1move[OF hd_attacker(1) hd_attacker.hyps(3, 4)] head
+            by (smt (verit) False \<open>positional_strategy f'\<close> append1_eq_conv 
+                  hd_attacker.hyps(2, 4) list.sel(1) plays_for_1strategy.simps 
+                  positional_strategy_def xs_def(1))
+          then show ?thesis using in_plays by auto
+        qed
+      qed
+    qed
+    hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> (xs = [] \<or> length xs \<le> n)\<close>
+      using f'_win_on_g' by auto
+    hence bounded: \<open>\<forall>play\<in>plays_for_1strategy f' ?g. length play \<le> (Suc n)\<close> using nat_le_linear by auto
 (*
        from winning_tail have \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<not>player0_wins_immediately play\<close> *)
-       hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> 
-             (xs = [] \<or> \<not>player0_wins_immediately xs)\<close>
-         using winning_tail f'_win_on_g' by auto
+    hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<exists>xs. play = xs@[?g] \<and> 
+          (xs = [] \<or> \<not>player0_wins_immediately xs)\<close> 
+      using winning_tail f'_win_on_g' by auto
+    hence \<open>\<forall>play\<in>plays_for_1strategy f' ?g. \<not>player0_wins_immediately play\<close>
+      unfolding player0_wins_immediately_def
+      by (metis hd_append list.sel(1) local.Atk)
 
-  then show ?case sorry
+    then show ?thesis unfolding player1_winning_strategy_def 
+      using bounded \<open>positional_strategy f'\<close> by blast
+  qed
 next
-  case Def: (3 g g')
-  then show ?case  sorry
+  case Def: (3 g)
+  then show ?case
+(*
+if no game move exists, the defender is stuck and every strategy wins. 
+
+otherwise: for every g_i with g \<longrightarrow> g_i we have a winning strategy f_i starting from g'.
+The winning strategy on g combines them all, i.e.
+for all g_i with g\<longrightarrow>g_i, f'(g_i) = f_i(g_i). 
+
+*)
+
+
+  proof(cases \<open>c_set_game_moves g g'\<close>)
+    case True
+    hence \<open>g' \<in> attacker_winning_region\<close> using Def.hyps by auto
+    hence \<open>\<exists>f. player1_winning_strategy f g' \<and>
+        positional_strategy f\<close> using Def.hyps True by auto
+    then show ?thesis sledgehammer sorry
+  next
+    case False
+    hence \<open>\<forall>play. player1_wins_immediately (g#play)\<close>sorry
+    then show ?thesis sorry
+  qed
 qed
 
 
@@ -263,8 +285,10 @@ proof -
   have \<open>\<forall>g. c_set_game_moves 
 (DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
     by (simp add: move_DefSim_to_AtkNode)
-  hence \<open>(DefenderSimNode a p' Q) \<in> attacker_winning_region\<close> using assms(1) attacker_winning_region.Def by blast
-  thus ?thesis using AtkToSim attacker_winning_region.Def by blast
+  hence \<open>(DefenderSimNode a p' Q) \<in> attacker_winning_region\<close> 
+    using assms(1) attacker_winning_region.Def
+    by (metis c_set_game_defender_node.simps(2))
+  thus ?thesis using AtkToSim attacker_winning_region.Atk by blast
 qed
 
 
@@ -313,7 +337,8 @@ next
       qed
     next
       case False
-      hence wr_pred_atk_node: \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> using Obs.hyps phi_distinguishing by auto
+      hence wr_pred_atk_node: \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> 
+        using Obs.hyps phi_distinguishing by auto
       thus ?thesis 
       proof(cases \<open>tau a\<close>)
         case True
@@ -363,7 +388,9 @@ next
       using move_DefSwap_to_AtkNode by blast
     hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> g \<in> attacker_winning_region\<close> 
       using all_atk_succs_in_wr by auto
-    hence \<open>DefenderSwapNode p' Q \<in> attacker_winning_region\<close> using attacker_winning_region.Def by blast
+    hence \<open>DefenderSwapNode p' Q \<in> attacker_winning_region\<close> 
+      using attacker_winning_region.Def
+      by (meson c_set_game_defender_node.simps(3)) 
     then show ?case using atk_move attacker_winning_region.Atk by blast
   qed
 qed
