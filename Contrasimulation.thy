@@ -10,39 +10,39 @@ begin
 
 subsection \<open>Definition of Contrasimulation\<close>
 
-definition contrasim ::
+definition contrasimulation ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
 where
-  \<open>contrasim R \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<and> R p q \<and> (p \<Rightarrow>$ A p') \<longrightarrow>
+  \<open>contrasimulation R \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<and> R p q \<and> (p \<Rightarrow>$ A p') \<longrightarrow>
     (\<exists> q'. (q \<Rightarrow>$ A q') \<and> R q' p')\<close>
 
 lemma contrasim_simpler_def:
-  shows \<open>contrasim R =
+  shows \<open>contrasimulation R =
     (\<forall> p q p' A . R p q \<and> (p \<Rightarrow>$ A p') \<longrightarrow> (\<exists> q'. (q \<Rightarrow>$ A q') \<and> R q' p'))\<close>
 proof -
   have \<open>\<And>A. \<forall>a\<in>set (filter (\<lambda>a. a \<noteq> \<tau>) A). a \<noteq> \<tau>\<close> by auto
   then show ?thesis
-    unfolding contrasim_def
+    unfolding contrasimulation_def
     using word_steps_ignore_tau_addition word_steps_ignore_tau_removal
     by metis
 qed
 
 abbreviation contrasimulated_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>c  _" [60, 60] 65)
-  where \<open>contrasimulated_by p q \<equiv> \<exists> R . contrasim R \<and> R p q\<close>
+  where \<open>contrasimulated_by p q \<equiv> \<exists> R . contrasimulation R \<and> R p q\<close>
 
 lemma contrasim_preorder_is_contrasim:
-  shows \<open>contrasim (\<lambda> p q . p \<sqsubseteq>c q)\<close>
-  unfolding contrasim_def
+  shows \<open>contrasimulation (\<lambda> p q . p \<sqsubseteq>c q)\<close>
+  unfolding contrasimulation_def
   by metis
 
 lemma contrasim_preorder_is_greatest:
-  assumes \<open>contrasim R\<close>
+  assumes \<open>contrasimulation R\<close>
   shows \<open>\<And> p q. R p q \<Longrightarrow> p \<sqsubseteq>c q\<close>
   using assms by auto
 
 lemma contrasim_tau_step:
-  \<open>contrasim (\<lambda> p1 q1 . q1 \<longmapsto>* tau p1)\<close>
-  unfolding contrasim_def
+  \<open>contrasimulation (\<lambda> p1 q1 . q1 \<longmapsto>* tau p1)\<close>
+  unfolding contrasimulation_def
   using steps.simps tau_tau tau_word_concat
   by metis
 
@@ -51,11 +51,11 @@ lemma contrasim_trans_constructive:
   defines
     \<open>R \<equiv> \<lambda> p q . \<exists> pq . (R1 p pq \<and> R2 pq q) \<or> (R2 p pq \<and> R1 pq q)\<close>
   assumes
-    R1_def: \<open>contrasim R1\<close> \<open>R1 p pq\<close> and
-    R2_def: \<open>contrasim R2\<close> \<open>R2 pq q\<close>
+    R1_def: \<open>contrasimulation R1\<close> \<open>R1 p pq\<close> and
+    R2_def: \<open>contrasimulation R2\<close> \<open>R2 pq q\<close>
   shows
-    \<open>R p q\<close> \<open>contrasim R\<close>
-  using assms(2,3,4,5) unfolding R_def contrasim_def by metis+
+    \<open>R p q\<close> \<open>contrasimulation R\<close>
+  using assms(2,3,4,5) unfolding R_def contrasimulation_def by metis+
 
 lemma contrasim_trans:
   assumes
@@ -83,9 +83,15 @@ proof -
   ultimately show ?thesis using equivpI by blast
 qed
 
+
+lemma contrasim_implies_trace_incl:
+  assumes \<open>contrasim R\<close>
+  shows \<open>trace_inclusion R\<close>
+by (metis assms contrasim_simpler_def trace_inclusion_def) 
+
 lemma contrasim_coupled:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>R p q\<close>
   shows
     \<open>\<exists> q'. q \<longmapsto>* tau q' \<and> R q' p\<close>
@@ -94,7 +100,7 @@ lemma contrasim_coupled:
 
 lemma contrasim_taufree_symm:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>R p q\<close>
     \<open>stable_state q\<close>
   shows
@@ -103,7 +109,7 @@ lemma contrasim_taufree_symm:
 
 lemma symm_contrasim_is_weak_bisim:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>\<And> p q. R p q \<Longrightarrow> R q p\<close>
   shows
     \<open>weak_bisimulation R\<close>
@@ -111,7 +117,7 @@ lemma symm_contrasim_is_weak_bisim:
 
 lemma contrasim_weakest_bisim:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>\<And> p q a. p \<longmapsto> a q \<Longrightarrow> \<not> tau a\<close>
   shows
     \<open>bisimulation R\<close>
@@ -123,7 +129,7 @@ lemma symm_weak_sim_is_contrasim:
     \<open>weak_simulation R\<close>
     \<open>\<And> p q. R p q \<Longrightarrow> R q p\<close>
   shows
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
   using assms unfolding contrasim_simpler_def weak_sim_word by blast
 
 subsection \<open>Intermediate Relation Mimicking Contrasim\<close>
@@ -145,7 +151,7 @@ lemma R_is_in_mimicking_of_R :
 
 lemma mimicking_of_C_guarantees_tau_succ:
   assumes
-    \<open>contrasim C\<close>
+    \<open>contrasimulation C\<close>
     \<open>mimicking (set_lifted C) p Q\<close>
     \<open>p \<Rightarrow>^\<tau> p'\<close>
   shows \<open>\<exists>q'. q' \<in> (weak_tau_succs Q) \<and> mimicking (set_lifted C) q' {p'}\<close>
@@ -159,7 +165,7 @@ proof -
   hence word: \<open>p0 \<Rightarrow>$A p'\<close> 
     by (metis \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> app_tau_taufree_list tau_def weak_step_over_tau)
   then obtain q' where \<open>q0 \<Rightarrow>$A q'\<close> \<open>C q' p'\<close> 
-    using assms contrasim_def[of \<open>C\<close>] \<open>C p0 q0\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> by blast
+    using assms contrasimulation_def[of \<open>C\<close>] \<open>C p0 q0\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau>\<close> by blast
   hence \<open>(set_lifted C) q' {p'}\<close> using set_lifted_def by auto
   hence in_mimicking: \<open>mimicking (set_lifted C) q' {p'}\<close> using R_is_in_mimicking_of_R  by auto
   have \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev A) Q0)\<close> 
@@ -171,7 +177,7 @@ qed
 
 lemma mimicking_of_C_guarantees_action_succ:
  assumes 
-    \<open>contrasim C\<close>
+    \<open>contrasimulation C\<close>
     \<open>mimicking (set_lifted C) p Q\<close>
     \<open>p =\<rhd>a p'\<close>
     \<open>a \<noteq> \<tau>\<close>
@@ -181,7 +187,7 @@ proof -
     where \<open>(set_lifted C) p0 Q0\<close> \<open>p0 \<Rightarrow>$A p\<close> \<open>Q0 = {q0}\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> 
       and Q_def: \<open>Q = (dsuccs_seq_rec (rev A) Q0)\<close> 
     using mimicking_def assms set_lifted_def by metis
-  then obtain CS where CS_def: \<open>contrasim CS \<and> CS p0 q0\<close> 
+  then obtain CS where CS_def: \<open>contrasimulation CS \<and> CS p0 q0\<close> 
     using assms set_lifted_def by (metis singleton_inject) 
   have notau: \<open>\<forall>a \<in> set (A@[a]). a \<noteq> \<tau>\<close> 
     using \<open>a \<noteq> \<tau>\<close> \<open>\<forall>a \<in> set A. a \<noteq> \<tau> \<close> by auto
@@ -190,7 +196,7 @@ proof -
     using \<open>p0 \<Rightarrow>$A p\<close>  rev_seq_step_concat
     by (meson steps.step steps_concat)
   then obtain q' where \<open>q0 \<Rightarrow>$(A@[a]) q' \<and> CS q' p'\<close> 
-    using CS_def contrasim_def[of \<open>CS\<close>] notau
+    using CS_def contrasimulation_def[of \<open>CS\<close>] notau
     by fastforce
   hence \<open>q' \<in> weak_tau_succs (dsuccs_seq_rec (rev (A@[a])) {q0})\<close> 
     using word_reachable_implies_in_dsuccs by blast
@@ -213,7 +219,7 @@ where
 
 lemma contrasim_step_weaker_than_seq:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
   shows
     \<open>contrasim_step R\<close>
   unfolding contrasim_step_def
@@ -235,8 +241,8 @@ lemma contrasim_step_seq_coincide_for_sims:
     \<open>contrasim_step R\<close>
     \<open>weak_simulation R\<close>
   shows
-    \<open>contrasim R\<close>
-  unfolding contrasim_def
+    \<open>contrasimulation R\<close>
+  unfolding contrasimulation_def
 proof (clarify)
   fix p q p' A
   assume

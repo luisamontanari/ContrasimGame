@@ -470,6 +470,15 @@ lemma weak_bisim_taufree_strong:
   unfolding weak_bisimulation_def bisimulation_def
   by auto
 
+subsection \<open>Trace Inclusion\<close>
+
+definition trace_inclusion ::
+  \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
+where
+  \<open>trace_inclusion R  \<equiv> \<forall> p q p' A . (\<forall> a \<in> set(A). a \<noteq> \<tau>) 
+  \<and> R p q \<and> p \<Rightarrow>$ A p' \<longrightarrow> (\<exists> q'. q \<Rightarrow>$ A q')\<close>
+
+
 subsection \<open>Delay Simulation\<close>
 
 definition delay_simulation :: 

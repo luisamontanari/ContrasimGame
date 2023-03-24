@@ -123,7 +123,7 @@ qed
 
 lemma set_game_strategy_retains_mimicking:
   assumes
-    \<open>contrasim C\<close>
+    \<open>contrasimulation C\<close>
     \<open>C p0 q0\<close>
     \<open>play \<in> plays_for_0strategy (strategy_from_mimicking_of_C (mimicking (set_lifted C))) (AttackerNode p0 {q0})\<close>
   shows \<open>n = AttackerNode p Q \<Longrightarrow> n \<in> set play \<Longrightarrow> mimicking (set_lifted C) p Q \<close>
@@ -215,7 +215,7 @@ qed
 
 lemma set_contrasim_game_complete:
   assumes
-    \<open>contrasim C\<close>
+    \<open>contrasimulation C\<close>
     \<open>C p0 q0\<close>
   shows \<open>player0_winning_strategy (strategy_from_mimicking_of_C (mimicking (set_lifted C))) (AttackerNode p0 {q0})\<close>
   unfolding player0_winning_strategy_def
@@ -291,7 +291,7 @@ qed
 
 lemma strategy_from_mimicking_of_C_sound : 
   assumes
-    \<open>contrasim C\<close>
+    \<open>contrasimulation C\<close>
     \<open>C p0 q0\<close>
   shows
     \<open>sound_0strategy (strategy_from_mimicking_of_C (mimicking (set_lifted C))) (AttackerNode p0 {q0})\<close>
@@ -480,7 +480,7 @@ lemma set_contrasim_game_sound:
       hd play = AttackerNode p {q} \<and> (hd play = (AttackerNode p00 {q00})
       \<or> (\<exists>P. hd (tl play) = DefenderSwapNode q P)))\<close>
   shows
-    \<open>contrasim C\<close>  unfolding contrasim_def
+    \<open>contrasimulation C\<close>  unfolding contrasimulation_def
 proof (safe) 
   fix p q p1 A
   assume \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>p \<Rightarrow>$A p1\<close> and \<open>C p q\<close> 
@@ -581,14 +581,14 @@ theorem winning_strategy_in_set_game_iff_contrasim:
 proof safe
   fix f
   assume \<open>player0_winning_strategy f (AttackerNode p0 {q0})\<close> \<open>sound_0strategy f (AttackerNode p0 {q0})\<close>
-  hence \<open>contrasim (\<lambda>p q. \<exists>play \<in> plays_for_0strategy f (AttackerNode p0 {q0}).
+  hence \<open>contrasimulation (\<lambda>p q. \<exists>play \<in> plays_for_0strategy f (AttackerNode p0 {q0}).
                  hd play = AttackerNode p {q} \<and>
                  (hd play = (AttackerNode p0 {q0}) \<or> (\<exists>P. hd (tl play) = DefenderSwapNode q P)))\<close>
     using set_contrasim_game_sound by blast
   thus  \<open>p0 \<sqsubseteq>c q0\<close> using plays_for_0strategy.init[of \<open>AttackerNode p0 {q0}\<close> f] list.sel(1) by force
 next
   fix C
-  assume \<open>contrasim C\<close> \<open>C p0 q0\<close>
+  assume \<open>contrasimulation C\<close> \<open>C p0 q0\<close>
   thus \<open>(\<exists>f. player0_winning_strategy f (AttackerNode p0 {q0}) \<and> sound_0strategy f (AttackerNode p0 {q0}))\<close>
     using set_contrasim_game_complete[OF _ _]
          strategy_from_mimicking_of_C_sound[OF _ _] by blast

@@ -40,7 +40,7 @@ for
   initial :: \<open>('s, 'a) c_basic_game_node\<close> 
 begin
 
-fun strategy_from_contrasim :: \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> ('s, 'a) c_basic_game_node strategy\<close> where
+fun strategy_from_contrasim:: \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> ('s, 'a) c_basic_game_node strategy\<close> where
   \<open>strategy_from_contrasim R ((DefenderNode A p1 q0)#play) =
     (AttackerNode (SOME q1 . R q1 p1 \<and> q0 \<Rightarrow>$A q1) p1)\<close> |
   \<open>strategy_from_contrasim _ _ = undefined\<close>
@@ -80,7 +80,7 @@ qed
 
 lemma basic_game_all_f_consistent_atk_pos_in_R:
   assumes 
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>R p0 q0\<close>
     \<open>initial = AttackerNode p0 q0\<close>
     \<open>play \<in> plays_for_0strategy (strategy_from_contrasim R) initial\<close>
@@ -125,7 +125,7 @@ next
        by (simp add: qpred_def p0moved.hyps(1) p0moved.hyps(2))
      have  \<open>\<exists> p1 . R p1 q \<and> ppred \<Rightarrow>$ A p1\<close>
       using qpred_q_move pred_R assms(1) \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-      unfolding contrasim_def by blast
+      unfolding contrasimulation_def by blast
     from someI_ex[OF this] show \<open>R p q\<close> unfolding p_def by blast
    qed
 next
@@ -149,7 +149,7 @@ qed
 
 lemma basic_contrasim_game_complete:
   assumes 
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>R p q\<close> 
     \<open>initial = AttackerNode p q\<close>
   shows \<open>player0_winning_strategy (strategy_from_contrasim R) initial\<close>
@@ -197,7 +197,7 @@ proof (safe)
       hence same_q: \<open>q0 = q\<close> by auto
       from Move_n1_n1' have p_succ: \<open>p \<Rightarrow>$A p1\<close> by auto
       from assms(1) have Contra: \<open>\<And>p q p' A. (\<forall>a\<in>set A. a \<noteq> \<tau>) \<Longrightarrow> R p q \<Longrightarrow> p \<Rightarrow>$ A  p' \<Longrightarrow> (\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p')\<close> 
-        unfolding contrasim_def by auto
+        unfolding contrasimulation_def by auto
       hence \<open>\<exists> q'. (q \<Rightarrow>$ A q')\<and> R q' p1\<close> using Contra[OF \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> pq_in_R p_succ] by auto
       hence \<open>\<exists> p1 q1. c_game_moves n1' (AttackerNode p1 q1)\<close> using same_q n1'_def by auto
       then show ?case by auto
@@ -209,7 +209,7 @@ qed
 lemma strategy_from_contrasim_sound : 
   assumes
     \<open>R p0 q0\<close>
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>initial = AttackerNode p0 q0\<close>
   shows
     \<open>sound_0strategy (strategy_from_contrasim R) initial\<close>
@@ -231,7 +231,7 @@ proof (safe)
       second_elem_in_play_set n0_def strategy0_plays_subset
     by fastforce
   with mov_p_p1 have q1_def: \<open>\<exists>q1. R q1 p1 \<and> q \<Rightarrow>$A q1\<close> 
-    using assms(2) unfolding contrasim_def by blast
+    using assms(2) unfolding contrasimulation_def by blast
   from n0_def have \<open>strategy_from_contrasim R (n0 # play) = (AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1)\<close>
     by auto
   then obtain q' where \<open>AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1 = AttackerNode q' p1\<close> by blast
@@ -247,7 +247,7 @@ lemma basic_contrasim_game_sound:
   defines
     \<open>R == \<lambda> p q . (\<exists> play \<in> plays_for_0strategy f initial. hd play = AttackerNode p q)\<close>
   shows
-    \<open>contrasim R\<close>  unfolding contrasim_def
+    \<open>contrasimulation R\<close>  unfolding contrasimulation_def
 proof (safe) 
   fix p q p1 A
   assume A1: \<open>p \<Rightarrow>$A p1\<close>
@@ -303,19 +303,19 @@ theorem winning_strategy_in_basic_game_iff_contrasim:
   assumes
     \<open>initial = AttackerNode p q\<close>
   shows 
-    \<open>(\<exists> f . player0_winning_strategy f initial \<and> sound_0strategy f initial) = (\<exists> C. contrasim C \<and> C p q)\<close>
+    \<open>(\<exists> f . player0_winning_strategy f initial \<and> sound_0strategy f initial) = (\<exists> C. contrasimulation C \<and> C p q)\<close>
 proof
   assume
     \<open>(\<exists>f. player0_winning_strategy f initial \<and> sound_0strategy f initial)\<close>
   then obtain f where
-    \<open>contrasim (\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q)\<close>
+    \<open>contrasimulation (\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q)\<close>
     using basic_contrasim_game_sound by blast
   moreover have \<open>(\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q) p q\<close>
     using assms plays_for_0strategy.init[of _ f] by (meson list.sel(1))
-  ultimately show \<open>\<exists> C. contrasim C \<and> C p q\<close> by blast
+  ultimately show \<open>\<exists> C. contrasimulation C \<and> C p q\<close> by blast
 next
   assume
-    \<open>\<exists> C. contrasim C \<and> C p q\<close>
+    \<open>\<exists> C. contrasimulation C \<and> C p q\<close>
   thus \<open>(\<exists>f. player0_winning_strategy f initial \<and> sound_0strategy f initial)\<close>
     using basic_contrasim_game_complete[OF _ _ assms]
          strategy_from_contrasim_sound[OF _ _ assms] by blast

@@ -1,6 +1,5 @@
 theory Contrasim_HML
   imports
-    Contrasimulation
     HM_Logic_Infinitary
 begin
 
@@ -22,9 +21,7 @@ inductive_set HML_weak_formulas :: \<open>('a,'x)HML_formula set\<close> where
   Obs: \<open>\<phi> \<in> HML_weak_formulas \<Longrightarrow> (\<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) \<in> HML_weak_formulas\<close> |
   Conj: \<open>(\<And>i. i \<in> I \<Longrightarrow> F i \<in> HML_weak_formulas) \<Longrightarrow> HML_weaknor I F \<in> HML_weak_formulas\<close>
 
-thm HML_weak_formulas.induct
-
-lemma backwards_truth:
+lemma weak_backwards_truth:
   assumes
     \<open>\<phi> \<in> HML_weak_formulas\<close>
     \<open>p \<longmapsto>* tau  p'\<close>

@@ -11,28 +11,10 @@ for
   \<tau> :: \<open>'a\<close> 
 begin
 
-fun is_dist ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close>
-  where
-   \<open>is_dist \<phi> p q = (p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>)\<close>
-
-fun is_dist_set ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's set \<Rightarrow> bool\<close>
-  where
-   \<open>is_dist_set \<phi> p Q = (p \<Turnstile> \<phi> \<and> (\<forall>q. q \<in> Q \<longrightarrow> \<not> q \<Turnstile> \<phi>))\<close>
-
 inductive_set atk_WR :: \<open>('s, 'a) c_set_game_node set\<close> where
   Base: \<open>DefenderSwapNode _ {} \<in> atk_WR\<close> |
   Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> atk_WR) \<Longrightarrow> (AttackerNode p Q) \<in> atk_WR\<close> |
   Def: \<open>(c_set_game_moves g g' \<and> c_set_game_defender_node g \<Longrightarrow> g' \<in> atk_WR) \<Longrightarrow> g \<in> atk_WR\<close> 
-
-definition Phi :: "(nat => nat) set" where
-  "Phi = {f. \<forall>x. 0 < f x \<and> f x < 11}"
-
-fun atk_state :: \<open>('s, 'a) c_set_game_node \<Rightarrow> 's\<close>
-  where
-    \<open>atk_state (AttackerNode p Q) = p\<close> 
-  | \<open>atk_state (DefenderSimNode a p Q) = p\<close>
-  | \<open>atk_state (DefenderSwapNode p Q) = p\<close>
-
 
 fun maintains_WR :: \<open>(('s, 'a) c_set_game_node list \<Rightarrow> ('s, 'a) c_set_game_node) 
       \<Rightarrow> ('s, 'a) c_set_game_node \<Rightarrow> bool\<close> 
@@ -190,7 +172,7 @@ qed
 lemma dist_formula_implies_wr_inclusion: 
   assumes 
     \<open>\<phi> \<in> HML_weak_formulas\<close>
-    \<open>is_dist_set \<phi> p Q\<close>
+    \<open>distinguishes_from_set \<phi> p Q\<close>
   shows \<open>(AttackerNode p Q) \<in> atk_WR\<close>
 proof(cases \<open>Q = {}\<close>)
   case True
@@ -213,7 +195,7 @@ next
       using delay_step_implies_tau_a_obs by blast
     hence \<open>\<forall>q'. q' \<in> dsuccs a Q \<longrightarrow> \<not> q' \<Turnstile> \<phi>\<close> 
       unfolding dsuccs_def by blast
-    hence phi_distinguishing: \<open>is_dist_set \<phi> p' (dsuccs a Q)\<close> 
+    hence phi_distinguishing: \<open>distinguishes_from_set \<phi> p' (dsuccs a Q)\<close> 
       using p'_def by simp
     thus ?case
     proof (cases \<open>dsuccs a Q = {}\<close>)
@@ -238,9 +220,9 @@ next
         case True
         hence \<open>\<forall>p. (p \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>) = (p  \<Turnstile> \<phi>)\<close>
           using delay_step_implies_tau_a_obs p'_def satisfies.simps(4) tau_tau 
-            Obs.hyps(1) backwards_truth
+            Obs.hyps(1) weak_backwards_truth
           by (meson lts.refl)
-        hence \<open>is_dist_set \<phi> p Q\<close> using Obs.prems by auto
+        hence \<open>distinguishes_from_set \<phi> p Q\<close> using Obs.prems by auto
         thus ?thesis using Obs.hyps Obs.prems by blast
       next
         case False
@@ -253,7 +235,7 @@ next
     then obtain p' where \<open>p \<Rightarrow>^\<tau> p'\<close> and p_sat:  \<open>p' \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
       unfolding HML_weaknor_def by auto
     have \<open>\<And>q . q \<in> Q  \<Longrightarrow> \<not>q  \<Turnstile>  HML_poss \<tau> (HML_conj I (\<lambda>f. HML_neg (F f)))\<close>
-      by (metis Conj.prems(3) HML_weaknor_def is_dist_set.elims(2))
+      by (metis Conj.prems(3) HML_weaknor_def distinguishes_from_set.elims(2))
     hence \<open>\<And>q q'. q \<in> Q \<Longrightarrow> \<not>q \<Rightarrow>^\<tau> q' \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
       using satisfies.simps(4) tau_tau by blast
     hence \<open>\<And>q'. \<not>q' \<in> (weak_tau_succs Q) \<or> \<not>q'  \<Turnstile> HML_conj I (\<lambda>f. HML_neg (F f))\<close>
@@ -271,8 +253,8 @@ next
       using p_sat by auto
     hence  \<open>\<forall>q1 P1. 
           c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (\<exists>i. i \<in> I \<and> is_dist_set (F i) q1 P1)\<close> 
-      unfolding is_dist_set.simps using p_sat by blast
+          (\<exists>i. i \<in> I \<and> distinguishes_from_set (F i) q1 P1)\<close> 
+      unfolding distinguishes_from_set.simps using p_sat by blast
     hence all_atk_succs_in_wr: 
           \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
           (AttackerNode q1 P1 \<in> atk_WR)\<close> 

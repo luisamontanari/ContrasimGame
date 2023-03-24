@@ -90,6 +90,14 @@ definition HML_equivalent :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<clos
   where \<open>HML_equivalent p q 
     \<equiv> (\<forall> \<phi>::('a, 's) HML_formula. (p \<Turnstile> \<phi>) \<longleftrightarrow> (q \<Turnstile> \<phi>))\<close>
 
+fun distinguishes ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool\<close>
+  where
+   \<open>distinguishes \<phi> p q = (p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>)\<close>
+
+fun distinguishes_from_set ::  \<open>('a,'s) HML_formula \<Rightarrow> 's \<Rightarrow> 's set \<Rightarrow> bool\<close>
+  where
+   \<open>distinguishes_from_set \<phi> p Q = (p \<Turnstile> \<phi> \<and> (\<forall>q. q \<in> Q \<longrightarrow> \<not> q \<Turnstile> \<phi>))\<close>
+
 lemma distinguishing_formula:
   assumes \<open>\<not> HML_equivalent p q\<close>
   shows \<open>\<exists> \<phi>. p \<Turnstile> \<phi> \<and> \<not> q \<Turnstile> \<phi>\<close>
