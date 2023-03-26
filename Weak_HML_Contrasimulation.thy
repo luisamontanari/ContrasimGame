@@ -4,7 +4,7 @@ theory Weak_HML_Contrasimulation
     HM_Logic_Infinitary
 begin
 
-section \<open>Weak Hml and the Contrasimulation Set Game\<close>
+section \<open>Weak HML and the Contrasimulation Set Game\<close>
 
 subsection \<open>Existence of Distinguishing Formula on Winning Attacker Position\<close>
 locale c_game_with_attacker_strategy  =

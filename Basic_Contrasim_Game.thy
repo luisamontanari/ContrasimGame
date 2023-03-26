@@ -206,6 +206,8 @@ proof (safe)
   qed
 qed
 
+subsection \<open>Winning Strategy Implies Contrasimulation (Soundness)\<close>
+
 lemma strategy_from_contrasim_sound : 
   assumes
     \<open>R p0 q0\<close>
