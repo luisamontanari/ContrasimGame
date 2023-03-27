@@ -4,6 +4,5 @@ session "Contrasimulation" = "HOL" +
     Contrasim_Set_Game
     Basic_Contrasim_Game
     Tau_Sinks
-    Weak_HML_Contrasimulation
   document_files
     "root.tex"
