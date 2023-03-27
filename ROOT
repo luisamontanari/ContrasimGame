@@ -3,6 +3,6 @@ session "Contrasimulation" = "HOL" +
   theories
     Contrasim_Set_Game
     Basic_Contrasim_Game
-    HML_Strategies_Game
+    Tau_Sinks
   document_files
     "root.tex"
