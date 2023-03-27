@@ -272,7 +272,7 @@ proof -
 qed
 
 
-lemma dist_formula_implies_wr_inclusion: 
+lemma distinction_completeness: 
   assumes 
     \<open>\<phi> \<in> HML_weak_formulas\<close>
     \<open>distinguishes_from_set \<phi> p Q\<close>

@@ -529,5 +529,19 @@ proof clarify
     using assms(2) by auto
 qed
 
+lemma contrasim_trace_incl_equiv_on_sink_expansion:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+    \<open>\<And> p . R sink p\<close>
+  shows 
+    \<open>contrasimulation R = trace_inclusion R\<close>
+proof
+  assume \<open>contrasimulation R\<close>
+  thus \<open>trace_inclusion R\<close> by (simp add: contrasim_implies_trace_incl)
+next
+  assume \<open>trace_inclusion R\<close>
+  thus \<open>contrasimulation R\<close>  by (meson assms lts_tau.trace_incl_with_sink_is_contrasim)
+qed
+
 end 
 end
