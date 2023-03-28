@@ -543,5 +543,5 @@ next
   thus \<open>contrasimulation R\<close>  by (meson assms lts_tau.trace_incl_with_sink_is_contrasim)
 qed
 
-end 
+end
 end
