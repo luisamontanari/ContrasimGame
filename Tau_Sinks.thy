@@ -3,9 +3,9 @@ imports
   Coupled_Simulation
 begin
 
-section \<open>\<tau>-sinks\<close>
+section \<open>\<open>\<tau>\<close>-sinks\<close>
 
-subsection \<open>Weak Relations Invariant to \<tau>-sinks\<close>
+subsection \<open>Weak Relations Invariant to \<open>\<tau>\<close>-sinks\<close>
 
 lemma simulation_tau_sink_1:
   fixes
@@ -442,7 +442,7 @@ proof -
 qed
 
 
-subsection \<open>\<tau>-sink Properties\<close>
+subsection \<open>\<open>\<tau>\<close>-sink Properties\<close>
 
 context lts_tau
 begin
