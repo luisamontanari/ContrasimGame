@@ -485,7 +485,7 @@ text \<open>Coupled simulation is precisely the intersection of contrasimulation
 
 lemma weak_sim_and_contrasim_implies_coupled_sim:
   assumes
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
     \<open>weak_simulation R\<close>
   shows
     \<open>coupled_simulation R\<close>
@@ -496,7 +496,7 @@ lemma coupledsim_implies_contrasim:
   assumes
     \<open>coupled_simulation R\<close>
   shows 
-    \<open>contrasim R\<close>
+    \<open>contrasimulation R\<close>
 proof -
   have \<open>contrasim_step R\<close>
   unfolding contrasim_step_def
@@ -512,12 +512,12 @@ proof -
     thus \<open>\<exists>q'. q \<Rightarrow>^a  q' \<and> R q' p'\<close>
       using q''_def(1) by blast
   qed
-  thus \<open>contrasim R\<close> using contrasim_step_seq_coincide_for_sims
+  thus \<open>contrasimulation R\<close> using contrasim_step_seq_coincide_for_sims
       coupled_simulation_implies_weak_simulation[OF assms] by blast 
 qed
 
 lemma coupled_simulation_iff_weak_sim_and_contrasim:
-  shows \<open>coupled_simulation R \<longleftrightarrow> contrasim R \<and> weak_simulation R\<close>
+  shows \<open>coupled_simulation R \<longleftrightarrow> contrasimulation R \<and> weak_simulation R\<close>
   using weak_sim_and_contrasim_implies_coupled_sim
     coupledsim_implies_contrasim coupled_simulation_weak_simulation by blast
 
