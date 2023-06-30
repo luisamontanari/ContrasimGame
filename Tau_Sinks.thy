@@ -1,10 +1,10 @@
 section \<open>Reductions and \<open>\<tau>\<close>-sinks\<close>
 
 text \<open>
-  Checking trace inclusion checking can be reduced to contrasimulation checking,
+  Checking trace inclusion can be reduced to contrasimulation checking,
   as can weak simulation checking to coupled simulation checking.
   The trick is to add a \<open>\<tau>\<close>-sink to the transition system, that is, a state that is reachable
-  by a single \<open>\<tau>\<close>-step from every other state.
+  by \<open>\<tau>\<close>-steps from every other state, and cannot be left.
 \<close>
 
 theory Tau_Sinks
@@ -12,7 +12,7 @@ imports
   Coupled_Simulation
 begin
 
-subsection \<open>\<open>\<tau>\<close>-sink Properties\<close>
+subsection \<open>\<open>\<tau>\<close>-Sink Properties\<close>
 
 context lts_tau
 begin
@@ -20,34 +20,18 @@ begin
 definition tau_sink ::
   \<open>'s \<Rightarrow> bool\<close>
 where
-  \<open>tau_sink p  \<equiv> \<forall>a. a = \<tau> \<or> (\<nexists>p'. p \<Rightarrow>a p')\<close>
+  \<open>tau_sink p \<equiv> 
+    (\<forall>a p'. p \<longmapsto>a p' \<longrightarrow> a = \<tau> \<and> p = p') \<and>
+    (\<forall>p0. p0 \<longmapsto>\<tau> p)\<close>
 
-text \<open>If there is a sink every state can reach via tau steps, then weak simulation implies
-  (and thus coincides with) coupled simulation.\<close>
+text \<open>The tau sink is a supremum for the weak transition relation.\<close>
 
-theorem coupledsim_weaksim_equiv_on_sink_expansion:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+lemma tau_sink_maximal:
+  assumes \<open>tau_sink sink\<close>
   shows
-    \<open>p \<sqsubseteq>ws q \<longleftrightarrow> p \<sqsubseteq>cs q\<close>
-  using assms 
-  using coupled_simulation_weak_simulation weak_sim_tau_step weaksim_greatest by auto
-
-lemma sink_coupled_simulates_all_states:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-  shows 
-    \<open>sink \<sqsubseteq>cs p\<close> 
-  by (simp add: assms coupledsim_refl coupledsim_step)
-
-lemma sink_has_no_weak_transitions: 
-  assumes 
-    \<open>tau_sink sink\<close>
-  shows \<open>\<nexists>s'. s' \<noteq> sink \<and> sink \<Rightarrow>^a s' \<and> a \<noteq> \<tau>\<close>
-proof - 
-  have  \<open>\<nexists>s' . sink \<Rightarrow>a s' \<and> a \<noteq> \<tau>\<close> using tau_sink_def assms(1) by auto
-  thus ?thesis using tau_def by blast
-qed
+    \<open>tau_max sink\<close>
+    \<open>(p \<longmapsto>* tau sink)\<close>
+  using assms steps_loop step_weak_step_tau tau_tau unfolding tau_sink_def by metis+
 
 lemma sink_has_no_word_transitions: 
   assumes 
@@ -57,11 +41,30 @@ lemma sink_has_no_word_transitions:
   shows \<open>\<nexists>s'. sink \<Rightarrow>$A s'\<close>
 proof - 
   obtain a where \<open>\<exists>B. A = a#B\<close> using assms(2) list.exhaust_sel by auto
-  hence \<open>\<nexists>s' . sink \<Rightarrow>^a s'\<close> by (metis assms(1,3) list.set_intros(1) lts_tau.tau_def tau_sink_def)
+  hence \<open>\<nexists>s' . sink \<Rightarrow>^a s'\<close>
+    by (metis assms(1,3) list.set_intros(1) lts_tau.tau_def steps_loop tau_sink_def)
   thus ?thesis using \<open>\<exists>B. A = a#B\<close> by fastforce
 qed
-  
 
+subsection \<open>Contrasimulation Equals Weak Simulation on \<open>\<tau>\<close>-Sink Systems\<close>
+
+lemma sink_coupled_simulates_all_states:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows 
+    \<open>sink \<sqsubseteq>cs p\<close> 
+  by (simp add: assms coupledsim_refl coupledsim_step)
+
+theorem coupledsim_weaksim_equiv_on_sink_expansion:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows
+    \<open>p \<sqsubseteq>ws q \<longleftrightarrow> p \<sqsubseteq>cs q\<close>
+  using assms 
+  using coupled_simulation_weak_simulation weak_sim_tau_step weaksim_greatest by auto
+
+subsection \<open>Contrasimulation Equals Weak Trace Inclusion on \<open>\<tau>\<close>-Sink Systems\<close>
+  
 lemma sink_contrasimulates_all_states:
 fixes A :: " 'a list"
   assumes 
@@ -81,7 +84,6 @@ next
     using assms(1) sink_has_no_word_transitions by fastforce
   show ?thesis using assms(2) contrasim_tau_step by auto 
 qed
-
 
 lemma sink_trace_includes_all_states:
   assumes 
@@ -134,7 +136,7 @@ theorem contrasim_trace_incl_equiv_on_sink_expansion:
 
 end
 
-subsection \<open>Weak Relations Invariant to \<open>\<tau>\<close>-sinks\<close>
+subsection \<open>Weak Simulation Invariant to Adding \<open>\<tau>\<close>-Sink\<close>
 
 lemma simulation_tau_sink_1:
   fixes
@@ -411,6 +413,8 @@ next
       using `R p q` unfolding step2_def by blast
   qed
 qed
+
+subsection \<open>Trace Inclusion Invariant to Adding \<open>\<tau>\<close>-Sink\<close>
 
 lemma trace_inclusion_sink_invariant:
   fixes
