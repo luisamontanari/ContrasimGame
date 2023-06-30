@@ -481,6 +481,11 @@ where
 abbreviation weakly_trace_included_by :: \<open>'s \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<sqsubseteq>T  _" [60, 60] 65)
   where \<open>weakly_trace_included_by p q \<equiv> \<exists> R . trace_inclusion R \<and> R p q\<close>
 
+lemma weak_trace_inlcusion_greatest:
+  shows \<open>trace_inclusion (\<lambda> p q . p \<sqsubseteq>T q)\<close>
+  unfolding trace_inclusion_def
+  by blast
+
 subsection \<open>Delay Simulation\<close>
 
 definition delay_simulation :: 

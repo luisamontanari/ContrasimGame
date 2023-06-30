@@ -521,27 +521,6 @@ lemma coupled_simulation_iff_weak_sim_and_contrasim:
   using weak_sim_and_contrasim_implies_coupled_sim
     coupledsim_implies_contrasim coupled_simulation_weak_simulation by blast
 
-text \<open>If there is a sink every state can reach via tau steps, then weak simulation implies
-  (and thus coincides with) coupled simulation.\<close>
-lemma tau_sink_sim_coupledsim:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-    \<open>\<And> p . R sink p\<close>
-    \<open>weak_simulation R\<close>
-  shows
-    \<open>coupled_simulation R\<close>
-  unfolding coupled_simulation_def
-proof safe
-  show \<open> \<And>p q p' a. R p q \<Longrightarrow> p \<longmapsto>a  p' \<Longrightarrow> \<exists>q'. R p' q' \<and> q \<Rightarrow>^a  q'\<close>
-    using assms(3) unfolding weak_simulation_def by blast
-next
-  fix p q
-  assume \<open>R p q\<close>
-  hence \<open>q \<longmapsto>* tau sink \<and> R sink p\<close>
-    using assms(1,2) by blast
-  thus \<open>\<exists>q'. q \<longmapsto>* tau  q' \<and> R q' p\<close> by blast
-qed
-
 subsection \<open>\<open>\<tau>\<close>-Reachability (and Divergence)\<close>
 
 text \<open>Coupled similarity comes close to (weak) bisimilarity in two respects:\<close>

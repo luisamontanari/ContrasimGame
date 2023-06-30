@@ -1,9 +1,138 @@
+section \<open>Reductions and \<open>\<tau>\<close>-sinks\<close>
+
+text \<open>
+  Checking trace inclusion checking can be reduced to contrasimulation checking,
+  as can weak simulation checking to coupled simulation checking.
+  The trick is to add a \<open>\<tau>\<close>-sink to the transition system, that is, a state that is reachable
+  by a single \<open>\<tau>\<close>-step from every other state.
+\<close>
+
 theory Tau_Sinks
 imports
   Coupled_Simulation
 begin
 
-section \<open>\<open>\<tau>\<close>-sinks\<close>
+subsection \<open>\<open>\<tau>\<close>-sink Properties\<close>
+
+context lts_tau
+begin
+
+definition tau_sink ::
+  \<open>'s \<Rightarrow> bool\<close>
+where
+  \<open>tau_sink p  \<equiv> \<forall>a. a = \<tau> \<or> (\<nexists>p'. p \<Rightarrow>a p')\<close>
+
+text \<open>If there is a sink every state can reach via tau steps, then weak simulation implies
+  (and thus coincides with) coupled simulation.\<close>
+
+theorem coupledsim_weaksim_equiv_on_sink_expansion:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows
+    \<open>p \<sqsubseteq>ws q \<longleftrightarrow> p \<sqsubseteq>cs q\<close>
+  using assms 
+  using coupled_simulation_weak_simulation weak_sim_tau_step weaksim_greatest by auto
+
+lemma sink_coupled_simulates_all_states:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows 
+    \<open>sink \<sqsubseteq>cs p\<close> 
+  by (simp add: assms coupledsim_refl coupledsim_step)
+
+lemma sink_has_no_weak_transitions: 
+  assumes 
+    \<open>tau_sink sink\<close>
+  shows \<open>\<nexists>s'. s' \<noteq> sink \<and> sink \<Rightarrow>^a s' \<and> a \<noteq> \<tau>\<close>
+proof - 
+  have  \<open>\<nexists>s' . sink \<Rightarrow>a s' \<and> a \<noteq> \<tau>\<close> using tau_sink_def assms(1) by auto
+  thus ?thesis using tau_def by blast
+qed
+
+lemma sink_has_no_word_transitions: 
+  assumes 
+    \<open>tau_sink sink\<close>
+    \<open>A \<noteq> []\<close>
+    \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
+  shows \<open>\<nexists>s'. sink \<Rightarrow>$A s'\<close>
+proof - 
+  obtain a where \<open>\<exists>B. A = a#B\<close> using assms(2) list.exhaust_sel by auto
+  hence \<open>\<nexists>s' . sink \<Rightarrow>^a s'\<close> by (metis assms(1,3) list.set_intros(1) lts_tau.tau_def tau_sink_def)
+  thus ?thesis using \<open>\<exists>B. A = a#B\<close> by fastforce
+qed
+  
+
+lemma sink_contrasimulates_all_states:
+fixes A :: " 'a list"
+  assumes 
+    \<open>tau_sink sink\<close>
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows 
+    \<open>\<forall> p. sink \<sqsubseteq>c p\<close>
+proof (cases A)
+  case Nil
+  hence empty_word: \<open>sink \<Rightarrow>$A sink\<close> by (simp add: steps.refl)
+  have \<open>\<forall>p. p \<Rightarrow>$A sink\<close> using assms(2) Nil by auto
+  have \<open>sink \<sqsubseteq>c sink\<close> using contrasim_tau_step empty_word Nil by auto 
+  show ?thesis using assms(2) contrasim_tau_step by auto 
+next
+  case Cons
+  hence \<open>\<nexists>s'. (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<and> sink \<Rightarrow>$A s'\<close>
+    using assms(1) sink_has_no_word_transitions by fastforce
+  show ?thesis using assms(2) contrasim_tau_step by auto 
+qed
+
+
+lemma sink_trace_includes_all_states:
+  assumes 
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows 
+    \<open>sink \<sqsubseteq>T p\<close>
+  by (metis assms contrasim_tau_step lts_tau.contrasim_implies_trace_incl) 
+
+lemma trace_incl_with_sink_is_contrasim:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+    \<open>\<And> p . R sink p\<close>
+    \<open>trace_inclusion R\<close>
+  shows
+    \<open>contrasimulation R\<close>
+ unfolding contrasimulation_def
+proof clarify
+  fix p q p' A
+  assume \<open>R p q\<close> \<open>p \<Rightarrow>$A  p'\<close> \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
+  hence \<open>\<exists>q'. q \<Rightarrow>$A  q'\<close>
+    using assms(3) unfolding trace_inclusion_def by blast
+  hence \<open>q \<Rightarrow>$A  sink\<close>
+    using assms(1) tau_tau word_tau_concat by blast
+  thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close>
+    using assms(2) by auto
+qed
+
+theorem contrasim_trace_incl_equiv_on_sink_expansion_R:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+    \<open>\<And> p . R sink p\<close>
+  shows 
+    \<open>contrasimulation R = trace_inclusion R\<close>
+proof
+  assume \<open>contrasimulation R\<close>
+  thus \<open>trace_inclusion R\<close> by (simp add: contrasim_implies_trace_incl)
+next
+  assume \<open>trace_inclusion R\<close>
+  thus \<open>contrasimulation R\<close>  by (meson assms lts_tau.trace_incl_with_sink_is_contrasim)
+qed
+
+theorem contrasim_trace_incl_equiv_on_sink_expansion:
+  assumes
+    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
+  shows
+    \<open>p \<sqsubseteq>T q \<longleftrightarrow> p \<sqsubseteq>c q\<close>
+  using assms weak_trace_inlcusion_greatest
+    contrasim_tau_step contrasim_trace_incl_equiv_on_sink_expansion_R contrasim_implies_trace_incl
+  by (metis (no_types, lifting))
+
+end
 
 subsection \<open>Weak Relations Invariant to \<open>\<tau>\<close>-sinks\<close>
 
@@ -441,107 +570,4 @@ proof -
   qed
 qed
 
-
-subsection \<open>\<open>\<tau>\<close>-sink Properties\<close>
-
-context lts_tau
-begin
-
-definition tau_sink ::
-  \<open>'s \<Rightarrow> bool\<close>
-where
-  \<open>tau_sink p  \<equiv> \<forall>a. a = \<tau> \<or> (\<nexists>p'. p \<Rightarrow>a p')\<close>
-
-lemma sink_has_no_weak_transitions: 
-  assumes 
-    \<open>tau_sink sink\<close>
-  shows \<open>\<nexists>s'. s' \<noteq> sink \<and> sink \<Rightarrow>^a s' \<and> a \<noteq> \<tau>\<close>
-proof - 
-  have  \<open>\<nexists>s' . sink \<Rightarrow>a s' \<and> a \<noteq> \<tau>\<close> using tau_sink_def assms(1) by auto
-  thus ?thesis using tau_def by blast
-qed
-
-lemma sink_has_no_word_transitions: 
-  assumes 
-    \<open>tau_sink sink\<close>
-    \<open>A \<noteq> []\<close>
-    \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
-  shows \<open>\<nexists>s'. sink \<Rightarrow>$A s'\<close>
-proof - 
-  obtain a where \<open>\<exists>B. A = a#B\<close> using assms(2) list.exhaust_sel by auto
-  hence \<open>\<nexists>s' . sink \<Rightarrow>^a s'\<close> by (metis assms(1,3) list.set_intros(1) lts_tau.tau_def tau_sink_def)
-  thus ?thesis using \<open>\<exists>B. A = a#B\<close> by fastforce
-qed
-  
-
-lemma sink_contrasimulates_all_states:
-fixes A :: " 'a list"
-  assumes 
-    \<open>tau_sink sink\<close>
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-  shows 
-    \<open>\<forall> p. sink \<sqsubseteq>c p\<close>
-proof (cases A)
-  case Nil
-  hence empty_word: \<open>sink \<Rightarrow>$A sink\<close> by (simp add: steps.refl)
-  have \<open>\<forall>p. p \<Rightarrow>$A sink\<close> using assms(2) Nil by auto
-  have \<open>sink \<sqsubseteq>c sink\<close> using contrasim_tau_step empty_word Nil by auto 
-  show ?thesis using assms(2) contrasim_tau_step by auto 
-next
-  case Cons
-  hence \<open>\<nexists>s'. (\<forall> a \<in> set(A). a \<noteq> \<tau>) \<and> sink \<Rightarrow>$A s'\<close>
-    using assms(1) sink_has_no_word_transitions by fastforce
-  show ?thesis using assms(2) contrasim_tau_step by auto 
-qed
-
-lemma sink_coupled_simulates_all_states:
-  assumes 
-    \<open>tau_sink sink\<close>
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-  shows 
-    \<open>sink \<sqsubseteq>cs p\<close> 
-  by (simp add: assms(1, 2) coupledsim_refl tau_sink_def coupledsim_step)  
-
-lemma sink_trace_includes_all_states:
-  assumes 
-    \<open>tau_sink sink\<close>
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-  shows 
-    \<open>sink \<sqsubseteq>T p\<close>
-  by (metis assms(2) contrasim_tau_step lts_tau.contrasim_implies_trace_incl) 
-
-lemma trace_incl_with_sink_is_contrasim:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-    \<open>\<And> p . R sink p\<close>
-    \<open>trace_inclusion R\<close>
-  shows
-    \<open>contrasimulation R\<close>
- unfolding contrasimulation_def
-proof clarify
-  fix p q p' A
-  assume \<open>R p q\<close> \<open>p \<Rightarrow>$A  p'\<close> \<open>\<forall> a \<in> set(A). a \<noteq> \<tau>\<close>
-  hence \<open>\<exists>q'. q \<Rightarrow>$A  q'\<close>
-    using assms(3) unfolding trace_inclusion_def by blast
-  hence \<open>q \<Rightarrow>$A  sink\<close>
-    using assms(1) tau_tau word_tau_concat by blast
-  thus \<open>\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p'\<close>
-    using assms(2) by auto
-qed
-
-lemma contrasim_trace_incl_equiv_on_sink_expansion:
-  assumes
-    \<open>\<And> p . (p \<longmapsto>* tau sink)\<close>
-    \<open>\<And> p . R sink p\<close>
-  shows 
-    \<open>contrasimulation R = trace_inclusion R\<close>
-proof
-  assume \<open>contrasimulation R\<close>
-  thus \<open>trace_inclusion R\<close> by (simp add: contrasim_implies_trace_incl)
-next
-  assume \<open>trace_inclusion R\<close>
-  thus \<open>contrasimulation R\<close>  by (meson assms lts_tau.trace_incl_with_sink_is_contrasim)
-qed
-
-end
 end
