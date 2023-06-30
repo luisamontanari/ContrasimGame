@@ -7,3 +7,5 @@ session "Contrasimulation" = "HOL" +
     Tau_Sinks
   document_files
     "root.tex"
+    "root.bib"
+    "splncs04.bst"
