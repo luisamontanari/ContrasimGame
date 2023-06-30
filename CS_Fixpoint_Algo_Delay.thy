@@ -6,8 +6,8 @@ subsection \<open>The Algorithm\<close>
 theory CS_Fixpoint_Algo_Delay
 imports
   Coupled_Simulation
-  "~~/src/HOL/Library/While_Combinator"
-  "~~/src/HOL/Library/Finite_Lattice"
+  "HOL-Library.While_Combinator"
+  "HOL-Library.Finite_Lattice"
 begin
 
 context lts_tau
