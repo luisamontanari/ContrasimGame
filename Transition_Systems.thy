@@ -1,7 +1,9 @@
+section \<open>Preliminaries\<close>
+
 subsection \<open>Labeled Transition Systems\<close>
 
 theory Transition_Systems
-  imports Finite_Partial_Order
+  imports Main
 begin
   
 locale lts =
@@ -118,7 +120,8 @@ lemma step_max_deadlock:
 proof -
   interpret order \<open>(\<lambda> p p'. p \<longmapsto>* A p')\<close> \<open>\<lambda> p p'. p \<longmapsto>* A p' \<and> \<not>(p' \<longmapsto>* A p)\<close>
     by (standard, simp add: assms(1))
-  show ?thesis using local.finite_max assms local.order_trans mem_Collect_eq by metis
+  show ?thesis using assms order_trans order_refl finite_has_maximal2 mem_Collect_eq
+    by metis
 qed
 
 end \<comment>\<open>end of lts\<close>
