@@ -207,7 +207,7 @@ proof -
       \<open>Q0 = {q0}\<close> Q_def notau simp_dsuccs_seq_rev by meson
 qed
 
-subsection \<open>Over-approximating Contrasim by single-step version\<close>
+subsection \<open>Over-Approximating Contrasimulation by a Single-Step Version\<close>
 
 definition contrasim_step ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>

@@ -6,11 +6,11 @@ session "Contrasimulation" = "HOL-Library" +
     "HOL-Library.Product_Order"
     "HOL-Library.Product_Plus"
   theories
-    Contrasim_Set_Game
-    Basic_Contrasim_Game
-    Weak_HML_Contrasimulation
     Coupled_Simulation
     CS_Game_Delay
+    Basic_Contrasim_Game
+    Contrasim_Set_Game
+    Weak_HML_Contrasimulation
     CS_Fixpoint_Algo_Delay
     Tau_Sinks
   document_files

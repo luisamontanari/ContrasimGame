@@ -1,10 +1,10 @@
+section \<open>The Basic Contrasimulation Preorder Game\<close>
+
 theory Basic_Contrasim_Game
 imports
   Simple_Game
   Contrasimulation
 begin
-
-subsection \<open>The Basic Contrasimulation Preorder Game\<close>
 
 datatype ('s, 'a) c_basic_game_node =
   AttackerNode 's 's |

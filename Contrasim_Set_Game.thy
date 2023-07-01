@@ -1,10 +1,10 @@
+section \<open>The Contrasimulation Preorder Set Game\<close>
+
 theory Contrasim_Set_Game
 imports
   Simple_Game
   Contrasimulation
 begin
-
-subsection \<open>The Contrasimulation Preorder Set Game\<close>
 
 datatype ('s, 'a) c_set_game_node =
   AttackerNode 's "'s set" |
