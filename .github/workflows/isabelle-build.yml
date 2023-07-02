@@ -26,7 +26,7 @@ jobs:
       - name: Isabelle-action
         uses: benkeks/isabelle-action@v1.5
         with:
-          args: build -P out -d . Contrasimulation
+          args: build -P out -d . ContraCoupledSimulation
 #      - name: Archive artifact
 #        uses: actions/upload-artifact@v3
 #        with:

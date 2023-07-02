@@ -1,10 +1,5 @@
-session "Contrasimulation" = "HOL-Library" +
+session "ContraCoupledSimulation" (AFP) = "HOL-Library" +
   options [document = "pdf", browser_info = true, document_output = "output", quick_and_dirty = true]
-  theories [quick_and_dirty, document = false]
-    "HOL-Library.While_Combinator"
-    "HOL-Library.Finite_Lattice"
-    "HOL-Library.Product_Order"
-    "HOL-Library.Product_Plus"
   theories
     Coupled_Simulation
     CS_Game_Delay
