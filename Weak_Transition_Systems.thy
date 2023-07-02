@@ -5,7 +5,7 @@ theory Weak_Transition_Systems
 begin                
 
 locale lts_tau = lts trans for
-  trans :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> + fixes
+  trans :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close> ("_ \<longmapsto>_  _" [70, 70, 70] 80) + fixes
   \<tau> :: \<open>'a\<close> begin
   
 definition tau :: \<open>'a \<Rightarrow> bool\<close> where \<open>tau a \<equiv> (a = \<tau>)\<close>

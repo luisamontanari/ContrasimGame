@@ -182,7 +182,7 @@ lemma weak_sim_union_cl:
 lemma weak_sim_remove_dead_state:
   assumes
     \<open>weak_simulation R\<close>
-    \<open>\<And> a p . \<not> step d a p \<and> \<not> step p a d\<close>
+    \<open>\<And> a p . \<not> d \<longmapsto>a p \<and> \<not> p \<longmapsto>a d\<close>
   shows
     \<open>weak_simulation (\<lambda> p q . R p q \<and> q \<noteq> d)\<close>
   unfolding weak_simulation_def
@@ -195,7 +195,8 @@ proof safe
   then obtain q' where \<open>R p' q'\<close> \<open>q \<Rightarrow>^a  q'\<close>
     using assms(1) unfolding weak_simulation_def by blast
   moreover hence \<open>q' \<noteq> d\<close>
-    using assms(2) `q \<noteq> d` by (metis steps.cases)
+    using assms(2) `q \<noteq> d`
+    by (metis steps.simps)
   ultimately show \<open>\<exists>q'. (R p' q' \<and> q' \<noteq> d) \<and> q \<Rightarrow>^a  q'\<close> by blast
 qed
 

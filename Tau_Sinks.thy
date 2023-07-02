@@ -456,12 +456,12 @@ proof -
         by (smt (verit, del_insts))
       then obtain p03 p04 where 
         tau1: \<open>lts_tau.weak_step_tau step2 \<tau> p02 \<tau> p03\<close> and
-        a_step2: \<open>lts.step step2 p03 a p04\<close> and
+        a_step2: \<open>step2 p03 a p04\<close> and
         tau2: \<open>lts_tau.weak_step_tau step2 \<tau> p04 \<tau> p'\<close>
         using snoc.prems(1) lts_tau.tau_def 
         by (metis last_in_set snoc_eq_iff_butlast)
       hence \<open>p04 \<noteq> sink\<close> using assms snoc.prems(1) by force
-      hence a_step: \<open>lts.step step p03 a p04\<close> using a_step2 assms by auto
+      hence a_step: \<open>step p03 a p04\<close> using a_step2 assms by auto
       have notsinkp03: \<open>p03 \<noteq> sink\<close> using a_step2 assms snoc.prems(1) by force
       have \<open>?steps step2 p02 ?tau p03\<close> using tau1 by (simp add: lts_tau.tau_tau)
       hence \<open>?steps step p02 ?tau p03\<close> using notsinkp03
@@ -509,7 +509,7 @@ proof -
         by (metis (mono_tags, lifting) lts_tau.weak_step_seq.simps(2))
       hence IH: \<open>?seq step2 \<tau> p1 xs p'\<close> using Cons by auto
       then obtain p01 p02 where \<open>lts_tau.weak_step_tau step \<tau> p \<tau> p01\<close> and
-        strong: \<open>lts.step step p01 x p02\<close> and
+        strong: \<open>step p01 x p02\<close> and
         p02_weak: \<open>lts_tau.weak_step_tau step \<tau> p02 \<tau> p1\<close>
         using Cons.prems(1) p1_def lts_tau.tau_def by (metis list.set_intros(1))
       hence tau1: \<open>lts_tau.weak_step_tau step2 \<tau> p \<tau> p01\<close> 

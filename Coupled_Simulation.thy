@@ -1171,7 +1171,7 @@ text \<open>The following example shows that a system might be related by s-coup
 datatype ex_state = a0 | a1 | a2 | a3 | b0 | b1 | b2 
   
 locale ex_lts = lts_tau trans \<tau>
-  for trans :: \<open>ex_state \<Rightarrow> nat \<Rightarrow> ex_state \<Rightarrow> bool\<close> and \<tau> +
+  for trans :: \<open>ex_state \<Rightarrow> nat \<Rightarrow> ex_state \<Rightarrow> bool\<close> ("_ \<longmapsto>_  _" [70, 70, 70] 80) and \<tau> +
   assumes
     sys:
   \<open>trans = (\<lambda> p act q .
