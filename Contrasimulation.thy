@@ -83,7 +83,6 @@ proof -
   ultimately show ?thesis using equivpI by blast
 qed
 
-
 lemma contrasim_implies_trace_incl:
   assumes \<open>contrasimulation R\<close>
   shows \<open>trace_inclusion R\<close>

@@ -59,7 +59,9 @@ lemma defender_preceded_by_attacker:
   assumes
     \<open>n0 # play \<in> plays (AttackerNode p0 q0)\<close>
     \<open>cs_game_defender_node n0\<close>
-  shows \<open>\<exists> p q . hd play = AttackerNode p q \<and> cs_game_moves (AttackerNode p q) n0\<close> \<open>play \<noteq> []\<close>
+  shows
+    \<open>\<exists> p q . hd play = AttackerNode p q \<and> cs_game_moves (AttackerNode p q) n0\<close>
+    \<open>play \<noteq> []\<close>
 proof -
   have n0_not_init: \<open>n0 \<noteq> (AttackerNode p0 q0)\<close> using assms(2) by auto
   hence \<open>cs_game_moves (hd play) n0\<close> using assms(1)
@@ -76,7 +78,6 @@ lemma defender_only_challenged_by_visible_actions:
     \<open>\<not>tau a\<close>
   using assms defender_preceded_by_attacker
   by fastforce
-
 
 lemma strategy_from_coupleddsim_retains_coupledsim:
   assumes
@@ -136,7 +137,8 @@ next
     have \<open>strategy_from_coupleddsim R (n0 # play) =
         (AttackerNode (SOME q1 . R q1 pi \<and> qi \<longmapsto>* tau q1) pi)\<close>
       unfolding n0_def(1) by auto
-    with subassms(1) have qp_def: \<open>p = (SOME q1 . R q1 pi \<and> qi \<longmapsto>* tau q1)\<close> \<open>q = pi\<close> by auto
+    with subassms(1) have qp_def:
+      \<open>p = (SOME q1 . R q1 pi \<and> qi \<longmapsto>* tau q1)\<close> \<open>q = pi\<close> by auto
     have \<open>\<exists> q1 . R q1 pi \<and> qi \<longmapsto>* tau q1\<close>
       using n0_def `R pi qi` `coupled_delay_simulation R`
       unfolding coupled_delay_simulation_def by blast
@@ -257,7 +259,8 @@ proof (clarify)
     then obtain p q where n1_def: \<open>n1 = AttackerNode p q\<close>
       using cs_game_defender_node.elims(3) by blast
     hence \<open>R p q\<close>
-      using strategy_from_coupleddsim_retains_coupledsim[OF assms, of \<open>n1 # play\<close>] 3(1) by auto
+      using strategy_from_coupleddsim_retains_coupledsim[OF assms, of \<open>n1 # play\<close>] 3(1)
+      by auto
     have \<open>(\<exists> p1 a . n1' = (DefenderStepNode a p1 q) \<and> (p \<longmapsto>a p1))
         \<or> n1' = (DefenderCouplingNode p q)\<close>
       using n1_def `cs_game_moves n1 n1'` coupling_challenge cs_game_moves_no_step(5)
@@ -406,5 +409,4 @@ next
 qed
 
 end
-
 end

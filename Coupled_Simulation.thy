@@ -523,13 +523,15 @@ lemma coupled_simulation_iff_weak_sim_and_contrasim:
 
 subsection \<open>\<open>\<tau>\<close>-Reachability (and Divergence)\<close>
 
-text \<open>Coupled similarity comes close to (weak) bisimilarity in two respects:\<close>
+text \<open>
+  Coupled similarity comes close to (weak) bisimilarity in two respects:
 
-text \<open>If there are no \<open>\<tau>\<close> transitions, coupled similarity coincides with bisimilarity.\<close>
+  \<^item> If there are no \<open>\<tau>\<close> transitions, coupled similarity coincides with bisimilarity.
 
-text \<open>If there are only finite \<open>\<tau>\<close> reachable portions, then coupled similarity contains a
+  \<^item> If there are only finite \<open>\<tau>\<close> reachable portions, then coupled similarity contains a
   bisimilarity on the \<open>\<tau>\<close>-maximal states. (For this,  \<open>\<tau>\<close>-cycles have to be ruled out, which, as
-  we show, is no problem because their removal is transparent to coupled similarity.) \<close>
+  we show, is no problem because their removal is transparent to coupled similarity.)
+\<close>
 
 lemma taufree_coupledsim_symm:
   assumes
@@ -776,10 +778,10 @@ qed
 
 subsection \<open>Reduction Semantics Coupled Simulation\<close>
 
-text \<open>The tradition to described coupled simulation as special delay/weak simulation is quite
+text \<open>The tradition to describe coupled simulation as special delay/weak simulation is quite
   common for coupled simulations on reduction semantics as in @{cite "gp15" and "Fournet2005"},
   of which @{cite "gp15"} can also be found in the AFP @{cite "Encodability_Process_Calculi-AFP"}.
-  The notions coincide (in systems just with \<open>\<tau>\<close>-transitions).\<close>
+  The notions coincide (for systems just with \<open>\<tau>\<close>-transitions).\<close>
 
 definition coupled_simulation_gp15 ::
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
@@ -917,7 +919,7 @@ subsection \<open>S-coupled Simulation\<close>
 
 text \<open>Originally coupled simulation was introduced as two weak simulations coupled at the stable
   states. We give the definitions from @{cite "parrow1992" and "ps1994"} and a proof connecting
-  this notion to "our" coupled similarity in the absence of divergences following
+  this notion to “our” coupled similarity in the absence of divergences following
   @{cite "sangiorgi2012"}.\<close>
 
 \<comment>\<open>From @{cite "parrow1992"}\<close>

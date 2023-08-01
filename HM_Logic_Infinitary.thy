@@ -1,9 +1,9 @@
+section \<open>Infinitary Hennessy--Milner Logic\<close>
+
 theory HM_Logic_Infinitary
   imports 
     Weak_Relations
 begin
-
-section \<open>Infinitary Hennessy-Milner Logic\<close>
 
 datatype ('a,'x)HML_formula =
   HML_true 
@@ -12,6 +12,9 @@ datatype ('a,'x)HML_formula =
 | HML_poss \<open>'a\<close> \<open>('a,'x)HML_formula\<close>            (\<open>\<langle>_\<rangle>_\<close> [60] 60)
 
 term \<open>\<langle>\<tau>\<rangle>\<langle>1\<rangle>\<langle>2\<rangle>\<langle>a\<rangle> ((\<lambda> x. \<langle>2\<rangle>x) C)\<close>
+
+\<comment>\<open>The HML formulation is derived from that by Max Pohlmann in
+  @{url \<open>https://github.com/maxpohlmann/Reducing-Reactive-to-Strong-Bisimilarity\<close>}\<close>
 
 subsection \<open>Satisfaction Relation\<close>
 
@@ -24,7 +27,8 @@ function satisfies :: \<open>'s \<Rightarrow> ('a, 's) HML_formula \<Rightarrow>
     \<open>(p \<Turnstile> HML_true) = True\<close> 
   | \<open>(p \<Turnstile> HML_conj I F) = (\<forall> i \<in> I. p \<Turnstile> (F i))\<close> 
   | \<open>(p \<Turnstile> HML_neg \<phi>) = (\<not> p \<Turnstile> \<phi>)\<close>
-  | \<open>(p \<Turnstile> HML_poss \<alpha> \<phi>) = (\<exists> p'. ((tau \<alpha> \<and> p \<longmapsto>* tau p') \<or> (\<not> tau \<alpha> \<and> p \<longmapsto>\<alpha> p')) \<and> p' \<Turnstile> \<phi>)\<close>
+  | \<open>(p \<Turnstile> HML_poss \<alpha> \<phi>) =
+      (\<exists> p'. ((tau \<alpha> \<and> p \<longmapsto>* tau p') \<or> (\<not> tau \<alpha> \<and> p \<longmapsto>\<alpha> p')) \<and> p' \<Turnstile> \<phi>)\<close>
   using HML_formula.exhaust by (auto, blast)
 
 inductive_set HML_wf_rel :: \<open>('s \<times> ('a, 's) HML_formula) rel\<close> 
@@ -40,18 +44,30 @@ proof (safe)
   obtain p \<phi> where \<open>t = (p, \<phi>)\<close> by force
   assume \<open>\<forall>x. (\<forall>y. (y, x) \<in> HML_wf_rel \<longrightarrow> P y) \<longrightarrow> P x\<close>
   hence \<open>P (p, \<phi>)\<close>
-    apply (induct \<phi> arbitrary: p)
-    apply (metis HML_formula.ctr_transfer(1) HML_formula.distinct(3) HML_formula.distinct(5) HML_formula.rel_distinct(2) HML_wf_relp.cases HML_wf_relp_HML_wf_rel_eq surj_pair)
-    apply (smt (verit) HML_formula.distinct(10) HML_formula.distinct(7) HML_formula.inject(1) HML_wf_rel_def UNIV_I case_prodE' image_eqI HML_wf_rel.cases mem_Collect_eq split_conv)
-    apply (smt (verit, ccfv_threshold) HML_formula.distinct(11) HML_formula.distinct(7) HML_formula.inject(2) case_prodI2 case_prod_curry HML_wf_rel.cases HML_wf_rel_def)
-    apply (smt (verit, del_insts) HML_formula.distinct(3,5,9,11)  HML_formula.inject(3) HML_wf_rel.cases case_prodD case_prodE' HML_wf_rel_def mem_Collect_eq)
-    done
+  proof (induct \<phi> arbitrary: p)
+    case HML_true
+    then show ?case
+      by (metis HML_formula.distinct(1,3,5) HML_wf_rel.cases old.prod.exhaust)
+  next
+    case (HML_conj I F)
+    thus ?case
+      by (smt (verit) HML_formula.distinct(7,9) HML_formula.inject(1) HML_wf_rel.cases
+         case_prodD case_prodE' lts_tau.HML_wf_rel_def mem_Collect_eq range_eqI)
+  next
+    case (HML_neg \<phi>)
+    thus ?case
+      by (metis HML_formula.distinct(11,7) HML_formula.inject(2) HML_wf_rel.cases surj_pair)
+  next
+    case (HML_poss a \<phi>)
+    thus ?case
+      by (smt (verit, del_insts) HML_formula.distinct(3,5,9,11)  HML_formula.inject(3)
+        HML_wf_rel.cases case_prodD case_prodE' HML_wf_rel_def mem_Collect_eq)
+  qed
   thus \<open>P t\<close> using \<open>t = (p, \<phi>)\<close> by simp
 qed
 
 termination satisfies using HML_wf_rel_is_wf 
   by (standard, (simp add: HML_wf_rel.intros)+)
-
 
 inductive_set HML_direct_subformulas :: \<open>(('a, 's) HML_formula) rel\<close>
   where
@@ -59,18 +75,29 @@ inductive_set HML_direct_subformulas :: \<open>(('a, 's) HML_formula) rel\<close
   | \<open>(\<phi>, HML_neg \<phi>) \<in> HML_direct_subformulas\<close> 
   | \<open>(\<phi>, HML_poss \<alpha> \<phi>) \<in> HML_direct_subformulas\<close>
 
-
 lemma HML_direct_subformulas_wf: \<open>wf HML_direct_subformulas\<close> 
   unfolding wf_def
 proof (safe)
   fix P x
   assume \<open>\<forall>x. (\<forall>y. (y, x) \<in> HML_direct_subformulas \<longrightarrow> P y) \<longrightarrow> P x\<close>
   thus \<open>P x\<close>
-    apply (induct, auto)
-    using HML_direct_subformulas.simps apply blast
-    apply (metis HML_direct_subformulas.cases HML_formula.distinct(7) HML_formula.distinct(9) HML_formula.inject(1) range_eqI)
-    apply (metis HML_direct_subformulas.simps HML_formula.distinct(11) HML_formula.distinct(7) HML_formula.inject(2))
-    by (metis HML_direct_subformulas.simps HML_formula.distinct(11) HML_formula.distinct(9) HML_formula.inject(3))
+  proof induct
+    case HML_true
+    then show ?case using HML_direct_subformulas.simps by blast
+  next
+    case (HML_conj I F)
+    then show ?case
+      by (metis HML_direct_subformulas.cases HML_formula.distinct(7,9)
+          HML_formula.inject(1) range_eqI)
+  next
+    case (HML_neg \<phi>)
+    then show ?case
+      by (metis HML_direct_subformulas.simps HML_formula.distinct(11,7) HML_formula.inject(2))
+  next
+    case (HML_poss a \<phi>)
+    then show ?case
+      by (metis HML_direct_subformulas.simps HML_formula.distinct(11,9) HML_formula.inject(3))
+  qed
 qed
 
 definition HML_subformulas where \<open>HML_subformulas \<equiv> (HML_direct_subformulas)\<^sup>+\<close>
@@ -109,7 +136,6 @@ lemma HML_equivalent_symm:
   shows \<open>HML_equivalent q p\<close>
   using HML_equivalent_def assms by presburger
 
-
 subsection \<open>Weak-NOR Hennessy-Milner Logic\<close>
 
 definition HML_weaknor ::
@@ -133,10 +159,20 @@ lemma weak_backwards_truth:
   shows
     \<open>p \<Turnstile> \<phi>\<close>
   using assms
-  apply (cases)
-  apply force
-  using satisfies.simps(4) steps_concat tau_tau apply blast
-  by (smt (z3) HML_weaknor_def satisfies.simps(4) steps_concat tau_tau)
+proof cases
+  case Base
+  then show ?thesis by force
+next
+  case (Obs \<phi> a)
+  then show ?thesis
+    using assms(2,3) satisfies.simps(4) steps_concat tau_tau by blast
+next
+  case (Conj I F)
+  then show ?thesis
+    unfolding HML_weaknor_def tau_def
+    using tau_tau assms steps_concat
+    by force
+qed
 
 lemma tau_a_obs_implies_delay_step: 
   assumes \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
@@ -152,9 +188,11 @@ lemma delay_step_implies_tau_a_obs:
     \<open>p' \<Turnstile> \<phi>\<close>
   shows \<open>p  \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>\<phi>\<close>
 proof - 
-  obtain p'' where \<open>p \<Rightarrow>^\<tau> p''\<close> and \<open>p'' \<Rightarrow>^a p'\<close> using assms steps.refl tau_tau by blast
-  thus ?thesis by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
+  obtain p'' where \<open>p \<Rightarrow>^\<tau> p''\<close> and \<open>p'' \<Rightarrow>^a p'\<close>
+    using assms steps.refl tau_tau by blast
+  thus ?thesis
+    by (metis assms(1,2) lts_tau.satisfies.simps(4) lts_tau.tau_tau)
 qed
 
-end \<comment> \<open>of \<open>context lts\<close>\<close>
-end \<comment> \<open>of \<open>theory\<close>\<close>
+end
+end

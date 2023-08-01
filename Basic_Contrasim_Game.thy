@@ -94,40 +94,44 @@ proof (induct arbitrary: p q rule: plays_for_0strategy.induct[OF assms(4)])
 next 
   case p0moved: (2 n0 play)
   hence IH:\<open>AttackerNode p q \<in> set (n0#play) \<Longrightarrow> R p q\<close> by simp
-  from p0moved.prems have \<open>(AttackerNode p q) \<in> set ((strategy_from_contrasim R (n0 # play))#n0#play)\<close> 
+  from p0moved.prems have
+    \<open>(AttackerNode p q) \<in> set ((strategy_from_contrasim R (n0 # play))#n0#play)\<close>
     by simp
-  hence \<open>(AttackerNode p q = (strategy_from_contrasim R (n0 # play))) \<or> (AttackerNode p q \<in> set (n0#play))\<close> 
+  hence \<open>(AttackerNode p q =
+      (strategy_from_contrasim R (n0 # play))) \<or> (AttackerNode p q \<in> set (n0#play))\<close>
     by simp
   thus \<open>R p q\<close>
   proof (rule disjE)
-     assume \<open>AttackerNode p q \<in> set (n0#play)\<close>
-     thus \<open>R p q\<close> using IH by simp
-   next
-     assume A: \<open>AttackerNode p q = (strategy_from_contrasim R (n0 # play))\<close>
-     have \<open>\<exists>A ppred. n0 = (DefenderNode A q ppred)\<close> using p0moved.hyps(3) 
-       strategy_from_contrasim.simps(1)[of \<open>R\<close>]
-       by (metis (no_types, lifting) A c_basic_game_node.inject(1) c_game_defender_node.elims(2))
-     then obtain A ppred where n0_def: \<open>n0 = (DefenderNode A q ppred)\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-       by (metis assms(3) c_basic_game.basic_defender_pred_is_attacker simulation_challenge p0moved.hyps(1, 3) strategy0_plays_subset)
-     hence \<open>strategy_from_contrasim R (n0#play) = AttackerNode (SOME q1. R q1 q \<and> ppred \<Rightarrow>$ A  q1) q\<close> 
-       using n0_def strategy_from_contrasim.simps(1)[of \<open>R\<close> \<open>A\<close> \<open>q\<close> \<open>ppred\<close> \<open>play\<close>] by auto
-     hence p_def: \<open>p = (SOME p1. R p1 q \<and> ppred \<Rightarrow>$ A p1)\<close> using A by auto
-     have \<open>\<exists>qpred. hd play = (AttackerNode qpred ppred) \<and> c_game_moves (hd play) n0\<close> 
-       using basic_defender_pred_is_attacker strategy0_plays_subset[OF p0moved.hyps(1)]
-       by (simp add: assms(3) n0_def  p0moved.hyps(3)) 
-     then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred ppred)\<close> 
-       and qpred_move: \<open>c_game_moves (hd play) n0\<close> by auto
-     have qpred_q_move: \<open>qpred \<Rightarrow>$A q\<close> using qpred_def qpred_move n0_def by simp
-     have \<open>hd play \<in> set (n0 # play)\<close> 
-       using second_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)] assms(3)
-       by (auto simp add: n0_def)
-     hence pred_R: \<open>R qpred ppred\<close> 
-       by (simp add: qpred_def p0moved.hyps(1) p0moved.hyps(2))
-     have  \<open>\<exists> p1 . R p1 q \<and> ppred \<Rightarrow>$ A p1\<close>
-      using qpred_q_move pred_R assms(1) \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-      unfolding contrasimulation_def by blast
-    from someI_ex[OF this] show \<open>R p q\<close> unfolding p_def by blast
-   qed
+    assume \<open>AttackerNode p q \<in> set (n0#play)\<close>
+    thus \<open>R p q\<close> using IH by simp
+  next
+    assume A: \<open>AttackerNode p q = (strategy_from_contrasim R (n0 # play))\<close>
+    have \<open>\<exists>A ppred. n0 = (DefenderNode A q ppred)\<close> using p0moved.hyps(3) 
+      strategy_from_contrasim.simps(1)[of \<open>R\<close>]
+      by (metis (no_types, lifting) A c_basic_game_node.inject(1) c_game_defender_node.elims(2))
+    then obtain A ppred where n0_def: \<open>n0 = (DefenderNode A q ppred)\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
+      by (metis assms(3) c_basic_game.basic_defender_pred_is_attacker
+          simulation_challenge p0moved.hyps(1, 3) strategy0_plays_subset)
+    hence \<open>strategy_from_contrasim R (n0#play) =
+        AttackerNode (SOME q1. R q1 q \<and> ppred \<Rightarrow>$ A  q1) q\<close> 
+      using n0_def strategy_from_contrasim.simps(1)[of \<open>R\<close> \<open>A\<close> \<open>q\<close> \<open>ppred\<close> \<open>play\<close>] by auto
+    hence p_def: \<open>p = (SOME p1. R p1 q \<and> ppred \<Rightarrow>$ A p1)\<close> using A by auto
+    have \<open>\<exists>qpred. hd play = (AttackerNode qpred ppred) \<and> c_game_moves (hd play) n0\<close> 
+      using basic_defender_pred_is_attacker strategy0_plays_subset[OF p0moved.hyps(1)]
+      by (simp add: assms(3) n0_def  p0moved.hyps(3)) 
+    then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred ppred)\<close> 
+      and qpred_move: \<open>c_game_moves (hd play) n0\<close> by auto
+    have qpred_q_move: \<open>qpred \<Rightarrow>$A q\<close> using qpred_def qpred_move n0_def by simp
+    have \<open>hd play \<in> set (n0 # play)\<close> 
+      using second_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)] assms(3)
+      by (auto simp add: n0_def)
+    hence pred_R: \<open>R qpred ppred\<close> 
+      by (simp add: qpred_def p0moved.hyps(1) p0moved.hyps(2))
+    have  \<open>\<exists> p1 . R p1 q \<and> ppred \<Rightarrow>$ A p1\<close>
+     using qpred_q_move pred_R assms(1) \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
+     unfolding contrasimulation_def by blast
+   from someI_ex[OF this] show \<open>R p q\<close> unfolding p_def by blast
+  qed
 next
   case p1moved: (3 n1 play n1')
   from p1moved.hyps have IH:\<open>AttackerNode p q \<in> set (n1#play) \<Longrightarrow> R p q\<close> by simp
@@ -154,7 +158,6 @@ lemma basic_contrasim_game_complete:
     \<open>initial = AttackerNode p q\<close>
   shows \<open>player0_winning_strategy (strategy_from_contrasim R) initial\<close>
     unfolding player0_winning_strategy_def 
-
 proof (safe)
   fix play
   assume A1: \<open>play \<in> plays_for_0strategy (strategy_from_contrasim R) initial\<close>
@@ -162,7 +165,8 @@ proof (safe)
     unfolding player1_wins_immediately_def
   proof - 
     assume A: \<open>c_game_defender_node (hd play) \<and> (\<nexists>p'. c_game_moves (hd play) p')\<close>
-    have player0_has_succ_node: \<open>c_game_defender_node (hd play) \<Longrightarrow> \<exists>p'. c_game_moves (hd play) p'\<close>
+    have player0_has_succ_node: \<open>c_game_defender_node (hd play) \<Longrightarrow>
+      \<exists>p'. c_game_moves (hd play) p'\<close>
     proof (induct rule: simple_game.plays_for_0strategy.induct[OF A1])
       case init: 1 
       from assms(3) have \<open>\<not>c_game_defender_node (hd [initial])\<close> by simp
@@ -176,9 +180,7 @@ proof (safe)
       hence \<open>\<not>c_game_defender_node (strategy_from_contrasim R (n0#play))\<close>
         using p0moved.hyps(4) c_game_moves.elims(2)[of \<open>n0\<close> \<open>strategy_from_contrasim R (n0#play)\<close>]
         by force 
-      hence \<open>\<not>c_game_defender_node (hd (strategy_from_contrasim R (n0 # play) # n0 # play))\<close> 
-        by simp
-      hence \<open>False\<close> using p0moved.prems ..
+      hence \<open>False\<close> using p0moved.prems by simp
       then show ?case ..
     next
       case p1moved: (3 n1 play n1')
@@ -196,10 +198,14 @@ proof (safe)
         using p1moved.hyps n1_def n1'_def by auto
       hence same_q: \<open>q0 = q\<close> by auto
       from Move_n1_n1' have p_succ: \<open>p \<Rightarrow>$A p1\<close> by auto
-      from assms(1) have Contra: \<open>\<And>p q p' A. (\<forall>a\<in>set A. a \<noteq> \<tau>) \<Longrightarrow> R p q \<Longrightarrow> p \<Rightarrow>$ A  p' \<Longrightarrow> (\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p')\<close> 
+      from assms(1) have Contra:
+          \<open>\<And>p q p' A. (\<forall>a\<in>set A. a \<noteq> \<tau>) \<Longrightarrow> R p q \<Longrightarrow> p \<Rightarrow>$ A  p'
+          \<Longrightarrow> (\<exists>q'. q \<Rightarrow>$ A  q' \<and> R q' p')\<close> 
         unfolding contrasimulation_def by auto
-      hence \<open>\<exists> q'. (q \<Rightarrow>$ A q')\<and> R q' p1\<close> using Contra[OF \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> pq_in_R p_succ] by auto
-      hence \<open>\<exists> p1 q1. c_game_moves n1' (AttackerNode p1 q1)\<close> using same_q n1'_def by auto
+      hence \<open>\<exists> q'. (q \<Rightarrow>$ A q')\<and> R q' p1\<close>
+        using Contra[OF \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> pq_in_R p_succ] by auto
+      hence \<open>\<exists> p1 q1. c_game_moves n1' (AttackerNode p1 q1)\<close>
+        using same_q n1'_def by auto
       then show ?case by auto
     qed
     thus \<open>False\<close> using A by auto
@@ -208,7 +214,7 @@ qed
 
 subsection \<open>Winning Strategy Implies Contrasimulation (Soundness)\<close>
 
-lemma strategy_from_contrasim_sound : 
+lemma strategy_from_contrasim_sound: 
   assumes
     \<open>R p0 q0\<close>
     \<open>contrasimulation R\<close>
@@ -234,12 +240,16 @@ proof (safe)
     by fastforce
   with mov_p_p1 have q1_def: \<open>\<exists>q1. R q1 p1 \<and> q \<Rightarrow>$A q1\<close> 
     using assms(2) unfolding contrasimulation_def by blast
-  from n0_def have \<open>strategy_from_contrasim R (n0 # play) = (AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1)\<close>
+  from n0_def have
+    \<open>strategy_from_contrasim R (n0 # play)
+    = (AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1)\<close>
     by auto
-  then obtain q' where \<open>AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1 = AttackerNode q' p1\<close> by blast
+  then obtain q' where
+    \<open>AttackerNode (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1) p1 = AttackerNode q' p1\<close> by blast
   hence q'_def: \<open>q' = (SOME q1 . R q1 p1 \<and> q \<Rightarrow>$A q1)\<close> by auto
   with someI_ex[OF q1_def] have \<open>R q' p1 \<and> q \<Rightarrow>$A q'\<close> by blast
-  thus \<open>c_game_moves n0 (strategy_from_contrasim R (n0 # play))\<close> using q'_def by (simp add: n0_def) 
+  thus \<open>c_game_moves n0 (strategy_from_contrasim R (n0 # play))\<close>
+    using q'_def by (simp add: n0_def) 
 qed
 
 lemma basic_contrasim_game_sound: 
@@ -254,12 +264,16 @@ proof (safe)
   fix p q p1 A
   assume A1: \<open>p \<Rightarrow>$A p1\<close>
   assume A2: \<open>R p q\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-  hence \<open>\<exists> play . play \<in> plays_for_0strategy f initial \<and> hd play = AttackerNode p q\<close> using R_def by auto
-  from this obtain play where play_def: \<open>play \<in> plays_for_0strategy f initial \<and> hd play = AttackerNode p q\<close> ..
-  from assms(1) have \<open>\<not>player1_wins_immediately play\<close> using player0_winning_strategy_def play_def by auto
+  hence \<open>\<exists> play . play \<in> plays_for_0strategy f initial \<and> hd play = AttackerNode p q\<close>
+    using R_def by auto
+  from this obtain play where play_def:
+    \<open>play \<in> plays_for_0strategy f initial \<and> hd play = AttackerNode p q\<close> ..
+  from assms(1) have \<open>\<not>player1_wins_immediately play\<close>
+    using player0_winning_strategy_def play_def by auto
   hence \<open>(c_game_defender_node (hd play) \<and> (\<nexists>p'. c_game_moves (hd play) p')) \<Longrightarrow> False\<close> 
     using player1_wins_immediately_def by auto
-  hence Def_not_stuck: \<open>c_game_defender_node (hd play) \<Longrightarrow> (\<nexists>p'. c_game_moves (hd play) p') \<Longrightarrow> False\<close> 
+  hence Def_not_stuck: \<open>c_game_defender_node (hd play) \<Longrightarrow> (\<nexists>p'. c_game_moves (hd play) p')
+    \<Longrightarrow> False\<close> 
     by auto
   have \<open>(p \<Rightarrow>$A p1) \<Longrightarrow> (((DefenderNode A p1 q)#play) \<in> plays_for_0strategy f initial)\<close>
   proof -
@@ -273,29 +287,37 @@ proof (safe)
       using  \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by (auto simp add: play_def A1)
     have \<open>(DefenderNode A p1 q)#(hd play)#(tl play) \<in> plays_for_0strategy f initial\<close> 
       using plays_for_0strategy.p1move[OF inF pl1 mov0] .
-    thus \<open>DefenderNode A p1 q#play \<in> plays_for_0strategy f initial\<close> by (simp add: sym[OF play_split])
+    thus \<open>DefenderNode A p1 q#play \<in> plays_for_0strategy f initial\<close>
+      by (simp add: sym[OF play_split])
   qed
-
-  hence def_in_f: \<open>(DefenderNode A p1 q)#play \<in> plays_for_0strategy f initial\<close> by (simp add: A1)
+  hence def_in_f: \<open>(DefenderNode A p1 q)#play \<in> plays_for_0strategy f initial\<close>
+    by (simp add: A1)
   hence \<open>\<not>(player1_wins_immediately (DefenderNode A p1 q#play))\<close> 
     using assms(1) player0_winning_strategy_def by auto
-  hence \<open>\<exists>n1. c_game_moves (DefenderNode A p1 q) n1\<close> using player1_wins_immediately_def by auto
+  hence \<open>\<exists>n1. c_game_moves (DefenderNode A p1 q) n1\<close>
+    using player1_wins_immediately_def by auto
   have move_ex: \<open>c_game_moves (DefenderNode A p1 q) (f (DefenderNode A p1 q # play))\<close>
     using assms(2) def_in_f sound_0strategy_def by auto
-  hence  in_f: \<open>f ((DefenderNode A p1 q) # play) # (DefenderNode A p1 q) # play \<in> plays_for_0strategy f initial\<close> 
+  hence in_f: \<open>f ((DefenderNode A p1 q) # play) # (DefenderNode A p1 q) # play
+      \<in> plays_for_0strategy f initial\<close> 
     using plays_for_0strategy.p0move[OF def_in_f] by auto
-  obtain n1 where n1_def: \<open>n1 = f (DefenderNode A p1 q # play)\<close>
-    and n1_move: \<open>c_game_moves (DefenderNode A p1 q) n1\<close> using move_ex by auto
-  hence \<open>\<exists>q1. n1 = (AttackerNode q1 p1)\<close> 
+  obtain n1 where
+    n1_def: \<open>n1 = f (DefenderNode A p1 q # play)\<close> and
+    n1_move: \<open>c_game_moves (DefenderNode A p1 q) n1\<close>
+    using move_ex by auto
+  hence \<open>\<exists>q1. n1 = (AttackerNode q1 p1)\<close>
     using c_game_moves.elims(2)[of \<open>DefenderNode A p1 q\<close> n1] by auto
-  from this obtain q1 where q1_def: \<open>n1 = (AttackerNode q1 p1)\<close> ..
-  have \<open>c_game_moves (DefenderNode A p1 q) (AttackerNode q1 p1)\<close> using q1_def move_ex n1_def by auto
+  from this obtain q1 where
+    q1_def: \<open>n1 = (AttackerNode q1 p1)\<close> ..
+  have \<open>c_game_moves (DefenderNode A p1 q) (AttackerNode q1 p1)\<close>
+    using q1_def move_ex n1_def by auto
   hence q1_succ: \<open>q \<Rightarrow>$A q1\<close> using c_game_moves.simps(2) by auto
   have def: \<open>c_game_defender_node (DefenderNode A p1 q)\<close> by simp
-  hence \<open>(AttackerNode q1 p1)#(DefenderNode A p1 q)#play \<in> plays_for_0strategy f initial\<close> 
+  hence \<open>(AttackerNode q1 p1)#(DefenderNode A p1 q)#play \<in> plays_for_0strategy f initial\<close>
     using q1_def n1_def in_f by auto
-  then obtain R_play where R_play_def: \<open>R_play = (AttackerNode q1 p1)#(DefenderNode A p1 q)#play\<close> 
-    and R_play_in_f: \<open>R_play \<in> plays_for_0strategy f initial\<close> by simp
+  then obtain R_play where
+    R_play_def: \<open>R_play = (AttackerNode q1 p1)#(DefenderNode A p1 q)#play\<close> and
+    R_play_in_f: \<open>R_play \<in> plays_for_0strategy f initial\<close> by simp
   hence \<open>(hd R_play) = AttackerNode q1 p1\<close> by (simp add: R_play_def)
   hence \<open>R q1 p1\<close> unfolding R_def using R_play_in_f by auto
   thus \<open>R p q \<Longrightarrow> p \<Rightarrow>$ A  p1 \<Longrightarrow> \<exists>q1. q \<Rightarrow>$ A  q1 \<and> R q1 p1\<close> using q1_succ by auto
@@ -305,14 +327,17 @@ theorem winning_strategy_in_basic_game_iff_contrasim:
   assumes
     \<open>initial = AttackerNode p q\<close>
   shows 
-    \<open>(\<exists> f . player0_winning_strategy f initial \<and> sound_0strategy f initial) = (\<exists> C. contrasimulation C \<and> C p q)\<close>
+    \<open>(\<exists> f . player0_winning_strategy f initial \<and> sound_0strategy f initial)
+    = (\<exists> C. contrasimulation C \<and> C p q)\<close>
 proof
   assume
     \<open>(\<exists>f. player0_winning_strategy f initial \<and> sound_0strategy f initial)\<close>
   then obtain f where
-    \<open>contrasimulation (\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q)\<close>
+    \<open>contrasimulation (\<lambda>p q.
+      \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q)\<close>
     using basic_contrasim_game_sound by blast
-  moreover have \<open>(\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q) p q\<close>
+  moreover have
+    \<open>(\<lambda>p q. \<exists>play\<in>plays_for_0strategy f initial. hd play = AttackerNode p q) p q\<close>
     using assms plays_for_0strategy.init[of _ f] by (meson list.sel(1))
   ultimately show \<open>\<exists> C. contrasimulation C \<and> C p q\<close> by blast
 next

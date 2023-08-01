@@ -293,7 +293,7 @@ proof -
       proof (safe)
         assume i:
           \<open>q' \<noteq> sink\<close> \<open>?tau a\<close>
-          \<open>?steps (\<lambda>p1 a p2.  p1 \<noteq> sink \<and> a = ?tauEx \<and> p2 = sink \<or> step p1 a p2) q ?tau q'\<close>
+          \<open>?steps (\<lambda>p1 a p2. p1 \<noteq> sink \<and> a = ?tauEx \<and> p2 = sink \<or> step p1 a p2) q ?tau q'\<close>
         thus \<open>?steps step q ?tau q'\<close>
         proof (induct rule: lts.steps.induct[OF i(3)])
           case (1 p af)
@@ -423,7 +423,9 @@ lemma trace_inclusion_sink_invariant:
     \<open>step2 \<equiv> \<lambda> p1 a p2 . (p1 \<noteq> sink \<and> a =  \<tau> \<and> p2 = sink) \<or> step p1 a p2\<close>
   assumes
     \<open>\<And> a p . \<not> step sink a p \<and> \<not> step p a sink\<close>
-  shows \<open>lts_tau.weakly_trace_included_by step2 \<tau> p q = lts_tau.weakly_trace_included_by step \<tau> p q\<close>
+  shows
+    \<open>lts_tau.weakly_trace_included_by step2 \<tau> p q
+    = lts_tau.weakly_trace_included_by step \<tau> p q\<close>
 proof - 
   let ?tau = \<open>(lts_tau.tau \<tau>)\<close>
   let ?steps = \<open>lts.steps\<close>

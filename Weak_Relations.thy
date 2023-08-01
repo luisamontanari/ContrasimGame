@@ -162,7 +162,7 @@ lemma weak_sim_enabled_subs:
     \<open>weak_enabled p a\<close>
     \<open>\<not> tau a\<close>
   shows \<open>weak_enabled q a\<close>
-proof-
+proof -
   obtain p' where p'_spec: \<open>p \<Rightarrow>a p'\<close>
     using \<open>weak_enabled p a\<close> weak_enabled_step by blast
   obtain R where \<open>R p q\<close> \<open>weak_simulation R\<close> using assms(1) by blast
@@ -438,9 +438,8 @@ next
   thus \<open>\<forall>q' a. q \<longmapsto>a  q' \<longrightarrow> (\<exists>p'. R p' q' \<and> (p \<Rightarrow>^a  p'))\<close> by blast
 qed
   
-lemma weak_bisim_weak_sim:  
-shows
-  \<open>weak_bisimulation R = (weak_simulation R \<and> weak_simulation (\<lambda> p q . R q p))\<close>
+lemma weak_bisim_weak_sim:
+  shows \<open>weak_bisimulation R = (weak_simulation R \<and> weak_simulation (\<lambda> p q . R q p))\<close>
 unfolding weak_bisimulation_def weak_simulation_def by auto
 
 lemma steps_retain_weak_bisim:

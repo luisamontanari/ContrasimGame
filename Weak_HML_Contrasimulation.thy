@@ -1,12 +1,14 @@
+section \<open>Weak HML and the Contrasimulation Set Game\<close>
+
 theory Weak_HML_Contrasimulation
   imports
     Contrasim_Set_Game
     HM_Logic_Infinitary
 begin
 
-section \<open>Weak HML and the Contrasimulation Set Game\<close>
 
 subsection \<open>Existence of Distinguishing Formula on Winning Attacker Position\<close>
+
 locale c_game_with_attacker_strategy  =
   c_set_game trans \<tau>
 for
@@ -27,8 +29,8 @@ assumes
     \<open>g \<in> attacker_winning_region \<Longrightarrow> player1_position g \<Longrightarrow>
       strat g \<in> attacker_winning_region \<and> c_set_game_moves g (strat g)\<close> and
   defender_keeps_losing:
-    \<open>g \<in> attacker_winning_region \<Longrightarrow> c_set_game_defender_node g \<Longrightarrow> c_set_game_moves g g' \<Longrightarrow>
-      g' \<in> attacker_winning_region\<close>
+    \<open>g \<in> attacker_winning_region \<Longrightarrow> c_set_game_defender_node g \<Longrightarrow> c_set_game_moves g g'
+    \<Longrightarrow> g' \<in> attacker_winning_region\<close>
 begin
 
 text \<open>This construction of attacker formulas from a game only works if \<open>strat\<close> is a (non-cyclic)
@@ -36,12 +38,20 @@ text \<open>This construction of attacker formulas from a game only works if \<o
 
 function attack_formula :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_formula\<close> where
   \<open>attack_formula (AttackerNode p Q) =
-    (if (AttackerNode p Q) \<in> attacker_winning_region then attack_formula (strat (AttackerNode p Q)) else HML_true)\<close>
+    (if (AttackerNode p Q) \<in> attacker_winning_region
+      then attack_formula (strat (AttackerNode p Q))
+      else HML_true)\<close>
 | \<open>attack_formula (DefenderSimNode a p Q) =
-    (if (DefenderSimNode a p Q) \<in> attacker_winning_region then \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p (dsuccs a Q))) else HML_true)\<close>
+    (if (DefenderSimNode a p Q) \<in> attacker_winning_region
+      then \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p (dsuccs a Q)))
+      else HML_true)\<close>
 | \<open>attack_formula (DefenderSwapNode p Q) =
-    (if Q = {} \<or> DefenderSwapNode p Q \<notin> attacker_winning_region then HML_true else
-    (HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then (attack_formula (AttackerNode q {p})) else HML_true )))\<close>
+    (if Q = {} \<or> DefenderSwapNode p Q \<notin> attacker_winning_region
+      then HML_true
+      else (HML_weaknor (weak_tau_succs Q)
+        (\<lambda>q. if q \<in> (weak_tau_succs Q)
+              then (attack_formula (AttackerNode q {p}))
+              else HML_true )))\<close>
   using c_set_game_defender_node.cases
   by (auto, blast)
 
@@ -59,7 +69,8 @@ next
   assume attacker_wins: \<open>DefenderSimNode a p Q \<in> attacker_winning_region\<close>
   hence \<open>AttackerNode p (dsuccs a Q) \<in> attacker_winning_region\<close>
     using defender_keeps_losing simulation_answer by force
-  with attacker_wins show \<open>(AttackerNode p (dsuccs a Q), DefenderSimNode a p Q) \<in> attacker_order\<close>
+  with attacker_wins show
+    \<open>(AttackerNode p (dsuccs a Q), DefenderSimNode a p Q) \<in> attacker_order\<close>
     unfolding attacker_order_def
     by (simp add: r_into_trancl')
 next
@@ -89,21 +100,30 @@ lemma attack_options:
     \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
   shows
     \<open>(\<exists>a p'. p =\<rhd>a p' \<and> \<not>tau a \<and> strat (AttackerNode p Q) = (DefenderSimNode a p' Q) \<and>
-      attack_formula (AttackerNode p Q) = \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p' (dsuccs a Q))))
+      attack_formula (AttackerNode p Q)
+      = \<langle>\<tau>\<rangle>\<langle>a\<rangle>(attack_formula (AttackerNode p' (dsuccs a Q))))
     \<or> (\<exists>p'. p \<longmapsto>* tau p' \<and> strat (AttackerNode p Q) = (DefenderSwapNode p' Q) \<and>
       attack_formula (AttackerNode p Q) =
-      (HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then (attack_formula (AttackerNode q {p'})) else HML_true )))
+      (HML_weaknor (weak_tau_succs Q) (\<lambda>q. 
+        if q \<in> (weak_tau_succs Q)
+          then (attack_formula (AttackerNode q {p'}))
+          else HML_true )))
     \<or> (Q = {} \<and> attack_formula (AttackerNode p Q) = HML_true)\<close>
 proof -
-  from assms have \<open>attack_formula (AttackerNode p Q) = attack_formula (strat (AttackerNode p Q))\<close> by simp
+  from assms have
+    \<open>attack_formula (AttackerNode p Q) = attack_formula (strat (AttackerNode p Q))\<close>
+    by simp
   moreover from attacker_defender_switch assms have
     \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
-    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close> by blast
+    \<or> (\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close>
+    by blast
   ultimately have 
-    \<open>(\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and>
-      (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
-    \<or>(\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and>
-      (attack_formula (AttackerNode p Q)) = attack_formula (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close>
+    \<open> (\<exists>a p'. (strat (AttackerNode p Q)) = (DefenderSimNode a p' Q) \<and>
+      (attack_formula (AttackerNode p Q))
+       = attack_formula (DefenderSimNode a p' Q) \<and> p  =\<rhd>a p' \<and> \<not>tau a)
+    \<or> (\<exists>p'. (strat (AttackerNode p Q)) = (DefenderSwapNode p' Q) \<and>
+      (attack_formula (AttackerNode p Q))
+       = attack_formula (DefenderSwapNode p' Q) \<and> p \<longmapsto>* tau p')\<close>
     by metis
   moreover from assms have \<open>strat (AttackerNode p Q) \<in> attacker_winning_region\<close>
     by (simp add: strat_stays_winning)
@@ -126,12 +146,14 @@ proof (induct arbitrary: p Q \<phi>)
   case (less p Q)
   from attack_options[OF this(2)] show ?case
   proof
-    assume \<open>\<exists>a p'. p =\<rhd> a  p' \<and> \<not> tau a \<and> strat (AttackerNode p Q) = DefenderSimNode a p' Q \<and>
+    assume \<open>\<exists>a p'. p =\<rhd> a  p' \<and> \<not> tau a \<and>
+      strat (AttackerNode p Q) = DefenderSimNode a p' Q \<and>
       attack_formula (AttackerNode p Q) = \<langle>\<tau>\<rangle>\<langle>a\<rangle>attack_formula (AttackerNode p' (dsuccs a Q))\<close>
     then obtain a p' where case_assms:
       \<open>p =\<rhd> a  p' \<and> \<not> tau a\<close>
       \<open>strat (AttackerNode p Q) = DefenderSimNode a p' Q\<close>
-      \<open>attack_formula (AttackerNode p Q) = \<langle>\<tau>\<rangle>\<langle>a\<rangle>attack_formula (AttackerNode p' (dsuccs a Q))\<close> by blast
+      \<open>attack_formula (AttackerNode p Q)
+      = \<langle>\<tau>\<rangle>\<langle>a\<rangle>attack_formula (AttackerNode p' (dsuccs a Q))\<close> by blast
     hence moves:
       \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
       \<open>c_set_game_moves (DefenderSimNode a p' Q) (AttackerNode p' (dsuccs a Q))\<close> by auto
@@ -146,7 +168,8 @@ proof (induct arbitrary: p Q \<phi>)
     hence \<open>(AttackerNode p' (dsuccs a Q), AttackerNode p Q) \<in> attacker_order\<close>
       unfolding attacker_order_def by auto
     with less.hyps all_winning(1) have
-      \<open>p' \<Turnstile> attack_formula (AttackerNode p' (dsuccs a Q)) \<and> (\<forall>q\<in>(dsuccs a Q). \<not> q \<Turnstile> attack_formula (AttackerNode p' (dsuccs a Q)))\<close>
+      \<open>p' \<Turnstile> attack_formula (AttackerNode p' (dsuccs a Q)) \<and>
+      (\<forall>q\<in>(dsuccs a Q). \<not> q \<Turnstile> attack_formula (AttackerNode p' (dsuccs a Q)))\<close>
       by blast
     with case_assms have
       \<open>p \<Turnstile> \<langle>\<tau>\<rangle>\<langle>a\<rangle>attack_formula (AttackerNode p' (dsuccs a Q))\<close>
@@ -155,23 +178,38 @@ proof (induct arbitrary: p Q \<phi>)
     thus ?case unfolding case_assms by blast
   next
     assume \<open>(\<exists>p'. p \<longmapsto>* tau  p' \<and> strat (AttackerNode p Q) = DefenderSwapNode p' Q \<and>
-        attack_formula (AttackerNode p Q) = HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then attack_formula (AttackerNode q {p'}) else HML_true)) \<or>
+        attack_formula (AttackerNode p Q)
+        = HML_weaknor (weak_tau_succs Q) (\<lambda>q.
+          if q \<in> (weak_tau_succs Q)
+            then attack_formula (AttackerNode q {p'})
+            else HML_true)) \<or>
       Q = {} \<and> attack_formula (AttackerNode p Q) = HML_true\<close>
     thus ?case
     proof
       assume \<open>\<exists>p'. p \<longmapsto>* tau  p' \<and> strat (AttackerNode p Q) = DefenderSwapNode p' Q \<and>
-        attack_formula (AttackerNode p Q) = HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then attack_formula (AttackerNode q {p'}) else HML_true)\<close>
+        attack_formula (AttackerNode p Q)
+        = HML_weaknor (weak_tau_succs Q) (\<lambda>q.
+          if q \<in> (weak_tau_succs Q)
+            then attack_formula (AttackerNode q {p'})
+            else HML_true)\<close>
       then obtain p' where case_assms:
         \<open>p \<longmapsto>* tau  p'\<close>
         \<open>strat (AttackerNode p Q) = DefenderSwapNode p' Q\<close>
-        \<open>attack_formula (AttackerNode p Q) = HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then attack_formula (AttackerNode q {p'}) else HML_true)\<close>
+        \<open>attack_formula (AttackerNode p Q)
+        = HML_weaknor (weak_tau_succs Q) (\<lambda>q.
+          if q \<in> (weak_tau_succs Q)
+          then attack_formula (AttackerNode q {p'})
+          else HML_true)\<close>
         by blast
       from case_assms have moves:
         \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p' Q)\<close>
-        \<open>\<forall>q'\<in>(weak_tau_succs Q). c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q' {p'})\<close> by auto
-      with case_assms less(2) defender_keeps_losing strat_stays_winning have all_winning:
-        \<open>(DefenderSwapNode p' Q) \<in> attacker_winning_region\<close>
-        \<open>\<forall>q'\<in>(weak_tau_succs Q). (AttackerNode q' {p'}) \<in> attacker_winning_region\<close>
+        \<open>\<forall>q'\<in>(weak_tau_succs Q).
+          c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q' {p'})\<close>
+        by auto
+      with case_assms less(2) defender_keeps_losing strat_stays_winning
+        have all_winning:
+          \<open>(DefenderSwapNode p' Q) \<in> attacker_winning_region\<close>
+          \<open>\<forall>q'\<in>(weak_tau_succs Q). (AttackerNode q' {p'}) \<in> attacker_winning_region\<close>
         by (metis, metis c_set_game_defender_node.simps(1,3))
       with case_assms moves less(2) have
         \<open>\<forall>q'\<in> weak_tau_succs Q. (AttackerNode q' {p'}, DefenderSwapNode p' Q) \<in> attacker_order\<close>
@@ -180,15 +218,26 @@ proof (induct arbitrary: p Q \<phi>)
       hence \<open>\<forall>q'\<in> weak_tau_succs Q. (AttackerNode q' {p'}, AttackerNode p Q) \<in> attacker_order\<close>
         unfolding attacker_order_def by auto
       with less.hyps all_winning have
-        \<open>\<forall>q'\<in> weak_tau_succs Q. q' \<Turnstile> attack_formula (AttackerNode q' {p'}) \<and> \<not> p' \<Turnstile> attack_formula (AttackerNode q' {p'})\<close>
+        \<open>\<forall>q'\<in> weak_tau_succs Q.
+          q' \<Turnstile> attack_formula (AttackerNode q' {p'}) \<and>
+          \<not> p' \<Turnstile> attack_formula (AttackerNode q' {p'})\<close>
         by blast
       with case_assms have
-        \<open>p' \<Turnstile> HML_conj (weak_tau_succs Q) (\<lambda>q'. HML_neg (attack_formula (AttackerNode q' {p'})))\<close>
-        \<open>\<forall>q'\<in> weak_tau_succs Q. \<not> q' \<Turnstile> HML_conj (weak_tau_succs Q) (\<lambda>qq'. HML_neg (attack_formula (AttackerNode qq' {p'})))\<close>
+        \<open>p' \<Turnstile> HML_conj (weak_tau_succs Q)
+          (\<lambda>q'. HML_neg (attack_formula (AttackerNode q' {p'})))\<close>
+        \<open>\<forall>q'\<in> weak_tau_succs Q.
+          \<not> q' \<Turnstile> HML_conj (weak_tau_succs Q)
+          (\<lambda>qq'. HML_neg (attack_formula (AttackerNode qq' {p'})))\<close>
         by (simp, fastforce)
       with case_assms have
-        \<open>p \<Turnstile>  HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then attack_formula (AttackerNode q {p'}) else HML_true)\<close>
-        \<open>\<forall>q\<in>Q. \<not>q \<Turnstile>  HML_weaknor (weak_tau_succs Q) (\<lambda>q. if q \<in> (weak_tau_succs Q) then attack_formula (AttackerNode q {p'}) else HML_true)\<close>
+        \<open>p \<Turnstile> HML_weaknor (weak_tau_succs Q)
+          (\<lambda>q. if q \<in> (weak_tau_succs Q)
+            then attack_formula (AttackerNode q {p'})
+            else HML_true)\<close>
+        \<open>\<forall>q\<in>Q. \<not>q \<Turnstile>  HML_weaknor (weak_tau_succs Q)
+          (\<lambda>q. if q \<in> (weak_tau_succs Q)
+            then attack_formula (AttackerNode q {p'})
+            else HML_true)\<close>
         unfolding weak_tau_succs_def HML_weaknor_def
         using conj_only_depends_on_indexset by (auto, force, fastforce)
       thus ?case unfolding case_assms by blast
@@ -239,26 +288,32 @@ begin
 
 inductive_set attacker_winning_region :: \<open>('s, 'a) c_set_game_node set\<close> where
   Base: \<open>DefenderSwapNode _ {} \<in> attacker_winning_region\<close> |
-  Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region) \<Longrightarrow> (AttackerNode p Q) \<in> attacker_winning_region\<close> |
-  Def: \<open>c_set_game_defender_node g \<Longrightarrow> (\<And>g'. c_set_game_moves g g' \<Longrightarrow> g' \<in> attacker_winning_region) \<Longrightarrow> g \<in> attacker_winning_region\<close>
+  Atk: \<open>(c_set_game_moves (AttackerNode p Q) g' \<and> g' \<in> attacker_winning_region)
+    \<Longrightarrow> (AttackerNode p Q) \<in> attacker_winning_region\<close> |
+  Def: \<open>c_set_game_defender_node g \<Longrightarrow>
+    (\<And>g'. c_set_game_moves g g' \<Longrightarrow> g' \<in> attacker_winning_region)
+    \<Longrightarrow> g \<in> attacker_winning_region\<close>
 
 lemma Atk_node_wins_if_Q_is_empty: 
-  assumes \<open>Q = {}\<close>
-  shows \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
+  assumes
+    \<open>Q = {}\<close>
+  shows
+    \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
 proof - 
   have atk_move: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p Q)\<close> 
     by (simp add: steps.refl)
-  have \<open>DefenderSwapNode p Q \<in> attacker_winning_region\<close> using assms attacker_winning_region.Base by simp
+  have \<open>DefenderSwapNode p Q \<in> attacker_winning_region\<close>
+    using assms attacker_winning_region.Base by simp
   thus ?thesis using atk_move attacker_winning_region.Atk by blast
 qed
 
-
 lemma Atk_node_wins_in_2_moves: 
   assumes 
-        \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close>
-        \<open>p =\<rhd>a p'\<close>
-        \<open>\<not>tau a\<close>
-  shows \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
+    \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close>
+    \<open>p =\<rhd>a p'\<close>
+    \<open>\<not>tau a\<close>
+  shows
+    \<open>AttackerNode p Q \<in> attacker_winning_region\<close>
 proof - 
   have AtkToSim: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
     using assms(2, 3) by simp
@@ -271,13 +326,13 @@ proof -
   thus ?thesis using AtkToSim attacker_winning_region.Atk by blast
 qed
 
-
 lemma distinction_completeness: 
   assumes 
     \<open>\<phi> \<in> HML_weak_formulas\<close>
     \<open>distinguishes_from_set \<phi> p Q\<close>
-  shows \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
-proof(cases \<open>Q = {}\<close>)
+  shows
+    \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
+proof (cases \<open>Q = {}\<close>)
   case True
   then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
 next
@@ -348,25 +403,27 @@ next
       by auto
     have atk_move: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p' Q)\<close>
       using \<open>p \<Rightarrow>^\<tau> p'\<close> by auto
-    have Ex_i: \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i)) \<and> P1 = {p'}\<close>
+    have Ex_i:
+      \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow>
+        (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i)) \<and> P1 = {p'}\<close>
       using Ex by auto
-    hence \<open>\<forall>q1 P1. 
-          c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i) \<and> (\<forall>p'. p' \<in> P1 \<longrightarrow> \<not> p' \<Turnstile> (F i)))\<close>
+    hence \<open>\<forall>q1 P1.
+      c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1)
+      \<longrightarrow> (\<exists>i. i \<in> I \<and> q1  \<Turnstile>  (F i) \<and> (\<forall>p'. p' \<in> P1 \<longrightarrow> \<not> p' \<Turnstile> (F i)))\<close>
       using p_sat by auto
     hence  \<open>\<forall>q1 P1. 
-          c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (\<exists>i. i \<in> I \<and> distinguishes_from_set (F i) q1 P1)\<close> 
+      c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1)
+      \<longrightarrow> (\<exists>i. i \<in> I \<and> distinguishes_from_set (F i) q1 P1)\<close> 
       unfolding distinguishes_from_set.simps using p_sat by blast
     hence all_atk_succs_in_wr: 
-          \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1) \<longrightarrow> 
-          (AttackerNode q1 P1 \<in> attacker_winning_region)\<close> 
+      \<open>\<forall>q1 P1. c_set_game_moves (DefenderSwapNode p' Q) (AttackerNode q1 P1)
+        \<longrightarrow> (AttackerNode q1 P1 \<in> attacker_winning_region)\<close> 
       using Conj.hyps Ex_i by blast
-    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> 
-          (\<exists> q1 P1. g = (AttackerNode q1 P1))\<close> 
+    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g
+        \<longrightarrow> (\<exists> q1 P1. g = (AttackerNode q1 P1))\<close> 
       using move_DefSwap_to_AtkNode by blast
-    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g \<longrightarrow> g \<in> attacker_winning_region\<close> 
+    hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g
+        \<longrightarrow> g \<in> attacker_winning_region\<close> 
       using all_atk_succs_in_wr by auto
     hence \<open>DefenderSwapNode p' Q \<in> attacker_winning_region\<close> 
       using attacker_winning_region.Def
@@ -376,5 +433,4 @@ next
 qed
 
 end
-
 end

@@ -16,7 +16,6 @@ abbreviation step_pred :: \<open>'s \<Rightarrow> ('a \<Rightarrow> bool) \<Righ
   where
   \<open>step_pred p af q \<equiv> \<exists> a. af a \<and> trans p a q\<close>
 
-   
 inductive steps :: \<open>'s \<Rightarrow> ('a \<Rightarrow> bool) \<Rightarrow> 's \<Rightarrow> bool\<close>
      ("_ \<longmapsto>* _  _" [70, 70, 70] 80)
 where
@@ -52,7 +51,7 @@ lemma steps_left:
     \<open>\<exists>p'' a . p \<longmapsto>a p'' \<and> A a \<and> p'' \<longmapsto>* A p'\<close>
    using assms(1) 
   by (induct rule:steps.induct[OF assms(2)], blast, metis refl steps_concat steps_one_step) 
-  
+
 lemma steps_no_step:
   assumes
     \<open>\<And> a p' . p \<longmapsto>a p' \<Longrightarrow> \<not>A a\<close>
@@ -78,7 +77,6 @@ lemma steps_loop:
    shows
     \<open>False\<close>
    using assms(3,1,2) by (induct, auto)
-    
 
 corollary steps_transp:
   \<open>transp (\<lambda> p p'. p \<longmapsto>* A p')\<close>
@@ -120,7 +118,7 @@ proof -
 qed
 
 end \<comment>\<open>end of lts\<close>
-  
+
 lemma lts_impl_steps2:
   assumes
     \<open>lts.steps step1 p1 ap p2\<close>
@@ -143,6 +141,6 @@ lemma lts_impl_steps:
      \<open>\<And> p1 a p2 . step1 p1 a p2 \<Longrightarrow> step2 p1 a p2\<close>
    shows
     \<open>lts.steps step2 p1 ap p2\<close>
-   using assms lts_impl_steps2[OF assms] by auto 
+   using assms lts_impl_steps2[OF assms] by auto
   
 end

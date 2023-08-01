@@ -15,7 +15,7 @@ lemma tau_tau[simp]: \<open>tau \<tau>\<close> unfolding tau_def by simp
 abbreviation weak_step :: \<open>'s \<Rightarrow> 'a \<Rightarrow> 's \<Rightarrow> bool\<close>
      ("_ \<Rightarrow>_  _" [70, 70, 70] 80)
 where
-  \<open>(p \<Rightarrow>a q) \<equiv> (\<exists> pq1 pq2. 
+  \<open>(p \<Rightarrow>a q) \<equiv> (\<exists> pq1 pq2.
     p \<longmapsto>* tau pq1 \<and>
     pq1 \<longmapsto>a   pq2 \<and>
     pq2 \<longmapsto>* tau q)\<close>
@@ -152,7 +152,6 @@ lemma weak_enabled_step:
   shows \<open>weak_enabled p a = (\<exists> p'. p \<Rightarrow>a p')\<close>
   using step_weak_step steps_concat by blast
 
-
 lemma step_tau_concat: 
   assumes 
     \<open>q \<Rightarrow>^a q'\<close>
@@ -176,7 +175,8 @@ lemma tau_word_concat:
   assumes
     \<open>q \<Rightarrow>^\<tau> q'\<close> 
     \<open>q' \<Rightarrow>$A q1\<close> 
-  shows \<open>q \<Rightarrow>$A q1\<close> using assms
+  shows \<open>q \<Rightarrow>$A q1\<close>
+  using assms
 proof (cases A)
   case Nil
   hence \<open>q' \<Rightarrow>^\<tau> q1\<close> using assms by auto
@@ -204,10 +204,10 @@ next
   thus \<open>p \<Rightarrow>^a  p'\<close> using step_weak_step_tau by blast
 qed
 
-
 lemma rev_seq_split : 
   assumes \<open>q \<Rightarrow>$ (xs @ [x])  q1\<close>
-  shows \<open>\<exists>q'. q \<Rightarrow>$xs q' \<and> q' \<Rightarrow>^x q1\<close> using assms
+  shows \<open>\<exists>q'. q \<Rightarrow>$xs q' \<and> q' \<Rightarrow>^x q1\<close>
+  using assms
 proof (induct xs arbitrary: q)
   case Nil
   hence \<open>q \<Rightarrow>$ [x]  q1\<close> by auto
@@ -225,7 +225,8 @@ lemma rev_seq_concat:
   assumes 
     \<open>q \<Rightarrow>$as q'\<close> 
     \<open>q'\<Rightarrow>$A q1\<close>
-  shows \<open>q \<Rightarrow>$(as@A) q1\<close> using assms
+  shows \<open>q \<Rightarrow>$(as@A) q1\<close>
+  using assms
 proof (induct as arbitrary: A q' rule: rev_induct)
   case Nil
   hence \<open>q \<Rightarrow>^\<tau> q'\<close> by auto
@@ -281,12 +282,10 @@ proof -
   show ?thesis using assms rev_exhaust by blast 
 qed
 
-
 primrec taufree :: \<open>'a list \<Rightarrow> 'a list\<close>
   where
     \<open>taufree [] = []\<close>
   | \<open>taufree (a#A) = (if tau a then taufree A else a#(taufree A))\<close>
-
 
 lemma weak_step_over_tau : 
   assumes 
@@ -382,22 +381,24 @@ next
 qed
 
 definition weak_tau_succs :: "'s set \<Rightarrow> 's set" where
-\<open>weak_tau_succs Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^\<tau> q1}\<close> 
+  \<open>weak_tau_succs Q  = {q1. \<exists>q\<in> Q. q \<Rightarrow>^\<tau> q1}\<close> 
 
 definition dsuccs :: "'a \<Rightarrow> 's set \<Rightarrow> 's set" where
-\<open>dsuccs a Q  = {q1. \<exists>q\<in> Q. q =\<rhd>a q1}\<close> 
+  \<open>dsuccs a Q  = {q1. \<exists>q\<in> Q. q =\<rhd>a q1}\<close> 
 
 definition word_reachable_via_delay :: "'a list \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> 's \<Rightarrow> bool" where
-\<open>word_reachable_via_delay A p p0 p1 = (\<exists>p00. p \<Rightarrow>$(butlast A) p00 \<and> p00 =\<rhd>(last A) p0 \<and> p0 \<Rightarrow>^\<tau> p1)\<close>
+  \<open>word_reachable_via_delay A p p0 p1 = (\<exists>p00. p \<Rightarrow>$(butlast A) p00 \<and> p00 =\<rhd>(last A) p0 \<and> p0 \<Rightarrow>^\<tau> p1)\<close>
 
 primrec dsuccs_seq_rec :: "'a list \<Rightarrow> 's set \<Rightarrow> 's set" where
-\<open>dsuccs_seq_rec [] Q  = Q\<close> | 
-\<open>dsuccs_seq_rec (a#as) Q  = dsuccs a (dsuccs_seq_rec as Q)\<close>
+  \<open>dsuccs_seq_rec [] Q  = Q\<close> | 
+  \<open>dsuccs_seq_rec (a#as) Q  = dsuccs a (dsuccs_seq_rec as Q)\<close>
 
-lemma in_dsuccs_implies_word_reachable : 
+lemma in_dsuccs_implies_word_reachable:
   assumes 
     \<open>q' \<in> dsuccs_seq_rec (rev A) {q}\<close>
-  shows \<open>q \<Rightarrow>$A q'\<close> using assms
+  shows
+    \<open>q \<Rightarrow>$A q'\<close>
+  using assms
 proof (induct arbitrary: q' rule: rev_induct) 
   case Nil
   hence \<open>q' = q\<close> by auto

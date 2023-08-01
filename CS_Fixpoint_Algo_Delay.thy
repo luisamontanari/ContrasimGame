@@ -90,11 +90,13 @@ next
     \<open>greatest_coupled_simulation p q\<close>
   then have \<open>(p, q) \<in> {(x, y). greatest_coupled_simulation x y}\<close> by blast
   moreover from asm have \<open>\<exists> R. R p q \<and> coupled_delay_simulation R\<close>
-    unfolding gcs_eq_coupled_sim_by[symmetric] coupled_sim_by_eq_coupled_delay_simulation .
-  moreover from asm have  \<open>\<forall> p' a. p \<longmapsto>a p' \<and> \<not>tau a \<longrightarrow>
+    unfolding gcs_eq_coupled_sim_by[symmetric] coupled_sim_by_eq_coupled_delay_simulation.
+  then obtain R where \<open>R p q\<close> \<open>coupled_delay_simulation R\<close> by blast
+  moreover then have  \<open>\<forall> p' a. p \<longmapsto>a p' \<and> \<not>tau a \<longrightarrow>
       (\<exists> q'. (greatest_coupled_simulation p' q') \<and> (q =\<rhd>a q'))\<close>
-    unfolding  gcs_eq_coupled_sim_by[symmetric] coupled_sim_by_eq_coupled_delay_simulation
-    by (metis coupled_delay_simulation_def delay_simulation_def)
+    using coupled_delay_simulation_def delay_simulation_def
+    by (metis coupled_similarity_implies_gcs coupled_simulation_weak_simulation
+        delay_simulation_implies_weak_simulation)
   moreover from asm have  \<open>\<forall> p' a. p \<longmapsto>a p' \<and> tau a \<longrightarrow> greatest_coupled_simulation p' q\<close>
     unfolding  gcs_eq_coupled_sim_by[symmetric] coupled_sim_by_eq_coupled_delay_simulation
     by (metis coupled_delay_simulation_def delay_simulation_def)
