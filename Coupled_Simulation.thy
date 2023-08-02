@@ -1,6 +1,4 @@
-
-
-section \<open>Coupled Similarity\<close>
+section \<open>Coupled Simulation\<close>
 
 theory Coupled_Simulation
   imports Contrasimulation

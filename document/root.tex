@@ -45,12 +45,11 @@ internal behavior.
 They have outstanding applications in contexts where internal choices must transparently be
 distributed in time or space, for example, in process calculi encodings or in action refinements.
 
-We show how the preexisting definitions coincide and that they can be reformulated using
-\emph{coupled delay simulations}. Our key contribution is to characterize the
-coupled simulation and contrasimulation preorders by reachability games. We moreover verify a
-polynomial-time coinductive fixed-point algorithm computing the coupled simulation preorder.
+Our key contribution is to characterize the coupled simulation and contrasimulation preorders by \emph{reachability games}.
+We also show how the preexisting definitions coincide and that they can be reformulated using \emph{coupled delay simulations}.
+We moreover verify a polynomial-time coinductive fixed-point algorithm computing the coupled simulation preorder.
 Through reduction proofs, we establish that deciding coupled similarity is at least as complex
-as computing weak similarity; and that checking contrasimilarity is at least as complex as trace inclusion
+as computing weak similarity; and that contrasimilarity checking is at least as hard as trace inclusion
 checking.
 \end{abstract}
 
@@ -58,13 +57,22 @@ checking.
 
 \section{Introduction}
 
-\cite{bm2021contrasimilarity}
+This theory contains the formalizations of two lines of publication:
 
-This theory accompanies Benjamin Bisping and Uwe Nestmann's TACAS 2019 paper \cite{bn2019coupledsimTacas}
-and Benjamin Bisping's master's thesis ``Computing Coupled Similarity'' \cite{bisping2018coupledsim},
-which can be found on \url{https://coupledsim.bbisping.de/bisping_computingCoupledSimilarity_thesis.pdf}.
-
-
+\begin{itemize}
+  \item \emph{Computing coupled similarity:} Benjamin Bisping and Uwe Nestmann's TACAS 2019 paper~%
+    \cite{bn2019coupledsimTacas} and Bisping's master thesis~\cite{bisping2018coupledsim},
+    which can be found on \url{https://coupledsim.bbisping.de/bisping_computingCoupledSimilarity_thesis.pdf},
+    establish the first decision procedures for coupled similarity checking.
+    This is done through a game-based approach.
+    Also, the work introduces the idea that $\tau$-sinks can be used to reduce from weak simulation
+    preorder to coupled simulation preorder.
+  \item \emph{Game characterization of contrasimilarity:} Benjamin Bisping and Luisa Montanari's
+    EXPRESS/SOS 2021 paper~\cite{bm2021contrasimilarity} and Montanari's bachelor thesis provide
+    the first game characterization of contrasimilarity.
+    This theory extends this work by also showing a reduction from weak trace preorder to
+    contrasimulation preorder and by linking the game to a modal characterization of contrasimilarity.
+\end{itemize}
 
 % include generated text of all theories
 \input{session}
