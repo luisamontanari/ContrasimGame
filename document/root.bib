@@ -60,18 +60,22 @@
   timestamp = {2017.06.19},
 }
 
-@Article{glabbeek2017,
-  author    = {Rob J. van Glabbeek},
-  title     = {A Branching Time Model of {CSP}},
-  journal   = {CoRR},
-  year      = {2017},
-  abstract  = {I present a branching time model of CSP that is finer than all other models of CSP proposed thus far. It is obtained by taking a semantic equivalence from the linear time – branching time spectrum, namely divergence-preserving coupled similarity, and showing that it is a congruence for the operators of CSP. This equivalence belongs to the bisimulation family of semantic equivalences, in the sense that on transi- tion systems without internal actions it coincides with strong bisimilarity. Nevertheless, enough of the equational laws of CSP remain to obtain a complete axiomatisation for closed, recursion-free terms.},
-  bibsource = {dblp computer science bibliography, http://dblp.org},
-  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/Glabbeek17a},
-  file      = {:glabbeek2017_branching-time-model-of-CSP.pdf:PDF},
-  timestamp = {Wed, 07 Jun 2017 14:41:59 +0200},
-  url       = {http://arxiv.org/abs/1702.07844},
+@InCollection{glabbeek2017,
+author="van Glabbeek, Rob",
+editor={Gibson-Robinson, Thomas
+and Hopcroft, Philippa
+and Lazi{\'{c}}, Ranko},
+title={A Branching Time Model of {CSP}},
+      bookTitle="Concurrency, Security, and Puzzles: Essays Dedicated to Andrew William Roscoe on the Occasion of His 60th Birthday",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages={272--293},
+isbn="978-3-319-51046-0",
+doi={10.1007/978-3-319-51046-0\_14}
 }
+
+
 
 @Article{nestmann1996decoding,
   author    = {Nestmann, Uwe and Pierce, Benjamin C.},
@@ -461,7 +465,7 @@
   organization = {Springer},
 }
 
-@InBook{ais2011algoBisim,
+@InCollection{ais2011algoBisim,
   pages      = {100--172},
   title      = {The algorithmics of bisimilarity},
   publisher  = {Cambridge University Press},
@@ -700,7 +704,7 @@ url = {https://coupledsim.bbisping.de/bisping_computingCoupledSimilarity_thesis.
 }
 
 @article{Encodability_Process_Calculi-AFP,
-  author  = {Kirstin Peters and Rob van Glabbeek},
+  author  = {Kirstin Peters and Rob J. van Glabbeek},
   title   = {Analysing and Comparing Encodability Criteria for Process Calculi},
   journal = {Archive of Formal Proofs},
   month   = aug,
@@ -708,6 +712,29 @@ url = {https://coupledsim.bbisping.de/bisping_computingCoupledSimilarity_thesis.
   note    = {\url{http://isa-afp.org/entries/Encodability_Process_Calculi.html},
             Formal proof development},
   ISSN    = {2150-914x},
+}
+
+@article{bnp2020coupledsim32,
+  author    = {Benjamin Bisping and
+               Uwe Nestmann and
+               Kirstin Peters},
+  title     = {Coupled similarity: the first 32 years},
+  journal   = {Acta Informatica},
+  volume    = {57},
+  number    = {3--5},
+  pages     = {439--463},
+  year      = {2020},
+  doi       = {10.1007/s00236-019-00356-4},
+}
+
+@misc{bj2023ltbtsSilentSteps,
+  title={Linear-Time--Branching-Time Spectroscopy Accounting for Silent Steps}, 
+  author={Benjamin Bisping and David N. Jansen},
+  year={2023},
+  eprint={2305.17671},
+  archivePrefix={arXiv},
+  primaryClass={cs.LO},
+  doi={s10.48550/arXiv.2305.17671}
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

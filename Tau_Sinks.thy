@@ -5,6 +5,46 @@ text \<open>
   as can weak simulation checking to coupled simulation checking.
   The trick is to add a \<open>\<tau>\<close>-sink to the transition system, that is, a state that is reachable
   by \<open>\<tau>\<close>-steps from every other state, and cannot be left.
+  An illustration of such an extension is given in Figure~\ref{fig:sink-illustration}.
+\<close>
+
+text_raw \<open>
+  \begin{figure}
+    \centering
+    \begin{tikzpicture}[scale=1, auto]
+  
+      \node (p0) [circle, draw=black] at (0,0)                    {};
+      \node (p1) [circle, draw=black, below right= 1cm of p0]                {};
+      \node (p2) [circle, draw=black, below left= 1.5cm and 2mm of p1]          {};
+      \node (p3) [circle, draw=black, above left= 1cm of p2]           {};
+      %\node (p5) [circle, draw=black, below left= 5mm and 8mm of p0]           {};
+      
+      \node (bot) [circle, draw= red, right= 2cm of p1] {\Large$\color{red}{\bot}$};
+      
+      \path[->]
+        (p0)         edge[swap, bend left = 15]         node    {}         (p1)
+        (p0)         edge[swap, bend right = 15]         node    {}         (p3)
+        (p1)         edge[bend left = 15]               node    {}         (p2)
+        (p2)         edge[loop below]   node    {}         (p2)
+        (p3)         edge[bend left = 15]    node    {}         (p1)
+        (p3)         edge[bend right = 15]   node    {}         (p2)
+        (p1)         edge[bend left = 15]   node    {}         (p3)
+        ;
+       
+      %Contrasim_ undirected
+      \path[->, draw=red,  every node/.style={color=red}]
+        (p0)         edge[bend left = 25]         node    {$\tau$}       (bot)
+        (p1)         edge[bend left = 10]         node    {$\tau$}    (bot)
+        (p2)         edge[swap,bend right = 25]   node    {$\tau$}         (bot)
+        (p3)         edge[bend right = 0, out = -35, in=-168]   node    {$\tau$}         (bot)
+        (bot)         edge[loop below]   node    {$\tau$}         (bot)
+       ;
+    ;
+    \end{tikzpicture}
+    \caption{Example of a $\tau$-sink extension with the original transition system in black and
+      the extension in red.}
+      \label{fig:sink-illustration}
+  \end{figure}
 \<close>
 
 theory Tau_Sinks
