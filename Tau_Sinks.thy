@@ -473,7 +473,7 @@ proof -
   {
     fix A
     have \<open>\<forall>p p'. (\<forall> a \<in> set(A). a \<noteq> \<tau>)
-    \<and> lts_tau.weak_step_seq step2 \<tau> p A p' 
+    \<and> ?seq step2 \<tau> p A p' 
     \<longrightarrow> (\<exists>p''. ?seq step \<tau> p A p''
     \<and> lts_tau.weak_step_tau step2 \<tau> p'' \<tau> p')\<close>
     proof(clarify, induct A rule: rev_induct)

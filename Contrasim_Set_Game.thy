@@ -60,7 +60,7 @@ fun strategy_from_mimicking_of_C ::
    
     \<open>strategy_from_mimicking_of_C _ _ = undefined\<close>
 
-lemma set_defender_pred_is_attacker: 
+lemma atk_nodes_precede_def_nodes_in_plays: 
   assumes 
     \<open>c_set_game_defender_node n0\<close>
     \<open>(n0#play) \<in> plays (AttackerNode p0 Q0)\<close>
@@ -87,7 +87,7 @@ proof -
   thus ?thesis using mov by auto
 qed
 
-lemma second_elem_in_play_set : 
+lemma second_play_elem_in_play_set : 
   assumes 
     \<open>(n0#play) \<in> plays (AttackerNode p0 Q0)\<close>
     \<open>c_set_game_defender_node n0\<close>
@@ -105,7 +105,7 @@ proof -
   from x_in_set x_head show \<open>hd play \<in> set (n0 # play)\<close> by auto
 qed
 
-lemma def_sim_or_swap_before_atkNode: 
+lemma only_def_nodes_move_to_atk_nodes: 
   assumes  
     \<open>c_set_game_moves n0 n1\<close>
     \<open>n1 = AttackerNode p Q\<close>
@@ -152,7 +152,7 @@ next
       (mimicking (set_lifted C)) (n0 # play)\<close>
     hence \<open>(\<exists>a Qpred. n0 = DefenderSimNode a p Qpred) \<or>
         (\<exists>q Ppred. n0 = DefenderSwapNode q Ppred \<and> Q = {q})\<close>
-      using def_sim_or_swap_before_atkNode[OF p0moved.hyps(4), of \<open>p\<close> \<open>Q\<close>]
+      using only_def_nodes_move_to_atk_nodes[OF p0moved.hyps(4), of \<open>p\<close> \<open>Q\<close>]
         p0moved.prems(1)
       by blast 
     thus ?case 
@@ -165,13 +165,13 @@ next
       hence Q_def: \<open>Q = (SOME Q1. Q1 = dsuccs a Qpred \<and> (mimicking (set_lifted C)) p Q1)\<close>
         using strat by (simp add: p0moved.prems(1))
       have \<open>\<exists>ppred. hd play = (AttackerNode ppred Qpred) \<and> c_set_game_moves (hd play) n0\<close> 
-        using set_defender_pred_is_attacker strategy0_plays_subset[OF p0moved.hyps(1)] 
+        using atk_nodes_precede_def_nodes_in_plays strategy0_plays_subset[OF p0moved.hyps(1)] 
           assms(2,3) n0_def by force
       then obtain ppred where ppred_def: \<open>hd play = (AttackerNode ppred Qpred)\<close> 
           and \<open>c_set_game_moves (hd play) n0\<close> by auto
       hence \<open>ppred =\<rhd>a p\<close> \<open>a \<noteq> \<tau>\<close> using n0_def by auto
       hence \<open>hd play \<in> set (n0 # play)\<close> 
-        using second_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)]
+        using second_play_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)]
           assms(3) n0_def
         by (simp add: assms(3))
       hence \<open>mimicking (set_lifted C) ppred Qpred\<close>
@@ -197,7 +197,7 @@ next
             (\<exists>p. p \<in> Ppred \<and> p \<Rightarrow>^\<tau> p1) \<and> (mimicking (set_lifted C)) p1 {q})\<close> 
         using strat p0moved.prems by auto
       have \<open>\<exists>qpred. hd play = (AttackerNode qpred Ppred) \<and> c_set_game_moves (hd play) n0\<close>
-        using set_defender_pred_is_attacker strategy0_plays_subset[OF p0moved.hyps(1)] 
+        using atk_nodes_precede_def_nodes_in_plays strategy0_plays_subset[OF p0moved.hyps(1)] 
           assms(3) n0_def
         by force
       then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred Ppred)\<close> 
@@ -205,7 +205,7 @@ next
       hence p1: \<open>player1_position (hd play)\<close> by simp
       have qpred_q_move: \<open>qpred \<Rightarrow>^\<tau> q\<close> using qpred_def qpred_move n0_def by simp
       have \<open>hd play \<in> set (n0 # play)\<close> 
-        using second_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)]
+        using second_play_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)]
           assms(3) n0_def
         by simp 
       hence \<open>mimicking (set_lifted C) qpred Ppred\<close>
@@ -228,7 +228,7 @@ next
   next
     assume A1: \<open>n = n1'\<close>
     hence \<open>c_set_game_defender_node n1'\<close>
-      using def_sim_or_swap_before_atkNode p1moved.hyps(3, 4) p1moved.prems(1)
+      using only_def_nodes_move_to_atk_nodes p1moved.hyps(3, 4) p1moved.prems(1)
         by fastforce
     hence \<open>False\<close> using A1 p1moved.prems(1) by auto
     thus ?case by auto
@@ -346,19 +346,19 @@ proof (safe)
     then obtain a p' Q where n0_def: \<open>n0 = DefenderSimNode a p' Q\<close> by auto
     then obtain p where p_def: \<open>hd play = AttackerNode p Q\<close>
       using A
-      by (metis set_defender_pred_is_attacker simulation_challenge strategy0_plays_subset)
+      by (metis atk_nodes_precede_def_nodes_in_plays simulation_challenge strategy0_plays_subset)
     hence \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
-      by (metis A n0_def set_defender_pred_is_attacker strategy0_plays_subset)
+      by (metis A n0_def atk_nodes_precede_def_nodes_in_plays strategy0_plays_subset)
     hence \<open>p =\<rhd>a p'\<close> \<open>\<not> tau a\<close> by auto
     hence \<open>mimicking (set_lifted C) p Q\<close>
       using set_game_strategy_retains_mimicking[OF assms] A p_def
-        assms(2) second_elem_in_play_set strategy0_plays_subset
+        assms(2) second_play_elem_in_play_set strategy0_plays_subset
       by fastforce
     hence  \<open>mimicking (set_lifted C) p' (dsuccs a Q)\<close>
       using mimicking_of_C_guarantees_action_succ \<open>\<not> tau a\<close> \<open>p =\<rhd>a p'\<close> assms(1) tau_tau
       by blast 
     hence Q1_ex: \<open>\<exists>Q'. Q' = dsuccs a Q \<and> mimicking (set_lifted C) p' Q'\<close> by auto
-    from n0_def have st:
+    from n0_def have strat_succ:
       \<open>strategy_from_mimicking_of_C (mimicking (set_lifted C)) (n0#play)
       = (AttackerNode p'
           (SOME Q1 . Q1 = dsuccs a Q \<and> (mimicking (set_lifted C)) p' Q1))\<close>
@@ -372,7 +372,7 @@ proof (safe)
     have next_is_atk:
       \<open>strategy_from_mimicking_of_C (mimicking (set_lifted C)) (n0#play)
       = (AttackerNode p' Q1)\<close> 
-      using st Q1_def by auto
+      using strat_succ Q1_def by auto
     with someI_ex[OF Q1_ex] Q1_def
       have mov_cond: \<open>Q1 = dsuccs a Q \<and> mimicking (set_lifted C) p' Q1\<close>
       by blast
@@ -382,13 +382,13 @@ proof (safe)
     assume \<open>\<exists>p' Q. n0 = DefenderSwapNode p' Q\<close>
     then obtain p' Q where n0_def: \<open>n0 = DefenderSwapNode p' Q\<close> by auto
     then obtain p where  p_def: \<open>hd play = AttackerNode p Q\<close> using A
-      by (metis set_defender_pred_is_attacker swap_challenge strategy0_plays_subset) 
+      by (metis atk_nodes_precede_def_nodes_in_plays swap_challenge strategy0_plays_subset) 
     hence \<open>c_set_game_moves (AttackerNode p Q) (DefenderSwapNode p' Q)\<close>
-      by (metis A n0_def set_defender_pred_is_attacker strategy0_plays_subset)
+      by (metis A n0_def atk_nodes_precede_def_nodes_in_plays strategy0_plays_subset)
     hence \<open>p \<Rightarrow>^\<tau> p'\<close> by auto
     hence \<open>mimicking (set_lifted C) p Q\<close>
       using set_game_strategy_retains_mimicking[OF assms] A p_def
-        second_elem_in_play_set strategy0_plays_subset 
+        second_play_elem_in_play_set strategy0_plays_subset 
       by fastforce 
     hence  \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> mimicking (set_lifted C) q' {p'}\<close>
       using mimicking_of_C_guarantees_tau_succ \<open>p \<Rightarrow>^\<tau> p'\<close> assms(1) by auto 
@@ -405,7 +405,7 @@ proof (safe)
     hence q1_def:
       \<open>q1 = (SOME q1 . (\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1)) \<and> (mimicking (set_lifted C)) q1 {p'})\<close>
       by auto
-    with someI_ex[OF q1_ex] have X:
+    with someI_ex[OF q1_ex] have
       \<open>\<exists>q. (q \<in> Q \<and> q  \<Rightarrow>^\<tau> q1) \<and> mimicking (set_lifted C) q1 {p'}\<close> 
       by blast
     hence \<open>q1 \<in> weak_tau_succs Q \<and> {p'} = {p'}\<close>
@@ -456,7 +456,7 @@ proof -
   thus ?thesis using assms by auto
 qed
 
-lemma def_sim_pos_with_prefix_in_play: 
+lemma defSim_pos_with_prefix_in_play: 
   assumes 
     \<open>A \<noteq> []\<close>
     \<open>p \<Rightarrow>$A p1\<close> 
@@ -619,7 +619,7 @@ proof (safe)
       \<open>DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}) # A_play
         \<in> plays_for_0strategy f (AttackerNode p00 {q00})\<close>
       \<open>word_reachable_via_delay A p p0 p1\<close> 
-      using def_sim_pos_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
+      using defSim_pos_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(2) play_def play_hd by meson
     then obtain Q where \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
     hence \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close>
