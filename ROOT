@@ -1,4 +1,4 @@
-session "CoupledsimContrasim" (AFP) = "HOL-Library" +
+session "Coupledsim_Contrasim" (AFP) = "HOL-Library" +
 options [
   document = "pdf",
   browser_info = true,
