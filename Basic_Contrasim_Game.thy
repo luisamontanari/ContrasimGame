@@ -45,7 +45,7 @@ fun strategy_from_contrasim:: \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<
     (AttackerNode (SOME q1 . R q1 p1 \<and> q0 \<Rightarrow>$A q1) p1)\<close> |
   \<open>strategy_from_contrasim _ _ = undefined\<close>
 
-lemma basic_defender_pred_is_attacker: 
+lemma bcg_atknodes_precede_defnodes_in_plays: 
   assumes 
     \<open>c_game_defender_node n0\<close>
     \<open>n0 = DefenderNode A p' q\<close>
@@ -61,7 +61,7 @@ proof -
   thus ?thesis using mov by auto
 qed
 
-lemma second_elem_in_play_set : 
+lemma bcg_second_play_elem_in_play_set : 
   assumes 
     \<open>(n0#play) \<in> plays initial\<close>
     \<open>initial = AttackerNode p0 q0\<close>
@@ -78,7 +78,7 @@ proof -
   with x_in_set show \<open>hd play \<in> set (n0 # play)\<close> by auto
 qed
 
-lemma basic_game_all_f_consistent_atk_pos_in_R:
+lemma bcg_contrasim_contains_all_strat_consistent_atknodes:
   assumes 
     \<open>contrasimulation R\<close>
     \<open>R p0 q0\<close>
@@ -110,20 +110,20 @@ next
       strategy_from_contrasim.simps(1)[of \<open>R\<close>]
       by (metis (no_types, lifting) A c_basic_game_node.inject(1) c_game_defender_node.elims(2))
     then obtain A ppred where n0_def: \<open>n0 = (DefenderNode A q ppred)\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
-      by (metis assms(3) c_basic_game.basic_defender_pred_is_attacker
+      by (metis assms(3) c_basic_game.bcg_atknodes_precede_defnodes_in_plays
           simulation_challenge p0moved.hyps(1, 3) strategy0_plays_subset)
     hence \<open>strategy_from_contrasim R (n0#play) =
         AttackerNode (SOME q1. R q1 q \<and> ppred \<Rightarrow>$ A  q1) q\<close> 
       using n0_def strategy_from_contrasim.simps(1)[of \<open>R\<close> \<open>A\<close> \<open>q\<close> \<open>ppred\<close> \<open>play\<close>] by auto
     hence p_def: \<open>p = (SOME p1. R p1 q \<and> ppred \<Rightarrow>$ A p1)\<close> using A by auto
     have \<open>\<exists>qpred. hd play = (AttackerNode qpred ppred) \<and> c_game_moves (hd play) n0\<close> 
-      using basic_defender_pred_is_attacker strategy0_plays_subset[OF p0moved.hyps(1)]
+      using bcg_atknodes_precede_defnodes_in_plays strategy0_plays_subset[OF p0moved.hyps(1)]
       by (simp add: assms(3) n0_def  p0moved.hyps(3)) 
     then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred ppred)\<close> 
       and qpred_move: \<open>c_game_moves (hd play) n0\<close> by auto
     have qpred_q_move: \<open>qpred \<Rightarrow>$A q\<close> using qpred_def qpred_move n0_def by simp
     have \<open>hd play \<in> set (n0 # play)\<close> 
-      using second_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)] assms(3)
+      using bcg_second_play_elem_in_play_set strategy0_plays_subset[OF p0moved.hyps(1)] assms(3)
       by (auto simp add: n0_def)
     hence pred_R: \<open>R qpred ppred\<close> 
       by (simp add: qpred_def p0moved.hyps(1) p0moved.hyps(2))
@@ -188,7 +188,7 @@ proof (safe)
       then obtain p q where n1_def: \<open>n1 = AttackerNode p q\<close>
         using c_game_defender_node.elims(3) by auto
       hence pq_in_R: \<open>R p q\<close> 
-        using basic_game_all_f_consistent_atk_pos_in_R[OF assms, of \<open>n1#play\<close>, OF p1moved.hyps(1)] 
+        using bcg_contrasim_contains_all_strat_consistent_atknodes[OF assms, of \<open>n1#play\<close>, OF p1moved.hyps(1)] 
         by auto
       have is_def: \<open>c_game_defender_node n1'\<close> using p1moved.prems by auto
       then obtain A p1 q0 where n1'_def: \<open>n1' = DefenderNode A p1 q0\<close>
@@ -214,7 +214,7 @@ qed
 
 subsection \<open>Winning Strategy Implies Contrasimulation (Soundness)\<close>
 
-lemma strategy_from_contrasim_sound: 
+lemma bcg_strategy_from_contrasim_sound: 
   assumes
     \<open>R p0 q0\<close>
     \<open>contrasimulation R\<close>
@@ -230,13 +230,13 @@ proof (safe)
   then obtain A p1 q where n0_def: \<open>n0 = DefenderNode A p1 q\<close>
     using c_game_defender_node.elims(2) by blast 
   then obtain p where p_def: \<open>hd play = AttackerNode p q\<close>
-    using n0_def A basic_defender_pred_is_attacker assms(3) strategy0_plays_subset by blast
+    using n0_def A bcg_atknodes_precede_defnodes_in_plays assms(3) strategy0_plays_subset by blast
   hence \<open>c_game_moves (AttackerNode p q) (DefenderNode A p1 q)\<close> 
-    using A n0_def by (metis assms(3) basic_defender_pred_is_attacker strategy0_plays_subset)
+    using A n0_def by (metis assms(3) bcg_atknodes_precede_defnodes_in_plays strategy0_plays_subset)
   hence mov_p_p1: \<open>p \<Rightarrow>$A p1\<close> \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by auto  
   from p_def have \<open>R p q\<close> 
-    using basic_game_all_f_consistent_atk_pos_in_R A assms
-      second_elem_in_play_set n0_def strategy0_plays_subset
+    using bcg_contrasim_contains_all_strat_consistent_atknodes A assms
+      bcg_second_play_elem_in_play_set n0_def strategy0_plays_subset
     by fastforce
   with mov_p_p1 have q1_def: \<open>\<exists>q1. R q1 p1 \<and> q \<Rightarrow>$A q1\<close> 
     using assms(2) unfolding contrasimulation_def by blast
@@ -345,7 +345,7 @@ next
     \<open>\<exists> C. contrasimulation C \<and> C p q\<close>
   thus \<open>(\<exists>f. player0_winning_strategy f initial \<and> sound_0strategy f initial)\<close>
     using basic_contrasim_game_complete[OF _ _ assms]
-         strategy_from_contrasim_sound[OF _ _ assms] by blast
+         bcg_strategy_from_contrasim_sound[OF _ _ assms] by blast
 qed
 
 end                         

@@ -294,7 +294,7 @@ inductive_set attacker_winning_region :: \<open>('s, 'a) c_set_game_node set\<cl
     (\<And>g'. c_set_game_moves g g' \<Longrightarrow> g' \<in> attacker_winning_region)
     \<Longrightarrow> g \<in> attacker_winning_region\<close>
 
-lemma Atk_node_wins_if_Q_is_empty: 
+lemma attacker_wins_if_defender_set_empty: 
   assumes
     \<open>Q = {}\<close>
   shows
@@ -307,7 +307,7 @@ proof -
   thus ?thesis using atk_move attacker_winning_region.Atk by blast
 qed
 
-lemma Atk_node_wins_in_2_moves: 
+lemma attacker_wr_propagation: 
   assumes 
     \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close>
     \<open>p =\<rhd>a p'\<close>
@@ -318,8 +318,9 @@ proof -
   have AtkToSim: \<open>c_set_game_moves (AttackerNode p Q) (DefenderSimNode a p' Q)\<close>
     using assms(2, 3) by simp
   have \<open>\<forall>g. c_set_game_moves 
-(DefenderSimNode a p' Q) g \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
-    by (simp add: move_DefSim_to_AtkNode)
+        (DefenderSimNode a p' Q) g 
+        \<longrightarrow> (g = AttackerNode p' (dsuccs a Q))\<close>
+    by (simp add: csg_move_defsimnode_to_atknode)
   hence \<open>(DefenderSimNode a p' Q) \<in> attacker_winning_region\<close> 
     using assms(1) attacker_winning_region.Def
     by (metis c_set_game_defender_node.simps(2))
@@ -334,7 +335,7 @@ lemma distinction_completeness:
     \<open>(AttackerNode p Q) \<in> attacker_winning_region\<close>
 proof (cases \<open>Q = {}\<close>)
   case True
-  then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
+  then show ?thesis using attacker_wins_if_defender_set_empty by auto
 next
   case False
   then show ?thesis using assms
@@ -363,17 +364,19 @@ next
         case True
         hence \<open>{q1. \<exists>q\<in> Q. q \<longmapsto>* tau q1} = {}\<close> using dsuccs_def dsuccs_empty by auto
         hence \<open>Q = {}\<close> using steps.refl by blast
-        then show ?thesis using Atk_node_wins_if_Q_is_empty by auto
+        then show ?thesis using attacker_wins_if_defender_set_empty by auto
       next
         case False
         hence \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> 
-          using Atk_node_wins_if_Q_is_empty dsuccs_empty by auto
-        thus ?thesis using Atk_node_wins_in_2_moves False p'_def by blast
+          using attacker_wins_if_defender_set_empty dsuccs_empty by auto
+        thus ?thesis using attacker_wr_propagation False p'_def by blast
       qed
     next
       case False
-      hence wr_pred_atk_node: \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> 
-        using Obs.hyps phi_distinguishing by auto
+      hence wr_pred_atk_node: 
+        \<open>AttackerNode p' (dsuccs a Q) \<in> attacker_winning_region\<close> 
+        using Obs.hyps phi_distinguishing 
+        by auto
       thus ?thesis 
       proof(cases \<open>tau a\<close>)
         case True
@@ -386,7 +389,8 @@ next
       next
         case False
         then show ?thesis 
-          using wr_pred_atk_node Atk_node_wins_in_2_moves p'_def by blast
+          using wr_pred_atk_node attacker_wr_propagation p'_def 
+          by blast
       qed
     qed
   next
@@ -421,7 +425,7 @@ next
       using Conj.hyps Ex_i by blast
     hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g
         \<longrightarrow> (\<exists> q1 P1. g = (AttackerNode q1 P1))\<close> 
-      using move_DefSwap_to_AtkNode by blast
+      using csg_move_defswapnode_to_atknode by blast
     hence \<open>\<forall>g. c_set_game_moves (DefenderSwapNode p' Q) g
         \<longrightarrow> g \<in> attacker_winning_region\<close> 
       using all_atk_succs_in_wr by auto

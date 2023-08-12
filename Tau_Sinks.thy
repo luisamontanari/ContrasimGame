@@ -468,17 +468,19 @@ lemma trace_inclusion_sink_invariant:
     = lts_tau.weakly_trace_included_by step \<tau> p q\<close>
 proof - 
   let ?tau = \<open>(lts_tau.tau \<tau>)\<close>
-  let ?steps = \<open>lts.steps\<close>
-  let ?seq = \<open>lts_tau.weak_step_seq\<close>
+  let ?weak_step = \<open>lts_tau.weak_step_tau step \<tau>\<close>
+  let ?weak_step2 = \<open>lts_tau.weak_step_tau step2 \<tau>\<close>
+  let ?weak_seq = \<open>lts_tau.weak_step_seq step \<tau>\<close>
+  let ?weak_seq2 = \<open>lts_tau.weak_step_seq step2 \<tau>\<close>
   {
     fix A
     have \<open>\<forall>p p'. (\<forall> a \<in> set(A). a \<noteq> \<tau>)
-    \<and> lts_tau.weak_step_seq step2 \<tau> p A p' 
-    \<longrightarrow> (\<exists>p''. ?seq step \<tau> p A p''
-    \<and> lts_tau.weak_step_tau step2 \<tau> p'' \<tau> p')\<close>
+    \<and> ?weak_seq2 p A p' 
+    \<longrightarrow> (\<exists>p''. ?weak_seq p A p''
+    \<and> ?weak_step2 p'' \<tau> p')\<close>
     proof(clarify, induct A rule: rev_induct)
       case Nil
-      hence \<open>lts_tau.weak_step_tau step \<tau> p \<tau> p\<close>
+      hence \<open>?weak_step p \<tau> p\<close>
         using lts_tau.step_tau_refl by fastforce
       thus ?case
         by (metis Nil.prems(2) lts_tau.tau_tau lts_tau.weak_step_seq.simps(1)) 
@@ -486,28 +488,28 @@ proof -
       case (snoc a A)
       hence not_in_set: \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> by force 
       then obtain p01 where 
-        \<open>?seq step2 \<tau> p A p01\<close> and
-        p01_def2: \<open>lts_tau.weak_step_tau step2 \<tau> p01 a p'\<close>
+        \<open>?weak_seq2 p A p01\<close> and
+        p01_def2: \<open>?weak_step2 p01 a p'\<close>
         using snoc by (metis lts_tau.rev_seq_split) 
       then obtain p02 where p02_def: 
-        \<open>?seq step \<tau> p A p02\<close> 
-        \<open>lts_tau.weak_step_tau step2 \<tau> p02 \<tau> p01\<close>
+        \<open>?weak_seq p A p02\<close> 
+        \<open>?weak_step2 p02 \<tau> p01\<close>
         using snoc.hyps[of p p01] snoc.prems(1) not_in_set by auto
-      hence \<open>lts_tau.weak_step_tau step2 \<tau> p02 a p'\<close> 
+      hence \<open>?weak_step2 p02 a p'\<close> 
         using p01_def2 lts_tau.step_tau_concat lts_tau.tau_tau
         by (smt (verit, del_insts))
       then obtain p03 p04 where 
-        tau1: \<open>lts_tau.weak_step_tau step2 \<tau> p02 \<tau> p03\<close> and
+        tau1: \<open>?weak_step2 p02 \<tau> p03\<close> and
         a_step2: \<open>step2 p03 a p04\<close> and
-        tau2: \<open>lts_tau.weak_step_tau step2 \<tau> p04 \<tau> p'\<close>
+        tau2: \<open>?weak_step2 p04 \<tau> p'\<close>
         using snoc.prems(1) lts_tau.tau_def 
         by (metis last_in_set snoc_eq_iff_butlast)
       hence \<open>p04 \<noteq> sink\<close> using assms snoc.prems(1) by force
       hence a_step: \<open>step p03 a p04\<close> using a_step2 assms by auto
       have notsinkp03: \<open>p03 \<noteq> sink\<close> using a_step2 assms snoc.prems(1) by force
-      have \<open>?steps step2 p02 ?tau p03\<close> using tau1 by (simp add: lts_tau.tau_tau)
-      hence \<open>?steps step p02 ?tau p03\<close> using notsinkp03
-      proof (induct rule: lts.steps.induct[OF `?steps step2 p02 ?tau  p03`])
+      have \<open>lts.steps step2 p02 ?tau p03\<close> using tau1 by (simp add: lts_tau.tau_tau)
+      hence \<open>lts.steps step p02 ?tau p03\<close> using notsinkp03
+      proof (induct rule: lts.steps.induct[OF `lts.steps step2 p02 ?tau  p03`])
         case (1 p A)
         thus ?case by (simp add: lts.refl)
       next
@@ -515,54 +517,54 @@ proof -
         hence \<open>q1 \<noteq> sink\<close> using assms(2) step2_def by blast 
         thus ?case using 2 lts.step step2_def by metis
       qed 
-      hence \<open>lts_tau.weak_step_tau step \<tau> p02 \<tau> p03\<close> by (simp add: lts_tau.tau_tau)
-      hence \<open>lts_tau.weak_step_tau step \<tau> p02 a p04\<close> using a_step
+      hence \<open>?weak_step p02 \<tau> p03\<close> by (simp add: lts_tau.tau_tau)
+      hence \<open>?weak_step p02 a p04\<close> using a_step
         by (metis lts.step lts_tau.step_tau_refl lts_tau.tau_tau) 
-      hence \<open>?seq step \<tau> p (A@[a]) p04\<close>
+      hence \<open>?weak_seq p (A@[a]) p04\<close>
         using lts_tau.rev_seq_step_concat p02_def(1) by fastforce 
       thus ?case using tau2 by auto
     qed
   }
   hence step2_to_step: \<open>\<forall>A p p'. (\<forall> a \<in> set(A). a \<noteq> \<tau>)
-    \<and> ?seq step2 \<tau> p A p' 
-    \<longrightarrow> (\<exists>p''. ?seq step \<tau> p A p'')\<close>
+    \<and> ?weak_seq2 p A p' 
+    \<longrightarrow> (\<exists>p''. ?weak_seq p A p'')\<close>
     by fastforce
 
   have step_to_step2:  \<open>\<forall>A p p'. (\<forall> a \<in> set(A). a \<noteq> \<tau>)
-    \<and> ?seq step \<tau> p A p' 
-    \<longrightarrow> ?seq step2 \<tau> p A p'\<close>
+    \<and> ?weak_seq p A p' 
+    \<longrightarrow> ?weak_seq2 p A p'\<close>
   proof
     fix A
     show \<open>\<forall>p p'. (\<forall> a \<in> set(A). a \<noteq> \<tau>)
-    \<and> ?seq step \<tau> p A p' 
-    \<longrightarrow> ?seq step2 \<tau> p A p'\<close>
+    \<and> ?weak_seq p A p' 
+    \<longrightarrow> ?weak_seq2 p A p'\<close>
     proof(clarify, induct A rule: list.induct)
       case Nil
-      assume \<open>?seq step \<tau> p [] p'\<close>
-      hence tau_step: \<open>lts_tau.weak_step_tau step \<tau> p \<tau> p'\<close>
+      assume \<open>?weak_seq p [] p'\<close>
+      hence tau_step: \<open>?weak_step p \<tau> p'\<close>
         by (simp add: lts_tau.weak_step_seq.simps(1) lts_tau.tau_tau)
-      hence \<open>lts_tau.weak_step_tau step2 \<tau> p \<tau> p'\<close>
+      hence \<open>?weak_step2 p \<tau> p'\<close>
         using lts_impl_steps step2_def lts_tau.tau_tau  by force 
       thus ?case by (simp add: lts_tau.weak_step_seq.simps(1) lts_tau.tau_tau) 
     next
       case (Cons x xs)
-      then obtain p1 where p1_def: \<open>lts_tau.weak_step_tau step \<tau> p x p1\<close> 
-      \<open>?seq step \<tau> p1 xs p'\<close>
+      then obtain p1 where p1_def: \<open>?weak_step p x p1\<close> 
+      \<open>?weak_seq p1 xs p'\<close>
         by (metis (mono_tags, lifting) lts_tau.weak_step_seq.simps(2))
-      hence IH: \<open>?seq step2 \<tau> p1 xs p'\<close> using Cons by auto
-      then obtain p01 p02 where \<open>lts_tau.weak_step_tau step \<tau> p \<tau> p01\<close> and
+      hence IH: \<open>?weak_seq2 p1 xs p'\<close> using Cons by auto
+      then obtain p01 p02 where \<open>?weak_step p \<tau> p01\<close> and
         strong: \<open>step p01 x p02\<close> and
-        p02_weak: \<open>lts_tau.weak_step_tau step \<tau> p02 \<tau> p1\<close>
+        p02_weak: \<open>?weak_step p02 \<tau> p1\<close>
         using Cons.prems(1) p1_def lts_tau.tau_def by (metis list.set_intros(1))
-      hence tau1: \<open>lts_tau.weak_step_tau step2 \<tau> p \<tau> p01\<close> 
+      hence tau1: \<open>?weak_step2 p \<tau> p01\<close> 
         using lts_impl_steps step2_def
         by (smt (verit, best))
-      have \<open>lts_tau.weak_step_tau step2 \<tau> p02 \<tau> p1\<close> 
+      have \<open>?weak_step2 p02 \<tau> p1\<close> 
         using p02_weak lts_impl_steps step2_def by (smt (verit, best))
-      hence \<open>lts_tau.weak_step_tau step2 \<tau> p x p1\<close> 
+      hence \<open>?weak_step2 p x p1\<close> 
         using tau1 strong step2_def Cons.prems(1) lts_tau.tau_def
         by (metis list.set_intros(1))  
-      thus \<open>?seq step2 \<tau> p (x#xs) p'\<close> 
+      thus \<open>?weak_seq2 p (x#xs) p'\<close> 
         using IH lts_tau.weak_step_seq_def[of step2 \<tau>] by auto
     qed
   qed
@@ -579,18 +581,18 @@ proof -
       assume subassms: 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
         \<open>R p q\<close>
-        \<open>?seq step \<tau> p A p'\<close>
+        \<open>?weak_seq p A p'\<close>
       hence \<open>(\<forall>a\<in>set A. a \<noteq> \<tau>) \<and>
-       ?seq step2 \<tau> p A p' \<longrightarrow>
-       (\<exists>q'. ?seq step2 \<tau> q A q')\<close> 
+       ?weak_seq2 p A p' \<longrightarrow>
+       (\<exists>q'. ?weak_seq2 q A q')\<close> 
         using weak_sim_R 
         unfolding lts_tau.trace_inclusion_def by simp
       hence \<open>(\<forall>a\<in>set A. a \<noteq> \<tau>) \<and>
-       ?seq step \<tau> p A p' \<longrightarrow>
-       (\<exists>q'. ?seq step \<tau> q A q')\<close>
+       ?weak_seq p A p' \<longrightarrow>
+       (\<exists>q'. ?weak_seq q A q')\<close>
         using step2_to_step step_to_step2
         by auto
-      thus "\<exists>q'. ?seq step \<tau> q A q'"
+      thus "\<exists>q'. ?weak_seq q A q'"
         by (simp add: subassms)
     qed
     thus \<open>\<exists>R. lts_tau.trace_inclusion step \<tau> R \<and> R p q\<close>
@@ -607,8 +609,8 @@ proof -
       assume subassms: 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close>
         \<open>R p q\<close>
-        \<open>?seq step2 \<tau> p A p'\<close>
-      thus \<open>\<exists>q'. ?seq step2 \<tau> q A q'\<close>
+        \<open>?weak_seq2 p A p'\<close>
+      thus \<open>\<exists>q'. ?weak_seq2 q A q'\<close>
         using step2_to_step step_to_step2
         by (metis (full_types) lts_tau.trace_inclusion_def weak_sim_R)
     qed
