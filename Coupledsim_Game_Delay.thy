@@ -1,6 +1,6 @@
 section \<open>Game for Coupled Similarity with Delay Formulation\<close>
 
-theory CS_Game_Delay
+theory Coupledsim_Game_Delay
 imports
   Coupled_Simulation
   Simple_Game

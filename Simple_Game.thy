@@ -1,4 +1,4 @@
-section \<open>Simple Games\<close>
+subsection \<open>Simple Games\<close>
 
 theory Simple_Game
 imports

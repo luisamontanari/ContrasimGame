@@ -1,9 +1,8 @@
 section \<open>Fixed Point Algorithm for Coupled Similarity\<close>
 
-
 subsection \<open>The Algorithm\<close>
 
-theory CS_Fixpoint_Algo_Delay
+theory Coupledsim_Fixpoint_Algo_Delay
 imports
   Coupled_Simulation
   "HOL-Library.While_Combinator"
