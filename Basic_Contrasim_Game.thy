@@ -188,7 +188,8 @@ proof (safe)
       then obtain p q where n1_def: \<open>n1 = AttackerNode p q\<close>
         using c_game_defender_node.elims(3) by auto
       hence pq_in_R: \<open>R p q\<close> 
-        using bcg_contrasim_contains_all_strat_consistent_atknodes[OF assms, of \<open>n1#play\<close>, OF p1moved.hyps(1)] 
+        using bcg_contrasim_contains_all_strat_consistent_atknodes[OF assms,
+                of \<open>n1#play\<close>, OF p1moved.hyps(1)] 
         by auto
       have is_def: \<open>c_game_defender_node n1'\<close> using p1moved.prems by auto
       then obtain A p1 q0 where n1'_def: \<open>n1' = DefenderNode A p1 q0\<close>

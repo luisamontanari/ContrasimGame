@@ -165,8 +165,8 @@ next
       hence Q_def: \<open>Q = (SOME Q1. Q1 = dsuccs a Qpred \<and> (mimicking (set_lifted C)) p Q1)\<close>
         using strat by (simp add: p0moved.prems(1))
       have \<open>\<exists>ppred. hd play = (AttackerNode ppred Qpred) \<and> c_set_game_moves (hd play) n0\<close> 
-        using csg_atknodes_precede_defnodes_in_plays strategy0_plays_subset[OF p0moved.hyps(1)] 
-          assms(2,3) n0_def by force
+        using csg_atknodes_precede_defnodes_in_plays
+              strategy0_plays_subset[OF p0moved.hyps(1)] assms(2,3) n0_def by force
       then obtain ppred where ppred_def: \<open>hd play = (AttackerNode ppred Qpred)\<close> 
           and \<open>c_set_game_moves (hd play) n0\<close> by auto
       hence \<open>ppred =\<rhd>a p\<close> \<open>a \<noteq> \<tau>\<close> using n0_def by auto
@@ -197,8 +197,8 @@ next
             (\<exists>p. p \<in> Ppred \<and> p \<Rightarrow>^\<tau> p1) \<and> (mimicking (set_lifted C)) p1 {q})\<close> 
         using strat p0moved.prems by auto
       have \<open>\<exists>qpred. hd play = (AttackerNode qpred Ppred) \<and> c_set_game_moves (hd play) n0\<close>
-        using csg_atknodes_precede_defnodes_in_plays strategy0_plays_subset[OF p0moved.hyps(1)] 
-          assms(3) n0_def
+        using csg_atknodes_precede_defnodes_in_plays
+          strategy0_plays_subset[OF p0moved.hyps(1)] assms(3) n0_def
         by force
       then obtain qpred where qpred_def: \<open>hd play = (AttackerNode qpred Ppred)\<close> 
         and qpred_move: \<open>c_set_game_moves (hd play) n0\<close> by auto
