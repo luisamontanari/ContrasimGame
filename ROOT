@@ -14,7 +14,7 @@ theories
   Coupled_Simulation
   Coupledsim_Game_Delay
   Coupledsim_Fixpoint_Algo_Delay
-  Basic_Contrasim_Game
+  Contrasim_Word_Game
   Contrasim_Set_Game
   HM_Logic_Infinitary
   Weak_HML_Contrasimulation

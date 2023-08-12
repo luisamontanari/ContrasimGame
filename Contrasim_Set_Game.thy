@@ -38,7 +38,7 @@ fun c_set_game_defender_node :: \<open>('s, 'a) c_set_game_node \<Rightarrow> bo
   \<open>c_set_game_defender_node (DefenderSimNode _ _ _) = True\<close> |
   \<open>c_set_game_defender_node (DefenderSwapNode _ _) = True\<close>
 
-subsection \<open>Contrasimulation Implies Winning Strategy (Completeness)\<close>
+subsection \<open>Contrasimulation Implies Winning Strategy in Set Game (Completeness)\<close>
 
 locale c_set_game =
   lts_tau trans \<tau> +
@@ -126,7 +126,7 @@ next
   then show ?thesis using DefenderSwapNode by auto
 qed
 
-lemma set_game_strategy_retains_mimicking:
+lemma c_set_game_strategy_retains_mimicking:
   assumes
     \<open>contrasimulation C\<close>
     \<open>C p0 q0\<close>
@@ -235,7 +235,7 @@ next
   qed
 qed
 
-lemma set_contrasim_game_complete:
+lemma contrasim_set_game_complete:
   assumes
     \<open>contrasimulation C\<close>
     \<open>C p0 q0\<close>
@@ -283,7 +283,7 @@ proof (safe)
       then obtain p Q where n1_def: \<open>n1 = AttackerNode p Q\<close>
         using c_set_game_defender_node.elims(3) by auto
       hence in_mimicking: \<open>mimicking (set_lifted C) p Q\<close> 
-        using set_game_strategy_retains_mimicking[OF assms, of \<open>n1#play\<close>, OF p1moved.hyps(1)]
+        using c_set_game_strategy_retains_mimicking[OF assms, of \<open>n1#play\<close>, OF p1moved.hyps(1)]
         by auto
       have \<open>(\<exists>a p1. n1' = DefenderSimNode a p1 Q) \<or> (\<exists>p1. n1' = DefenderSwapNode p1 Q)\<close> 
         using p1moved.prems n1_def p1moved.hyps(4)
@@ -351,7 +351,7 @@ proof (safe)
       by (metis A n0_def csg_atknodes_precede_defnodes_in_plays strategy0_plays_subset)
     hence \<open>p =\<rhd>a p'\<close> \<open>\<not> tau a\<close> by auto
     hence \<open>mimicking (set_lifted C) p Q\<close>
-      using set_game_strategy_retains_mimicking[OF assms] A p_def
+      using c_set_game_strategy_retains_mimicking[OF assms] A p_def
         assms(2) csg_second_play_elem_in_play_set strategy0_plays_subset
       by fastforce
     hence  \<open>mimicking (set_lifted C) p' (dsuccs a Q)\<close>
@@ -387,7 +387,7 @@ proof (safe)
       by (metis A n0_def csg_atknodes_precede_defnodes_in_plays strategy0_plays_subset)
     hence \<open>p \<Rightarrow>^\<tau> p'\<close> by auto
     hence \<open>mimicking (set_lifted C) p Q\<close>
-      using set_game_strategy_retains_mimicking[OF assms] A p_def
+      using c_set_game_strategy_retains_mimicking[OF assms] A p_def
         csg_second_play_elem_in_play_set strategy0_plays_subset 
       by fastforce 
     hence  \<open>\<exists>q'. q' \<in> weak_tau_succs Q \<and> mimicking (set_lifted C) q' {p'}\<close>
@@ -414,7 +414,7 @@ proof (safe)
   qed
 qed
 
-subsection \<open>Winning Strategy Implies Contrasimulation (Soundness)\<close>
+subsection \<open>Winning Strategy Implies Contrasimulation in Set Game (Soundness)\<close>
 
 lemma csg_move_defsimnode_to_atknode:
   assumes 
@@ -456,7 +456,7 @@ proof -
   thus ?thesis using assms by auto
 qed
 
-lemma csg_defsimnode_with_prefix_in_play: 
+lemma csg_defender_can_simulate_prefix: 
   assumes 
     \<open>A \<noteq> []\<close>
     \<open>p \<Rightarrow>$A p1\<close> 
@@ -550,7 +550,7 @@ next
   then show ?case using n0'_is_defSimNode in_play by auto
 qed
 
-lemma set_contrasim_game_sound: 
+lemma contrasim_set_game_sound: 
   assumes
     \<open>player0_winning_strategy f (AttackerNode p00 {q00})\<close>
     \<open>sound_0strategy f (AttackerNode p00 {q00})\<close>
@@ -619,7 +619,7 @@ proof (safe)
       \<open>DefenderSimNode (last A) p0 (dsuccs_seq_rec (rev (butlast A)) {q}) # A_play
         \<in> plays_for_0strategy f (AttackerNode p00 {q00})\<close>
       \<open>word_reachable_via_delay A p p0 p1\<close> 
-      using csg_defsimnode_with_prefix_in_play \<open>p \<Rightarrow>$A p1\<close> 
+      using csg_defender_can_simulate_prefix \<open>p \<Rightarrow>$A p1\<close> 
         \<open>\<forall>a\<in>set A. a \<noteq> \<tau>\<close> \<open>A \<noteq> []\<close> assms(2) play_def play_hd by meson
     then obtain Q where \<open>Q = dsuccs_seq_rec (rev (butlast A)) {q}\<close> by auto
     hence \<open>\<forall>q' \<in> Q.  q \<Rightarrow>$(butlast A) q'\<close>
@@ -675,7 +675,7 @@ proof (safe)
   qed
 qed
 
-theorem winning_strategy_in_set_game_iff_contrasim:
+theorem winning_strategy_in_c_set_game_iff_contrasim:
   shows
     \<open>(\<exists> f . player0_winning_strategy f (AttackerNode p0 {q0})
       \<and> sound_0strategy f (AttackerNode p0 {q0}))
@@ -688,7 +688,7 @@ proof safe
   hence \<open>contrasimulation (\<lambda>p q. \<exists>play \<in> plays_for_0strategy f (AttackerNode p0 {q0}).
     hd play = AttackerNode p {q} \<and>
     (hd play = (AttackerNode p0 {q0}) \<or> (\<exists>P. hd (tl play) = DefenderSwapNode q P)))\<close>
-    using set_contrasim_game_sound by blast
+    using contrasim_set_game_sound by blast
   thus \<open>p0 \<sqsubseteq>c q0\<close>
     using plays_for_0strategy.init[of \<open>AttackerNode p0 {q0}\<close> f] list.sel(1) by force
 next
@@ -697,7 +697,7 @@ next
   thus
     \<open>(\<exists>f. player0_winning_strategy f (AttackerNode p0 {q0})
       \<and> sound_0strategy f (AttackerNode p0 {q0}))\<close>
-    using set_contrasim_game_complete[OF _ _] csg_strategy_from_mimicking_of_C_sound[OF _ _]
+    using contrasim_set_game_complete[OF _ _] csg_strategy_from_mimicking_of_C_sound[OF _ _]
     by blast
 qed
 
