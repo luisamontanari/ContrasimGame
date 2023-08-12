@@ -26,11 +26,11 @@ jobs:
       - name: Isabelle-action
         uses: benkeks/isabelle-action@v1.5
         with:
-          args: build -P out -d . ContraCoupledSimulation
+          args: build -P out -d . Coupledsim_Contrasim
 #      - name: Archive artifact
 #        uses: actions/upload-artifact@v3
 #        with:
-#          name: Contrasim-Theory-HTML
+#          name: Coupledsim-Contrasim-HTML
 #          path: "out"
       - name: Setup Pages
         uses: actions/configure-pages@v2
