@@ -13,8 +13,7 @@ datatype ('a,'x)HML_formula =
 
 term \<open>\<langle>\<tau>\<rangle>\<langle>1\<rangle>\<langle>2\<rangle>\<langle>a\<rangle> ((\<lambda> x. \<langle>2\<rangle>x) C)\<close>
 
-\<comment>\<open>The HML formulation is derived from that by Max Pohlmann in
-  @{url \<open>https://github.com/maxpohlmann/Reducing-Reactive-to-Strong-Bisimilarity\<close>}\<close>
+\<comment>\<open>The HML formulation is derived from that by Max Pohlmann @{cite pohlmann2021reactivebisim}.\<close>
 
 subsection \<open>Satisfaction Relation\<close>
 

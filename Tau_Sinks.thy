@@ -6,6 +6,13 @@ text \<open>
   The trick is to add a \<open>\<tau>\<close>-sink to the transition system, that is, a state that is reachable
   by \<open>\<tau>\<close>-steps from every other state, and cannot be left.
   An illustration of such an extension is given in Figure~\ref{fig:sink-illustration}.
+
+  We here prove that, on systems with a \<open>\<tau>\<close>-sink, weak similarity equals coupled similarity and 
+  weak trace inclusion equals contrasimilarity.
+  We also prove that adding a \<open>\<tau>\<close>-sink to a system does not change weak similarity nor weak trace
+  inclusion relationships within the system.
+  As adding the \<open>\<tau>\<close>-sink only has negligible effect on the system sizes, these facts establish the
+  reducibility relationships.
 \<close>
 
 text_raw \<open>

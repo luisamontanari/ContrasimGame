@@ -66,13 +66,15 @@ checking.
 \section{Introduction}
 
 Coupled similarity and contrasimilarity are among the weakest abstractions of bisimilarity for systems
-with silent steps presented in van Glabbeek's \emph{linear-time--branching-time spectrum}~\cite{glabbeek1993ltbt}.
+with silent steps presented in van Glabbeek's \emph{linear-time--branching-time spectrum} of behavioral
+equivalences~\cite{glabbeek1993ltbt}.
 In particular, they are \emph{weaker than weak bisimilarity} in that they impose a weaker form of
 symmetry on the bisimulation link between compared states; coupled similarity implies
 contrasimilarity~\cite{bnp2020coupledsim32}. They are weak bisimilarities, however, in the sense
 that, on systems with no internal behavior, they coincide with strong bisimilarity.
 
-This theory contains the Isabelle formalization for two related lines of publication:
+This theory contains the Isabelle formalization for two related lines of publication, which presented
+the first algorithms to check coupled similarity and contrasimilarity for pairs of states:
 
 \begin{itemize}
   \item \emph{Computing coupled similarity:} Benjamin Bisping and Uwe Nestmann's TACAS 2019 paper~%
