@@ -70,21 +70,22 @@ with silent steps presented in van Glabbeek's \emph{linear-time--branching-time 
 equivalences~\cite{glabbeek1993ltbt}.
 In particular, they are \emph{weaker than weak bisimilarity} in that they impose a weaker form of
 symmetry on the bisimulation link between compared states; coupled similarity implies
-contrasimilarity~\cite{bnp2020coupledsim32}. They are weak bisimilarities, however, in the sense
+contrasimilarity. They are weak bisimilarities, however, in the sense
 that, on systems with no internal behavior, they coincide with strong bisimilarity.
+
+\subsection{This Theory}
 
 This theory contains the Isabelle formalization for two related lines of publication, which presented
 the first algorithms to check coupled similarity and contrasimilarity for pairs of states:
 
 \begin{itemize}
-  \item \emph{Computing coupled similarity:} Benjamin Bisping and Uwe Nestmann's TACAS 2019 paper~%
-    \cite{bn2019coupledsimTacas} and Bisping's master thesis~\cite{bisping2018coupledsim},
-    which can be found on \url{https://coupledsim.bbisping.de/bisping_computingCoupledSimilarity_thesis.pdf},
+  \item \emph{Computing coupled similarity:} Bisping and Nestmann's TACAS 2019 paper~%
+    \cite{bn2019coupledsimTacas} and Bisping's master thesis~\cite{bisping2018coupledsim}
     establish the first decision procedures for coupled similarity checking.
     This is done through a game-based approach.
     Also, the work introduces the idea that $\tau$-sinks can be used to reduce from weak simulation
     preorder to coupled simulation preorder.
-  \item \emph{Game characterization of contrasimilarity:} Benjamin Bisping and Luisa Montanari's
+  \item \emph{Game characterization of contrasimilarity:} Bisping and Montanari's
     EXPRESS/SOS 2021 paper~\cite{bm2021contrasimilarity} and Montanari's bachelor thesis provide
     the first game characterization of contrasimilarity.
     The present Isabelle theory extends this work by also showing a reduction from weak trace preorder to
@@ -141,6 +142,22 @@ Blue parts indicate a slope of decision problem complexities.
 Combined, the results establish a slope of complexity between weak bisimilarity, coupled similarity,
 and contrasimilarity with the equivalence problems becoming harder for coarser equivalences.
 See Figure~\ref{fig:equivalences} for a graphical representation.
+
+\subsection{Coupled Similarity vs.\ Weak Bisimilarity vs.\ Contrasimilarity in a Nutshell}
+
+In coupled simulation semantics, the CCS process $\tau \ldotp a + \tau \ldotp (\tau \ldotp b + \tau \ldotp c)$
+with gradual internal choice equals $\tau \ldotp a + \tau \ldotp b + \tau \ldotp c$ with only one internal choice point.
+In weak bisimulation semantics, this is not the case as the intermediate choice point
+$\tau \ldotp b + \tau \ldotp c$ of the first process does not match symmetrically to any state of the second process.
+
+The same is true for contrasimulation semantics. It moreover blurs the lines between non-determinism
+of visble behavior and internal non-deterministic choice by considering  $a \ldotp b + a \ldotp c$ to be
+indistinguishable from $a \ldotp (\tau \ldotp b + \tau \ldotp c)$. This equality does not hold under coupled similarity.
+
+For a more detailed exposition about the nuances of coupled similarity and contrasimilarity we refer
+to our publications \cite{bn2019coupledsimTacas,bnp2020coupledsim32,bm2021contrasimilarity}.
+
+\subsection{Modal Intuition}
 
 The modal characterization of contrasimilarity at the end of this theory gives a nice intuition
 for why contrasimilarity is a sensible weakening for bisimilarity. We show that the following
