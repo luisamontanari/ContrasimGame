@@ -697,7 +697,8 @@ next
   thus
     \<open>(\<exists>f. player0_winning_strategy f (AttackerNode p0 {q0})
       \<and> sound_0strategy f (AttackerNode p0 {q0}))\<close>
-    using contrasim_set_game_complete[OF _ _] csg_strategy_from_mimicking_of_C_sound[OF _ _]
+    using contrasim_set_game_complete[OF _ _]
+      csg_strategy_from_mimicking_of_C_sound[OF _ _]
     by blast
 qed
 

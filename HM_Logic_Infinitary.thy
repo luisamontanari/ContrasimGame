@@ -135,7 +135,7 @@ lemma HML_equivalent_symm:
   shows \<open>HML_equivalent q p\<close>
   using HML_equivalent_def assms by presburger
 
-subsection \<open>Weak-NOR Hennessy-Milner Logic\<close>
+subsection \<open>Weak-NOR Hennessy--Milner Logic\<close>
 
 definition HML_weaknor ::
   \<open>'x set \<Rightarrow> ('x \<Rightarrow> ('a,'x)HML_formula) \<Rightarrow> ('a,'x)HML_formula\<close>

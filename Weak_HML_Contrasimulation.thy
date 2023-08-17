@@ -6,8 +6,7 @@ theory Weak_HML_Contrasimulation
     HM_Logic_Infinitary
 begin
 
-
-subsection \<open>Existence of Distinguishing Formula on Winning Attacker Position\<close>
+subsection \<open> Distinguishing Formulas at Winning Attacker Positions\<close>
 
 locale c_game_with_attacker_strategy  =
   c_set_game trans \<tau>
@@ -33,7 +32,7 @@ assumes
     \<Longrightarrow> g' \<in> attacker_winning_region\<close>
 begin
 
-text \<open>This construction of attacker formulas from a game only works if \<open>strat\<close> is a (non-cyclic)
+text \<open>This construction of attacker formulas from a game only works if \<open>strat\<close> is a well-founded
   attacker strategy. (If it's winning and sound, the constructed formula should be distinguishing.)\<close>
 
 function attack_formula :: \<open>('s, 'a) c_set_game_node \<Rightarrow> ('a,'s) HML_formula\<close> where
@@ -277,7 +276,7 @@ qed
 
 end
 
-subsection \<open>Attacker Wins on Positions With Distinguishing Formula\<close>
+subsection \<open>Attacker Wins on Pairs with Distinguishing Formulas\<close>
 
 locale c_game_with_attacker_formula  =
   c_set_game trans \<tau>

@@ -6,6 +6,7 @@ text \<open>
   The trick is to add a \<open>\<tau>\<close>-sink to the transition system, that is, a state that is reachable
   by \<open>\<tau>\<close>-steps from every other state, and cannot be left.
   An illustration of such an extension is given in Figure~\ref{fig:sink-illustration}.
+  Intuitively, the extension means that the model is allowed to just stop progressing at any point.
 
   We here prove that, on systems with a \<open>\<tau>\<close>-sink, weak similarity equals coupled similarity and 
   weak trace inclusion equals contrasimilarity.
@@ -183,7 +184,7 @@ theorem contrasim_trace_incl_equiv_on_sink_expansion:
 
 end
 
-subsection \<open>Weak Simulation Invariant to Adding \<open>\<tau>\<close>-Sink\<close>
+subsection \<open>Weak Simulation Invariant under \<open>\<tau>\<close>-Sink Extension\<close>
 
 lemma simulation_tau_sink_1:
   fixes
@@ -461,7 +462,7 @@ next
   qed
 qed
 
-subsection \<open>Trace Inclusion Invariant to Adding \<open>\<tau>\<close>-Sink\<close>
+subsection \<open>Trace Inclusion Invariant under \<open>\<tau>\<close>-Sink Extension\<close>
 
 lemma trace_inclusion_sink_invariant:
   fixes
