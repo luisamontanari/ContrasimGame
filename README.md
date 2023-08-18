@@ -1,4 +1,4 @@
-# Coupled Simulation and Contrasimilarity---And How to Compute Them
+# Coupled Similarity and Contrasimilarity, and How to Compute Them
 
 *Coupled similarity* and *contrasimilarity* are nice semantic equivalences for systems with internal behavior.
 This repository contains an [Isabelle2022](https://isabelle.in.tum.de/index.html) formalization for the two with a focus

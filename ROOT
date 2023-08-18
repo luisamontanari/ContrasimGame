@@ -1,3 +1,5 @@
+chapter AFP
+
 session "Coupledsim_Contrasim" (AFP) = "HOL-Library" +
 options [
   document = "pdf",
