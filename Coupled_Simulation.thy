@@ -260,20 +260,19 @@ lemma coupled_similarity_implies_gcs:
   assumes \<open>p \<sqsubseteq>cs q\<close>
   shows \<open>greatest_coupled_simulation p q\<close>
   using assms
-proof (coinduct, simp del: weak_step_tau2_def, safe)
-  fix x1 x2 R a xa
-  assume ih: \<open>coupled_simulation R\<close> \<open>R x1 x2\<close> \<open>x1 \<longmapsto>a  xa\<close>
-  then obtain q' where \<open>x2 \<Rightarrow>^^ a  q'\<close> \<open>R xa q'\<close>
-    unfolding coupled_simulation_def weak_step_tau2_def by blast
-  thus \<open>\<exists>q'. x2 \<Rightarrow>^^ a  q' \<and> (xa \<sqsubseteq>cs  q' \<or> greatest_coupled_simulation xa q')\<close>
-    using ih by blast
-next
-  fix x1 x2 R
-  assume ih: \<open>coupled_simulation R\<close> \<open>R x1 x2\<close>
-  then obtain q' where \<open>x2 \<longmapsto>* tau  q'\<close> \<open>R q' x1\<close>
-    unfolding coupled_simulation_def by blast
-  thus \<open>\<exists>q'. x2 \<longmapsto>* tau  q' \<and> (q' \<sqsubseteq>cs  x1 \<or> greatest_coupled_simulation q' x1)\<close>
-    using ih by blast
+proof (coinduct)
+  case (greatest_coupled_simulation p1 q1)
+  then obtain R where \<open>coupled_simulation R\<close> \<open>R p1 q1\<close>
+    \<open>weak_simulation R\<close> using coupled_simulation_implies_weak_simulation by blast
+  then have \<open>(\<forall>x xa. p1 \<longmapsto>x  xa \<longrightarrow>
+          (\<exists>q'. q1 \<Rightarrow>^x  q' \<and> (xa \<sqsubseteq>cs  q' \<or> greatest_coupled_simulation xa q'))) \<and>
+        (\<exists>q'. q1 \<longmapsto>* tau  q' \<and>
+          (q' \<sqsubseteq>cs  p1 \<or> greatest_coupled_simulation q' p1))\<close>
+    unfolding weak_step_tau2_def
+    using coupled_simulation_implies_coupling
+       weak_sim_ruleformat[OF \<open>weak_simulation R\<close>]
+    by (metis (no_types, lifting))
+  thus ?case by simp
 qed
 
 lemma gcs_eq_coupled_sim_by:
@@ -317,67 +316,46 @@ proof -
   hence \<open>R pqc q\<close> by blast
   thus \<open>pqc \<sqsubseteq>cs  q\<close>
     unfolding gcs_eq_coupled_sim_by
-  proof (coinduct, auto)
-    fix x1 x2 x xa
-    assume ih:
-      \<open>R x1 x2\<close>
-      \<open>x1 \<longmapsto>x  xa\<close>
-    hence \<open>x1 = q \<and> x2 = pqc \<or> x1 = pqc \<and> x2 = q \<or> x1 = p \<and> x2 = q\<close> using R_def by auto
-    thus \<open>\<exists>q'. (tau x \<longrightarrow> x2 \<longmapsto>* tau  q') \<and>
-      (\<not> tau x \<longrightarrow> (\<exists>pq1. x2 \<longmapsto>* tau  pq1 \<and>
-        (\<exists>pq2. pq1 \<longmapsto>x  pq2 \<and> pq2 \<longmapsto>* tau  q'))) \<and>
-      (R xa q' \<or> greatest_coupled_simulation xa q')\<close>
+  proof (coinduct)
+    case (greatest_coupled_simulation p1 q1)
+    then show ?case
+      unfolding weak_step_tau2_def R_def
     proof safe
-      assume \<open>x1 = q\<close> \<open>x2 = pqc\<close>
-      thus \<open>\<exists>q'.
-        (tau x \<longrightarrow> pqc \<longmapsto>* tau  q') \<and>
-        (\<not>tau x \<longrightarrow> (\<exists>pq1. pqc \<longmapsto>* tau  pq1 \<and>
-          (\<exists>pq2. pq1 \<longmapsto>x  pq2 \<and> pq2 \<longmapsto>* tau  q'))) \<and>
-        (R xa q' \<or> greatest_coupled_simulation xa q')\<close> 
-        using ih `q \<sqsubseteq>cs pqc`
+      assume \<open>q1 = pqc\<close> \<open>p1 = q\<close>
+      thus \<open>\<exists>pa qa.
+        q = pa \<and> pqc = qa \<and>
+        (\<forall>x xa. pa \<longmapsto>x  xa \<longrightarrow>
+          (\<exists>q'. qa \<Rightarrow>^x  q' \<and> ((xa = q \<and> q' = pqc \<or> xa = pqc \<and> q' = q \<or> xa = p \<and> q' = q)
+            \<or> greatest_coupled_simulation xa q'))) \<and>
+        (\<exists>q'. qa \<longmapsto>* tau  q' \<and>
+            ((q' = q \<and> pa = pqc \<or> q' = pqc \<and> pa = q \<or> q' = p \<and> pa = q)
+            \<or> greatest_coupled_simulation q' pa))\<close>
+        using `q \<sqsubseteq>cs pqc` step_tau_refl weak_sim_ruleformat tau_def
           coupled_simulation_implies_weak_simulation[OF gcs_is_coupled_simulation] 
+        unfolding gcs_eq_coupled_sim_by by fastforce
+    next
+      assume \<open>q1 = q\<close> \<open>p1 = pqc\<close>
+      thus \<open>\<exists>pa qa.
+        pqc = pa \<and> q = qa \<and>
+        (\<forall>x xa. pa \<longmapsto>x  xa \<longrightarrow>
+          (\<exists>q'. qa \<Rightarrow>^x  q' \<and> ((xa = q \<and> q' = pqc \<or> xa = pqc \<and> q' = q \<or> xa = p \<and> q' = q)
+            \<or> greatest_coupled_simulation xa q'))) \<and>
+        (\<exists>q'. qa \<longmapsto>* tau  q' \<and>
+          ((q' = q \<and> pa = pqc \<or> q' = pqc \<and> pa = q \<or> q' = p \<and> pa = q)
+            \<or> greatest_coupled_simulation q' pa))\<close>
+        using R1_def \<open>coupled_simulation R1\<close> assms(2)
+          coupled_similarity_implies_gcs step_tau_refl by fastforce
+    next
+      assume \<open>q1 = q\<close> \<open>p1 = p\<close>
+      thus \<open>\<exists>pa qa.
+       p = pa \<and> q = qa \<and>
+       (\<forall>x xa. pa \<longmapsto>x  xa \<longrightarrow> (\<exists>q'. qa \<Rightarrow>^x  q' \<and> ((xa = q \<and> q' = pqc \<or> xa = pqc \<and> q' = q \<or> xa = p \<and> q' = q) \<or> greatest_coupled_simulation xa q'))) \<and>
+       (\<exists>q'. qa \<longmapsto>* tau  q' \<and> ((q' = q \<and> pa = pqc \<or> q' = pqc \<and> pa = q \<or> q' = p \<and> pa = q) \<or> greatest_coupled_simulation q' pa))\<close>
+        using `p \<sqsubseteq>cs q` weak_sim_ruleformat
+          coupled_simulation_implies_weak_simulation[OF gcs_is_coupled_simulation]
+          coupled_simulation_implies_coupling[OF gcs_is_coupled_simulation]
         unfolding gcs_eq_coupled_sim_by
-        by (metis (full_types) weak_sim_ruleformat)
-    next
-      assume \<open>x1 = pqc\<close> \<open>x2 = q\<close>
-      hence \<open>x = \<tau> \<and> (xa = q \<or> xa = p)\<close> using ih(2) assms(2) by blast
-      thus \<open>\<exists>q'.
-        (tau x \<longrightarrow> q \<longmapsto>* tau  q') \<and>
-        (\<not> tau x \<longrightarrow> (\<exists>pq1. q \<longmapsto>* tau  pq1 \<and>
-          (\<exists>pq2. pq1 \<longmapsto>x  pq2 \<and> pq2 \<longmapsto>* tau  q'))) \<and>
-        (R xa q' \<or> greatest_coupled_simulation xa q')\<close>
-        unfolding gcs_eq_coupled_sim_by[symmetric] 
-        using steps.refl[of q tau] `p \<sqsubseteq>cs q` tau_tau
-        by auto
-    next
-      assume \<open>x1 = p\<close> \<open>x2 = q\<close>
-      thus \<open>\<exists>q'.
-         (tau x \<longrightarrow> q \<longmapsto>* tau  q') \<and>
-         (\<not> tau x \<longrightarrow> (\<exists>pq1. q \<longmapsto>* tau  pq1 \<and>
-            (\<exists>pq2. pq1 \<longmapsto>x  pq2 \<and> pq2 \<longmapsto>* tau  q'))) \<and>
-         (R xa q' \<or> greatest_coupled_simulation xa q')\<close>
-        using ih `p \<sqsubseteq>cs q`
-          coupled_simulation_implies_weak_simulation[OF gcs_is_coupled_simulation] 
-        unfolding gcs_eq_coupled_sim_by
-        by (metis (full_types) weak_sim_ruleformat)
-    qed
-  next
-    fix x1 x2
-    assume
-      \<open>R x1 x2\<close>
-    hence \<open>x1 = q \<and> x2 = pqc \<or> x1 = pqc \<and> x2 = q \<or> x1 = p \<and> x2 = q\<close> using R_def by auto
-    thus \<open>\<exists>q'. x2 \<longmapsto>* tau  q' \<and> (R q' x1 \<or> greatest_coupled_simulation q' x1)\<close>
-    proof (auto)
-      show \<open>\<exists>q'. pqc \<longmapsto>* tau  q' \<and> (R q' q \<or> greatest_coupled_simulation q' q)\<close>
-        using \<open>R pqc q\<close> steps.simps by blast
-    next
-      show \<open>\<exists>q'. q \<longmapsto>* tau  q' \<and> (R q' pqc \<or> greatest_coupled_simulation q' pqc)\<close>
-        using \<open>R1 q pqc\<close> \<open>coupled_simulation R1\<close> coupled_similarity_implies_gcs steps.refl
-        by blast
-    next
-      show \<open>\<exists>q'. q \<longmapsto>* tau  q' \<and> (R q' p \<or> greatest_coupled_simulation q' p)\<close>
-        using assms(1) coupled_simulation_weak_simulation
-          lts_tau.coupled_similarity_implies_gcs by fastforce
+        by (auto, metis+)
     qed
   qed
 qed

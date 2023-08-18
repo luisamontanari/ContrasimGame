@@ -11,8 +11,6 @@ datatype ('a,'x)HML_formula =
 | HML_neg \<open>('a,'x)HML_formula\<close>                  (\<open>~_\<close> [20] 60)
 | HML_poss \<open>'a\<close> \<open>('a,'x)HML_formula\<close>            (\<open>\<langle>_\<rangle>_\<close> [60] 60)
 
-term \<open>\<langle>\<tau>\<rangle>\<langle>1\<rangle>\<langle>2\<rangle>\<langle>a\<rangle> ((\<lambda> x. \<langle>2\<rangle>x) C)\<close>
-
 \<comment>\<open>The HML formulation is derived from that by Max Pohlmann @{cite pohlmann2021reactivebisim}.\<close>
 
 subsection \<open>Satisfaction Relation\<close>

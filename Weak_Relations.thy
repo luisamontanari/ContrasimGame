@@ -68,13 +68,13 @@ lemma weakly_sim_by_implies_gws:
   assumes \<open>p \<sqsubseteq>ws q\<close>
   shows \<open>greatest_weak_simulation p q\<close>
   using assms
-proof (coinduct, simp del: weak_step_tau2_def, safe)
-  fix x1 x2 R a xa
-  assume ih: \<open>weak_simulation R\<close> \<open>R x1 x2\<close> \<open>x1 \<longmapsto>a  xa\<close>
-  then obtain q' where \<open>x2 \<Rightarrow>^^ a  q'\<close> \<open>R xa q'\<close>
-    unfolding weak_simulation_def weak_step_tau2_def by blast
-  thus \<open>\<exists>q'. (xa \<sqsubseteq>ws  q' \<or> greatest_weak_simulation xa q') \<and> x2 \<Rightarrow>^^ a  q'\<close>
-    using ih by blast
+proof coinduct
+  case (greatest_weak_simulation p q)
+  then obtain R where \<open>weak_simulation R\<close> \<open>R p q\<close>
+    unfolding weak_simulation_def by blast
+  with weak_sim_ruleformat[OF this] show ?case
+    unfolding weak_step_tau2_def
+    by metis
 qed
 
 lemma gws_eq_weakly_sim_by:

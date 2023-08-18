@@ -420,17 +420,8 @@ proof (rule)
   have weak_sim_R: \<open>lts_tau.weak_simulation step2 \<tau> R\<close>
     using lts_tau.weaksim_greatest[of step2 \<tau>] unfolding R_def by blast
   have R_contains_inv_tau_closure:
-    \<open>R = (\<lambda>p1 q1. R p1 q1 \<or> lts.steps step2 q1 (lts_tau.tau \<tau>) p1)\<close> unfolding R_def
-  proof (rule, rule, rule, simp)
-    fix p q
-    assume
-      \<open>(\<exists>R. lts_tau.weak_simulation step2 \<tau>  R \<and> R p q) \<or>
-       (lts.steps step2 q (lts_tau.tau \<tau>) p)\<close>
-    thus \<open>\<exists>R. lts_tau.weak_simulation step2 \<tau> R \<and> R p q\<close>
-      using weak_sim_R
-            lts_tau.weak_sim_tau_step[of step2 \<open>\<tau>\<close>]
-            lts_tau.weak_sim_union_cl[of step2 \<open>\<tau>\<close>] by blast
-  qed
+    \<open>R = (\<lambda>p1 q1. R p1 q1 \<or> lts.steps step2 q1 (lts_tau.tau \<tau>) p1)\<close>
+    unfolding R_def using lts_tau.weak_sim_tau_step by fastforce
   assume Rpq: \<open>R p q\<close>
   have \<open>\<And> p' q' q . R p' q' \<and> lts.steps step2 q (lts_tau.tau \<tau>) q'  \<longrightarrow> R p' q\<close>
     using R_contains_inv_tau_closure lts_tau.weak_sim_trans[of step2 \<open>\<tau>\<close> _ _ _] R_def assms(2)
