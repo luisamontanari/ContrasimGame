@@ -6,8 +6,8 @@ on game characterizations. The theory accompanies the publications [“Computing
 (Bisping & Nestmann, TACAS 2019) and [“A Game Characterization for Contrasimilarity”](https://doi.org/10.4204/EPTCS.339.5)
 (Bisping & Montanari, EXPRESS/SOS 2021).
 
-- Document: <https://luisamontanari.github.io/ContrasimGame/Unsorted/Coupledsim_Contrasim/document.pdf>
-- Browsable theory: <https://luisamontanari.github.io/ContrasimGame/Unsorted/Coupledsim_Contrasim/index.html>
+- Document: <https://luisamontanari.github.io/ContrasimGame/AFP/Coupledsim_Contrasim/document.pdf>
+- Browsable theory: <https://luisamontanari.github.io/ContrasimGame/AFP/Coupledsim_Contrasim/index.html>
 
 ## Authors
 
