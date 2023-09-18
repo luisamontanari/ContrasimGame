@@ -9,7 +9,7 @@ begin
 
 subsection \<open>Van Glabbeeks's Coupled Simulation\<close>
   
-text \<open>We mainly use van Glabbeek's coupled simulation from his 2017 CSP paper @{cite "glabbeek2017"}.
+text \<open>We mainly use van Glabbeek's coupled simulation from his 2017 CSP paper \<open>cite "glabbeek2017"\<close>.
   Later on, we will compare it to other definitions of coupled (delay/weak) simulations.\<close>
 
 definition coupled_simulation ::
@@ -293,7 +293,7 @@ lemma coupledsim_unfold:
 
 subsection \<open>Coupled Simulation Join\<close>
 
-text \<open>The following lemmas reproduce Proposition 3 from @{cite glabbeek2017} that internal choice
+text \<open>The following lemmas reproduce Proposition 3 from \<open>cite glabbeek2017\<close> that internal choice
   acts as a least upper bound within the semi-lattice of CSP terms related by \<open>\<sqsubseteq>cs\<close> taking \<open>\<equiv>cs\<close>
   as equality.\<close>
 
@@ -755,8 +755,8 @@ qed
 subsection \<open>Reduction Semantics Coupled Simulation\<close>
 
 text \<open>The tradition to describe coupled simulation as special delay/weak simulation is quite
-  common for coupled simulations on reduction semantics as in @{cite "gp15" and "Fournet2005"},
-  of which @{cite "gp15"} can also be found in the AFP @{cite "Encodability_Process_Calculi-AFP"}.
+  common for coupled simulations on reduction semantics as in \<open>cite "gp15" and "Fournet2005"\<close>,
+  of which \<open>cite "gp15"\<close> can also be found in the AFP \<open>cite "Encodability_Process_Calculi-AFP"\<close>.
   The notions coincide (for systems just with \<open>\<tau>\<close>-transitions).\<close>
 
 definition coupled_simulation_gp15 ::
@@ -837,12 +837,12 @@ qed
 
 subsection \<open>Coupled Simulation as Two Simulations\<close>
 
-text \<open>Historically, coupled similarity has been defined in terms of @{emph \<open>two\<close>} weak simulations
-  coupled in some way @{cite "sangiorgi2012" and "ps1994"}.
+text \<open>Historically, coupled similarity has been defined in terms of \<open>emph \<open>two\<close>\<close> weak simulations
+  coupled in some way \<open>cite "sangiorgi2012" and "ps1994"\<close>.
   We reproduce these (more well-known) formulations and show that they are equivalent to the
   coupled (delay) simulations we are using.\<close>
 
-\<comment>\<open>From @{cite "sangiorgi2012"}\<close>
+\<comment>\<open>From \<open>cite "sangiorgi2012"\<close>\<close>
 definition coupled_simulation_san12 :: 
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> ('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
 where
@@ -894,11 +894,11 @@ qed
 subsection \<open>S-coupled Simulation\<close>
 
 text \<open>Originally coupled simulation was introduced as two weak simulations coupled at the stable
-  states. We give the definitions from @{cite "parrow1992" and "ps1994"} and a proof connecting
+  states. We give the definitions from \<open>cite "parrow1992" and "ps1994"\<close> and a proof connecting
   this notion to “our” coupled similarity in the absence of divergences following
-  @{cite "sangiorgi2012"}.\<close>
+  \<open>cite "sangiorgi2012"\<close>.\<close>
 
-\<comment>\<open>From @{cite "parrow1992"}\<close>
+\<comment>\<open>From \<open>cite "parrow1992"\<close>\<close>
 definition coupled_simulation_p92 :: 
   \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> ('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> bool\<close>
 where
@@ -1000,7 +1000,7 @@ lemma s_coupledsim_eq_parts:
     \<open>q \<sqsubseteq>scs p\<close>
   using assms s_coupledsim_symm by metis+
 
-\<comment>\<open>From @{cite "sangiorgi2012"}, p.~226\<close>
+\<comment>\<open>From \<open>cite "sangiorgi2012"\<close>, p.~226\<close>
 lemma divergence_free_coupledsims_coincidence_1:
   defines 
     \<open>R1 \<equiv> (\<lambda> p q . p \<sqsubseteq>cs q \<and> (stable_state p \<longrightarrow> stable_state q))\<close> and
@@ -1059,7 +1059,7 @@ next \<comment>\<open>analogous\<close>
     using coupled_sim_by_is_coupled_sim coupledsim_stable_state_symm by blast
 qed
 
-\<comment>\<open>From @{cite "sangiorgi2012"}, p.~227\<close>
+\<comment>\<open>From \<open>cite "sangiorgi2012"\<close>, p.~227\<close>
 lemma divergence_free_coupledsims_coincidence_2:
   defines 
     \<open>R \<equiv> (\<lambda> p q . p \<sqsubseteq>scs q \<or> (\<exists> q' . q \<longmapsto>* tau q' \<and> p \<equiv>scs q'))\<close>
@@ -1120,7 +1120,7 @@ next
   qed (metis s_coupledsim_symm)
 qed
 
-text \<open>While this proof follows @{cite "sangiorgi2012"}, we needed to deviate from them by also
+text \<open>While this proof follows \<open>cite "sangiorgi2012"\<close>, we needed to deviate from them by also
   requiring rootedness (shared stability) for the compared states.\<close>
 theorem divergence_free_coupledsims_coincidence:
   assumes
