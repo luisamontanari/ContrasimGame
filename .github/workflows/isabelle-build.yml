@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3.4.0
       - name: Isabelle-action
-        uses: benkeks/isabelle-action@v1.5
+        uses: benkeks/isabelle-action@v1.6
         with:
           args: build -P out -d . Coupledsim_Contrasim
 #      - name: Archive artifact
