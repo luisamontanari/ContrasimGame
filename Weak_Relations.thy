@@ -486,6 +486,96 @@ lemma weak_trace_inlcusion_greatest:
   unfolding trace_inclusion_def
   by blast
 
+subsection \<open>Infinite Traces\<close>
+
+definition infinite_path ::
+  \<open>(nat \<Rightarrow> 's) \<Rightarrow> bool\<close>
+  where \<open>infinite_path pt \<equiv> \<forall>n. \<exists>a. (pt n) \<Rightarrow>^a (pt (Suc n))\<close>
+
+primrec sim_path :: \<open>('s \<Rightarrow> 's \<Rightarrow> bool) \<Rightarrow> (nat \<Rightarrow> 's) \<Rightarrow> 's \<Rightarrow> (nat \<Rightarrow> 's)\<close> where
+    \<open>sim_path R iPath q 0 = q\<close> |
+    \<open>sim_path R iPath q (Suc n) = (SOME p'. \<exists>a.
+      iPath n \<Rightarrow>^a (iPath (Suc n))
+    \<and> (sim_path R iPath q n \<Rightarrow>^a p')
+    \<and> R (iPath (Suc n)) p')\<close>
+
+lemma path_lifting_construction:
+  assumes
+    \<open>weak_simulation R\<close>
+    \<open>R p q\<close>
+    \<open>infinite_path pt\<close>
+    \<open>pt 0 = p\<close>
+  shows
+    \<open>\<forall>n.\<exists>a.
+      ((sim_path R pt q) n) \<Rightarrow>^ a ((sim_path R pt q) (Suc n)) \<and>
+      R (pt n) ((sim_path R pt q) n)\<close>
+proof safe
+  fix n show \<open>\<exists>a. sim_path R pt q n \<Rightarrow>^a (sim_path R pt q (Suc n)) \<and> R (pt n) (sim_path R pt q n)\<close>
+  proof (induct n)
+    case 0
+    have q_def: \<open>sim_path R pt q 0 = q\<close> by auto
+    then obtain a where p_step: \<open>(pt 0) \<Rightarrow>^a (pt (Suc 0))\<close>
+      using \<open>infinite_path pt\<close> unfolding infinite_path_def by blast
+    then have \<open>\<exists>q'. q \<Rightarrow>^a q' \<and> R (pt (Suc 0)) q'\<close>
+      using assms(1) \<open>R p q\<close>
+      unfolding \<open>pt 0 = p\<close> weak_sim_weak_premise by blast
+    hence \<open>\<exists> q' a. pt 0 \<Rightarrow>^a (pt (Suc 0))
+      \<and> (sim_path R pt q 0 \<Rightarrow>^a q')
+      \<and> R (pt (Suc 0)) q'\<close>
+      using p_step
+      unfolding \<open>pt 0 = p\<close> q_def by blast
+    from someI_ex[OF this] obtain a1 where
+        \<open>sim_path R pt q 0 \<Rightarrow>^a1 (sim_path R pt q (Suc 0))\<close>
+      by (auto simp add: \<open>pt 0 = p\<close>)
+    then show ?case using assms q_def by auto
+  next
+    case (Suc n)
+    then obtain a1 where ih:
+      \<open>sim_path R pt q n \<Rightarrow>^a1 (sim_path R pt q (Suc n))\<close> \<open>R (pt n) (sim_path R pt q n)\<close> by blast
+    obtain a2 a4 where p_step: \<open>(pt n) \<Rightarrow>^a2 (pt (Suc n))\<close>  \<open>(pt (Suc n)) \<Rightarrow>^a4 (pt (Suc (Suc n)))\<close>
+      using \<open>infinite_path pt\<close> unfolding infinite_path_def by blast
+    then have \<open>\<exists>q'. (sim_path R pt q n) \<Rightarrow>^a2 q' \<and> R (pt (Suc n)) q'\<close>
+      using assms(1) ih(2)
+      unfolding weak_sim_weak_premise by blast
+    hence \<open>\<exists> q' a. pt n \<Rightarrow>^a (pt (Suc n))
+      \<and> (sim_path R pt q n \<Rightarrow>^a q')
+      \<and> R (pt (Suc n)) q'\<close>
+      using p_step by blast
+    from someI_ex[OF this] obtain a3 where
+      \<open>pt n \<Rightarrow>^a3 (pt (Suc n))\<close>
+      \<open>sim_path R pt q n \<Rightarrow>^a3 (SOME x. \<exists>a. pt n \<Rightarrow>^a (pt (Suc n)) \<and> sim_path R pt q n \<Rightarrow>^a  x \<and> R (pt (Suc n)) x)\<close>
+      \<open>R (pt (Suc n)) (SOME x. \<exists>a. pt n \<Rightarrow>^a (pt (Suc n)) \<and> sim_path R pt q n \<Rightarrow>^a  x \<and> R (pt (Suc n)) x)\<close>
+      by blast
+    hence qSucN:
+      \<open>pt n \<Rightarrow>^a3 (pt (Suc n))\<close>
+      \<open>sim_path R pt q n \<Rightarrow>^a3 (sim_path R pt q (Suc n))\<close>
+      \<open>R (pt (Suc n)) (sim_path R pt q (Suc n))\<close>
+      by auto
+    then have \<open>\<exists>q'. (sim_path R pt q (Suc n)) \<Rightarrow>^a4 q' \<and> R (pt (Suc (Suc n))) q'\<close>
+      using assms(1) p_step(2)
+      unfolding weak_sim_weak_premise by blast
+    hence \<open>\<exists> q'. \<exists>a4. (pt (Suc n)) \<Rightarrow>^a4 (pt (Suc (Suc n)))
+      \<and> (sim_path R pt q (Suc n)) \<Rightarrow>^a4 q'
+      \<and>  R (pt (Suc (Suc n))) q'\<close>
+      using p_step by blast
+    from someI_ex[OF this] have
+      \<open>\<exists>a. sim_path R pt q (Suc n) \<Rightarrow>^a (sim_path R pt q (Suc (Suc n)))\<close> by auto
+    with qSucN(3) show ?case by blast
+  qed
+qed
+
+lemma path_lifting:
+  assumes
+    \<open>weak_simulation R\<close>
+    \<open>R p q\<close>
+    \<open>infinite_path pt\<close>
+    \<open>pt 0 = p\<close>
+  shows
+    \<open>\<exists>qt. infinite_path qt \<and> qt 0 = q \<and> (\<forall>n. R (pt n) (qt n))\<close>
+  using path_lifting_construction[OF assms] sim_path.simps(1)
+  unfolding infinite_path_def
+  by metis
+
 subsection \<open>Delay Simulation\<close>
 
 definition delay_simulation :: 
